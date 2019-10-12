@@ -2299,6 +2299,7 @@ void SEMIError(const int lineno){
     error = 1;
 }
 void yyerror(const char *s){
+    return;
 }
 #ifndef CALC_MAIN
 #else

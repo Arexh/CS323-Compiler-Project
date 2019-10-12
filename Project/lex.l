@@ -1,6 +1,7 @@
 %{
     #include"syntax.tab.h"
     #include"ASTNode.c"
+    #include"LinkedList.c"
     #include <string.h>
     #include <stdlib.h>
     /* library inclusions */ 
@@ -12,10 +13,13 @@
         yylloc.last_line = yylineno; \
         yylloc.last_column = yycolno + yyleng; \
         yycolno += yyleng; \
-    char* strCopy(char*);
-    char *splice(char*, char*);
+    char *strCopy(char*);
+    void record(char*);
+    void appendLst(struct LstNode *);
     int wrong = 0;
-    char *record = "";
+    char *rec = "";
+    struct LstHead *head = NULL;
+    struct LstNode *node = NULL;
 %}
 letter [a-zA-Z]
 number [0-9]
@@ -27,64 +31,121 @@ not_hex [g-zG-Z"#$%&:?@\^`|~]
 char [ !"#$%&'()*+,\-./0-9:;<=>?@A-Z[\]^_`a-z{|}~]
 not_struct ["#$%&:?@\\^`|~]
 struct [ .;,=<>!=+\-*/&|()\[\]{}]
+struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
 %x COMMENT INT_HEX INT_BINARY_OR_WRONG_ID C_ID
+%x DEFINE NAME TEXT
 %%
-"//".*"\n" { yylineno++; }
-"/*" { BEGIN(COMMENT); }
-<COMMENT>"*/" { BEGIN(INITIAL); }
-<COMMENT>\n   { yylineno++; }
-<COMMENT>.    {}
+"#define " {
+        BEGIN(DEFINE);
+        node = newLstNode();
+    }
+<DEFINE>{id_char_first}({id_char}|{struct_ne})* {
+        printf("yytext: %s", yytext);
+        node->name = strCopy(yytext);
+        BEGIN(NAME);
+    }
+<DEFINE>[ \r\t] {}
+<DEFINE>.{id_char}* { 
+        fprintf(stderr, "Error type A at Line %d: unknown lexeme %s\n", yylineno, yytext);
+        node = NULL;
+        register int c;
+        while((c = input()) != '\n' && c != EOF);
+        if(c == '\n'){
+            BEGIN(INITIAL);
+            yylineno++;
+        }else{
+            fprintf(stderr, "Error at Line %d: EOF in macros\n", yylineno);
+        }
+    }
+<NAME>.* { 
+        node->text = strCopy(yytext);
+        BEGIN(TEXT);
+    }
+<NAME>"\n" { 
+        BEGIN(INITIAL);
+        node->text = "";
+        appendLst(node);
+        printfLstNode(node);
+        node = NULL;
+        yylineno++; 
+    }
+<TEXT>"\n" {
+        BEGIN(INITIAL);
+        appendLst(node);
+        printfLstNode(node);
+        node = NULL;
+        yylineno++; 
+    }
+"//".*"\n" {
+        yylineno++; 
+    }
+"/*" { 
+        BEGIN(COMMENT);
+    }
+<COMMENT>"*/" { 
+        BEGIN(INITIAL); 
+    }
+<COMMENT>\n { 
+        yylineno++; 
+    }
+<COMMENT>. {}
 "0x" { 
         BEGIN(INT_HEX);
-        record = splice(record, yytext);
+        record(yytext);
     }
 <INT_HEX>{hex} {
-        record = splice(record, yytext);
+        record(yytext);
     }
 <INT_HEX>({struct}|"\n") { 
+        if(yytext == "\n"){
+            yylineno++;
+        }
         if(wrong == 1){
-            fprintf(stderr, "Error type A at Line %d: unknown lexeme %s\n", yylineno, record);
+            fprintf(stderr, "Error type A at Line %d: unknown lexeme %s\n", yylineno, rec);
             error = 1;
         }
-        yylval.node = newLeaf("INT", strCopy(record));
+        yylval.node = newLeaf("INT", strCopy(rec));
         wrong = 0;
         BEGIN(INITIAL);
         yyless(yyleng - 1);
-        strcpy(record, "");
+        rec = "";
         return INT;
     }
 <INT_HEX>. { 
-        record = splice(record, yytext);
+        record(yytext);
         wrong = 1; 
     }
 {number} { 
         BEGIN(INT_BINARY_OR_WRONG_ID); 
-        record = splice(record, yytext);
+        record(yytext);
     }
 <INT_BINARY_OR_WRONG_ID>({struct}|"\n") {
+        if(yytext == "\n"){
+            yylineno++;
+        }
         if(wrong == 1){
-            fprintf(stderr, "Error type A at Line %d: unknown lexeme %s\n", yylineno, record);
+            fprintf(stderr, "Error type A at Line %d: unknown lexeme %s\n", yylineno, rec);
             error = 1;
-            yylval.node = newLeaf("ID", strCopy(record));
+            yylval.node = newLeaf("ID", strCopy(rec));
             wrong = 0;
             BEGIN(INITIAL);
             yyless(yyleng - 1);
-            strcpy(record, "");
+            rec = "";
             return ID;
         }else{
-            yylval.node = newLeaf("INT", strCopy(record));
+            yylval.node = newLeaf("INT", strCopy(rec));
             BEGIN(INITIAL);
             yyless(yyleng - 1);
-            strcpy(record, "");
+            rec = "";
             return INT;
         }
     }
 <INT_BINARY_OR_WRONG_ID>{number} {
-        record = splice(record, yytext);
+        record(yytext);
     }
 <INT_BINARY_OR_WRONG_ID>. {
         wrong = 1;
-        record = splice(record, yytext);
+        record(yytext);
     }
 {number}*"."{number}+ { 
         yylval.node = newLeaf("FLOAT", strCopy(yytext)); 
@@ -135,30 +196,33 @@ struct [ .;,=<>!=+\-*/&|()\[\]{}]
 {id_char_first} { 
         BEGIN(C_ID);
         wrong = 0;
-        record = splice(record, yytext);
+        record(yytext);
     }
 {not_struct} {
         BEGIN(C_ID);
         wrong = 1;
-        record = splice(record, yytext);
+        record(yytext);
     }
 <C_ID>({struct}|"\n") {
+        if(yytext == "\n"){
+            yylineno++;
+        }
         if(wrong == 1){
-            fprintf(stderr, "Error type A at Line %d: unknown lexeme %s\n", yylineno, record);
+            fprintf(stderr, "Error type A at Line %d: unknown lexeme %s\n", yylineno, rec);
             error = 1;
         }
         wrong = 0;
-        yylval.node = newLeaf("ID", strCopy(record));
+        yylval.node = newLeaf("ID", strCopy(rec));
         BEGIN(INITIAL);
         yyless(yyleng - 1);
-        strcpy(record, "");
+        rec = "";
         return ID;
     }
 <C_ID>{id_char} {
-        record = splice(record, yytext);
+        record(yytext);
     }
 <C_ID>. {
-        record = splice(record, yytext);
+        record(yytext);
         wrong = 1;
     }
 "." { 
@@ -254,7 +318,6 @@ struct [ .;,=<>!=+\-*/&|()\[\]{}]
         return RC; 
     }
 "\n" { 
-        yycolno = 1;
         yylineno++;
     }
 [ \r\t] { 
@@ -271,9 +334,18 @@ char* strCopy(char* src)
     return dest;
 }
 
-char *splice(char* first, char* second) {
-    char *str = malloc(strlen(first) + strlen(second));
-    strcpy(str, first);
-    strcat(str, second);
-    return str;
+void record(char* ipt) 
+{
+    char *str = malloc(strlen(rec) + strlen(ipt));
+    strcpy(str, rec);
+    strcat(str, ipt);
+    rec = str;
+}
+
+void appendLst(LstNode *node)
+{
+    if(head == NULL){
+        head = newLstHead();
+    }
+    appendNode(head, node);
 }
