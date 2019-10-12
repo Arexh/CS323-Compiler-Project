@@ -12,6 +12,7 @@ typedef struct LstNode
 {
     char *name;
     char *text;
+    int name_len;
     struct LstNode *next;
 } LstNode;
 
@@ -28,6 +29,7 @@ LstNode *newLstNode()
     node->name = NULL;
     node->text = NULL;
     node->next = NULL;
+    node->name_len = 0;
     return node;
 }
 

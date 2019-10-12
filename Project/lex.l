@@ -15,9 +15,11 @@
         yycolno += yyleng; \
     char *strCopy(char*);
     void record(char*);
+    void record_char(char);
+    void unputStr(char*);
     void appendLst(struct LstNode *);
     int wrong = 0;
-    char *rec = "";
+    char *rec = NULL;
     struct LstHead *head = NULL;
     struct LstNode *node = NULL;
 %}
@@ -40,8 +42,8 @@ struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
         node = newLstNode();
     }
 <DEFINE>{id_char_first}({id_char}|{struct_ne})* {
-        printf("yytext: %s", yytext);
         node->name = strCopy(yytext);
+        node->name_len = yyleng;
         BEGIN(NAME);
     }
 <DEFINE>[ \r\t] {}
@@ -55,24 +57,24 @@ struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
             yylineno++;
         }else{
             fprintf(stderr, "Error at Line %d: EOF in macros\n", yylineno);
+            yyterminate();
         }
     }
-<NAME>.* { 
+<NAME>[^ \n].* { 
         node->text = strCopy(yytext);
         BEGIN(TEXT);
     }
+<NAME>" " {}
 <NAME>"\n" { 
         BEGIN(INITIAL);
         node->text = "";
         appendLst(node);
-        printfLstNode(node);
         node = NULL;
         yylineno++; 
     }
 <TEXT>"\n" {
         BEGIN(INITIAL);
         appendLst(node);
-        printfLstNode(node);
         node = NULL;
         yylineno++; 
     }
@@ -193,10 +195,53 @@ struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
         yylval.node = newNotation("RETURN"); 
         return RETURN; 
     }
-{id_char_first} { 
-        BEGIN(C_ID);
-        wrong = 0;
-        record(yytext);
+{id_char_first} {
+        rec = "";
+        int judge = 1;
+        if(head != NULL) {
+            int i;
+            LstNode *tmp = head->next;
+            register int c = 0;
+            for(i = 0; i < head->num; i++){
+                if(yytext[0] == tmp->name[0]){
+                    record(yytext);
+                    int j;
+                    for(j = 0; j < tmp->name_len - 1; j++){
+                        c = input();
+                        if(c != EOF){
+                            record_char(c);
+                        }else{
+                            /* fail */
+                            unputStr(rec);
+                            rec = "";
+                            break;
+                        }
+                    }
+                    if(c == EOF){
+                        /* fail */
+                        continue;
+                    }
+                    if(!strcmp(tmp->name, rec)){
+                        /* success */
+                        unputStr(tmp->text);
+                        rec = "";
+                        yytext = "";
+                        judge = 0;
+                        break;
+                    }else{
+                        /* fail */
+                        unputStr(rec);
+                        rec = "";
+                    }
+                }
+                tmp = tmp->next;
+            }
+        }
+        if(judge) {
+            BEGIN(C_ID);
+            wrong = 0;
+            record(yytext);
+        }
     }
 {not_struct} {
         BEGIN(C_ID);
@@ -326,19 +371,23 @@ struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
         fprintf(stderr, "Error type A at Line %d: unknown lexeme %s\n", yylineno, yytext);
         error = 1;
     }
+<<EOF>> {
+        yyterminate();
+    }
 %%
 char* strCopy(char* src)
 {
-    char *dest = malloc(sizeof(src));
+    char *dest = malloc(strlen(src));
     strcpy(dest, src);
     return dest;
 }
 
-void record(char* ipt) 
+void record(char* ipt)
 {
-    char *str = malloc(strlen(rec) + strlen(ipt));
+    char *str = malloc(strlen(rec) + strlen(ipt) + 1);
     strcpy(str, rec);
     strcat(str, ipt);
+    str[strlen(rec) + strlen(ipt)] = 0;
     rec = str;
 }
 
@@ -348,4 +397,20 @@ void appendLst(LstNode *node)
         head = newLstHead();
     }
     appendNode(head, node);
+}
+
+void record_char(char ipt)
+{
+    char *str = malloc(strlen(rec) + 2);
+    strcpy(str, rec);
+    str[strlen(rec)] = ipt;
+    str[strlen(rec) + 1] = 0;
+    rec = str;
+}
+
+void unputStr(char* str){
+    int i = strlen(str) - 1;
+    for (; i >= 0; i--){
+        unput(str[i]);
+    }
 }
