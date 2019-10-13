@@ -25,6 +25,7 @@
     char *rec = NULL;
     struct LstHead *head = NULL;
     struct LstNode *node = NULL;
+    int neasted_start;
 %}
 letter [a-zA-Z]
 number [0-9]
@@ -37,9 +38,31 @@ char [ !"#$%&'()*+,\-./0-9:;<=>?@A-Z[\]^_`a-z{|}~]
 not_struct ["#$%&:?@\\^`|~]
 struct [ .;,=<>!=+\-*/&|()\[\]{}]
 struct_define [.;,=<>!=+\-*/&|)\[\]{}]
-%x COMMENT INT_HEX INT_BINARY_OR_WRONG_ID C_ID
-%x DEFINE NAME TEXT WHE_PARA NAME_EAT PARA
+%x COMMENT INT_HEX INT_BINARY_OR_WRONG_ID C_ID NEASTED_COMMENT
+%x DEFINE NAME TEXT WHE_PARA NAME_EAT PARA INCLUDE_HEAD INCLUDE_FILE
 %%
+"#include" {
+        BEGIN(INCLUDE_HEAD);
+        rec = "";
+    }
+<INCLUDE_HEAD>[ \r\t] {
+    }
+<INCLUDE_HEAD>"\n" {
+        yylineno++;
+        fprintf(stderr, "Error INCLUDE at Line %d: empty file\n", yylineno);
+        eatLine();
+    }
+<INCLUDE_HEAD>[^ \r\t\n]* {
+        record(yytext);
+        BEGIN(INCLUDE_FILE);
+    }
+<INCLUDE_FILE>[.\n] {
+        yylval.node = newLeaf("INCLUDE", strCopy(rec));
+        rec = "";
+        BEGIN(INITIAL);
+        yylineno++;
+        return INCLUDE;
+    }
 "#define " {
         BEGIN(DEFINE);
         node = newLstNode();
@@ -112,15 +135,37 @@ struct_define [.;,=<>!=+\-*/&|)\[\]{}]
         yylineno++; 
     }
 "/*" { 
+        rec = "";
         BEGIN(COMMENT);
     }
-<COMMENT>"*/" { 
-        BEGIN(INITIAL); 
+<COMMENT>"/*" {
+        neasted_start = yylineno;
+        BEGIN(NEASTED_COMMENT);
     }
-<COMMENT>\n { 
+<COMMENT>"*/" { 
+        rec = "";
+        BEGIN(INITIAL);
+    }
+<COMMENT>\n {
         yylineno++; 
     }
-<COMMENT>. {}
+<COMMENT><<EOF>> {
+        fprintf(stderr, "Error COMMENT at Line %d: missing '*/'\n", yylineno);
+    }
+<COMMENT>. {
+    }
+<NEASTED_COMMENT>"*/" {
+        fprintf(stderr, "Error COMMENT from Line %d to Line %d: nested multi-line comments\n", neasted_start, yylineno);
+        BEGIN(COMMENT);
+    }
+<NEASTED_COMMENT><<EOF>> {
+        fprintf(stderr, "Error COMMENT at Line %d: missing '*/'\n", yylineno);
+    }
+<NEASTED_COMMENT>. {
+    }
+<NEASTED_COMMENT>\n {
+        yylineno++;
+    }
 "0x" { 
         BEGIN(INT_HEX);
         record(yytext);
@@ -224,6 +269,10 @@ struct_define [.;,=<>!=+\-*/&|)\[\]{}]
 "return" {
         yylval.node = newNotation("RETURN"); 
         return RETURN; 
+    }
+"for" {
+        yylval.node = newNotation("FOR");
+        return FOR;
     }
 {id_char_first} {
         rec = "";

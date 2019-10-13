@@ -5,12 +5,13 @@
     void RPError(const int);
     void SEMIError(const int);
 %}
+%error-verbose
 %union {
     struct ASTNode *node;
 }
-%token <node> INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN DOT SEMI COMMA
-%token <node> ASSIGN LT LE GT GE NE EQ PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC
-%type  <node> Program ExtDefList ExtDef ExtDecList
+%token <node> INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN DOT SEMI COMMA FOR
+%token <node> ASSIGN LT LE GT GE NE EQ PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC INCLUDE
+%type  <node> Program ExtDefList ExtDef ExtDecList IncludeList
 %type  <node> Specifier StructSpecifier
 %type  <node> VarDec FunDec VarList ParamDec
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
@@ -25,11 +26,18 @@
 %left LP RP LB RB DOT
 %%
 /* High-Level Definition */
-Program: ExtDefList {
-    $$ = newNode("Program", @$.first_line); 
-     root = $$;
-     appendChild($$, 1, $1); 
+Program: IncludeList ExtDefList {
+        $$ = newNode("Program", @$.first_line); 
+        root = $$;
+        appendChild($$, 2, $1, $2); 
      };
+IncludeList: INCLUDE IncludeList {
+        $$ = newNode("IncludeList", @$.first_line); 
+        appendChild($$, 2, $1, $2); 
+    }
+    | {
+        $$ = newNode("NONE", @$.first_line);
+    };
 ExtDefList: ExtDef ExtDefList {
     $$ = newNode("ExtDefList", @$.first_line); 
      appendChild($$, 2, $1, $2); 
@@ -170,6 +178,20 @@ Stmt: Exp SEMI {
     | WHILE LP Exp error Stmt {
         RPError(@$.first_line);
     }
+    | FOR LP Def Exp SEMI Exp RP Stmt {
+        $$ = newNode("Stmt", @$.first_line); 
+        appendChild($$, 8, $1, $2, $3, $4, $5, $6, $7, $8);
+    }
+    | FOR LP Def Exp error Exp RP Stmt {
+        SEMIError(@$.first_line);
+    }
+    | FOR LP Def Exp error Exp error Stmt {
+        SEMIError(@$.first_line);
+        RPError(@$.first_line);
+    }
+    | FOR LP Def Exp SEMI Exp error Stmt {
+        RPError(@$.first_line);
+    }
     ;
 
 /* local definition */
@@ -206,43 +228,122 @@ Dec: VarDec {
         appendChild($$, 3, $1, $2, $3);
     };
 
-/* Expression */
-Exp:  Exp ASSIGN Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp AND Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp OR Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp LT Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp LE Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp GT Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp GE Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp NE Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp EQ Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp PLUS Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp MINUS Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp MUL Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp DIV Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | LP Exp RP { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
+    /* Expression */
+Exp:  Exp ASSIGN Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp AND Exp 
+    { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp OR Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp LT Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp LE Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp GT Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp GE Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp NE Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp EQ Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp PLUS Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp MINUS Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp MUL Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp DIV Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | LP Exp RP { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
     | LP Exp error {
         RPError(@$.first_line);
     }
-    | MINUS Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 2, $1, $2); }
-    | NOT Exp { $$ = newNode("Exp", @$.first_line); appendChild($$, 2, $1, $2); }
-    | ID LP Args RP { $$ = newNode("Exp", @$.first_line); appendChild($$, 4, $1, $2, $3, $4); }
+    | MINUS Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 2, $1, $2); 
+    }
+    | NOT Exp { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 2, $1, $2); 
+    }
+    | ID LP Args RP { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 4, $1, $2, $3, $4); 
+    }
     | ID LP Args error {
         RPError(@$.first_line);
     }
-    | ID LP RP { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
+    | ID LP RP { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
     | ID LP error {
         RPError(@$.first_line);
     }
-    | Exp LB Exp RB { $$ = newNode("Exp", @$.first_line); appendChild($$, 4, $1, $2, $3, $4); }
-    | Exp DOT ID { $$ = newNode("Exp", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | ID { $$ = newNode("Exp", @$.first_line); appendChild($$, 1, $1); }
-    | INT { $$ = newNode("Exp", @$.first_line); appendChild($$, 1, $1); }
-    | FLOAT { $$ = newNode("Exp", @$.first_line); appendChild($$, 1, $1); }
-    | CHAR { $$ = newNode("Exp", @$.first_line); appendChild($$, 1, $1); }
+    | Exp LB Exp RB { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 4, $1, $2, $3, $4); 
+    }
+    | Exp DOT ID { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | ID { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 1, $1); 
+    }
+    | INT { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 1, $1); 
+    }
+    | FLOAT { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 1, $1);
+    }
+    | CHAR { 
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 1, $1); 
+    }
     ;
-Args: Exp COMMA Args  { $$ = newNode("Args", @$.first_line); appendChild($$, 3, $1, $2, $3); }
-    | Exp { $$ = newNode("Args", @$.first_line); appendChild($$, 1, $1); }
+Args: Exp COMMA Args  { 
+        $$ = newNode("Args", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+    }
+    | Exp { 
+        $$ = newNode("Args", @$.first_line); 
+        appendChild($$, 1, $1); 
+    }
     ;
 %%
 void RPError(const int lineno){
@@ -254,7 +355,7 @@ void SEMIError(const int lineno){
     error = 1;
 }
 void yyerror(const char *s){
-    return;
+    fprintf(stderr, "%s", s);
 }
 #ifndef CALC_MAIN
 #else

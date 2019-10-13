@@ -58,28 +58,30 @@ extern int yydebug;
     DOT = 268,
     SEMI = 269,
     COMMA = 270,
-    ASSIGN = 271,
-    LT = 272,
-    LE = 273,
-    GT = 274,
-    GE = 275,
-    NE = 276,
-    EQ = 277,
-    PLUS = 278,
-    MINUS = 279,
-    MUL = 280,
-    DIV = 281,
-    AND = 282,
-    OR = 283,
-    NOT = 284,
-    LP = 285,
-    RP = 286,
-    LB = 287,
-    RB = 288,
-    LC = 289,
-    RC = 290,
-    ADD = 291,
-    SUB = 292
+    FOR = 271,
+    ASSIGN = 272,
+    LT = 273,
+    LE = 274,
+    GT = 275,
+    GE = 276,
+    NE = 277,
+    EQ = 278,
+    PLUS = 279,
+    MINUS = 280,
+    MUL = 281,
+    DIV = 282,
+    AND = 283,
+    OR = 284,
+    NOT = 285,
+    LP = 286,
+    RP = 287,
+    LB = 288,
+    RB = 289,
+    LC = 290,
+    RC = 291,
+    INCLUDE = 292,
+    ADD = 293,
+    SUB = 294
   };
 #endif
 
@@ -88,11 +90,11 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 8 "syntax.y" /* yacc.c:1909  */
+#line 9 "syntax.y" /* yacc.c:1909  */
 
     struct ASTNode *node;
 
-#line 96 "syntax.tab.h" /* yacc.c:1909  */
+#line 98 "syntax.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
