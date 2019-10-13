@@ -14,10 +14,13 @@
         yylloc.last_column = yycolno + yyleng; \
         yycolno += yyleng; \
     char *strCopy(char*);
+    char *splice_char(char*, char);
     void record(char*);
     void record_char(char);
     void unputStr(char*);
     void appendLst(struct LstNode *);
+    int eatLine();
+    char *splice(char*, char*);
     int wrong = 0;
     char *rec = NULL;
     struct LstHead *head = NULL;
@@ -33,39 +36,66 @@ not_hex [g-zG-Z"#$%&:?@\^`|~]
 char [ !"#$%&'()*+,\-./0-9:;<=>?@A-Z[\]^_`a-z{|}~]
 not_struct ["#$%&:?@\\^`|~]
 struct [ .;,=<>!=+\-*/&|()\[\]{}]
-struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
+struct_define [.;,=<>!=+\-*/&|)\[\]{}]
 %x COMMENT INT_HEX INT_BINARY_OR_WRONG_ID C_ID
-%x DEFINE NAME TEXT
+%x DEFINE NAME TEXT WHE_PARA NAME_EAT PARA
 %%
 "#define " {
         BEGIN(DEFINE);
         node = newLstNode();
     }
-<DEFINE>{id_char_first}({id_char}|{struct_ne})* {
+<DEFINE>{id_char_first}({id_char}|{struct_define})* {
         node->name = strCopy(yytext);
         node->name_len = yyleng;
+        rec = "";
         BEGIN(NAME);
     }
 <DEFINE>[ \r\t] {}
 <DEFINE>.{id_char}* { 
         fprintf(stderr, "Error type A at Line %d: unknown lexeme %s\n", yylineno, yytext);
         node = NULL;
-        register int c;
-        while((c = input()) != '\n' && c != EOF);
-        if(c == '\n'){
-            BEGIN(INITIAL);
-            yylineno++;
+        eatLine();
+    }
+<WHE_PARA>" " {}
+<WHE_PARA>"," {
+        fprintf(stderr, "Error macro at Line %d: empty parameter\n", yylineno);
+        eatLine();
+    }
+<WHE_PARA>[^ ,)]* {
+        if(checkArg(node->argHead, yytext)){
+            fprintf(stderr, "Error macro at Line %d: duplicate parameter\n", yylineno);
+            eatLine();
         }else{
-            fprintf(stderr, "Error at Line %d: EOF in macros\n", yylineno);
-            yyterminate();
+            appendArgId(node->argHead, strCopy(yytext));
+            BEGIN(PARA);
         }
     }
-<NAME>[^ \n].* { 
+<PARA>" "*"," {
+        BEGIN(WHE_PARA);
+    }
+<PARA>" "*")"";"" "* {
+        node->semi = 1;
+        BEGIN(NAME_EAT);
+    }
+<PARA>" "*")"" "* {
+        BEGIN(NAME_EAT);
+    }
+<PARA>" " {
+        fprintf(stderr, "Error at Line %d: missing right parenthesis\n", yylineno);
+        eatLine();
+    }
+<NAME>"(" {
+        record("(");
+        BEGIN(WHE_PARA);
+    }
+<NAME>" " { 
+        BEGIN(NAME_EAT);
+    }
+<NAME_EAT>[^ \n].* {
         node->text = strCopy(yytext);
         BEGIN(TEXT);
     }
-<NAME>" " {}
-<NAME>"\n" { 
+<NAME_EAT>"\n" { 
         BEGIN(INITIAL);
         node->text = "";
         appendLst(node);
@@ -198,6 +228,7 @@ struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
 {id_char_first} {
         rec = "";
         int judge = 1;
+        int change = 0;
         if(head != NULL) {
             int i;
             LstNode *tmp = head->next;
@@ -205,6 +236,7 @@ struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
             for(i = 0; i < head->num; i++){
                 if(yytext[0] == tmp->name[0]){
                     record(yytext);
+                    change = 1;
                     int j;
                     for(j = 0; j < tmp->name_len - 1; j++){
                         c = input();
@@ -223,11 +255,85 @@ struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
                     }
                     if(!strcmp(tmp->name, rec)){
                         /* success */
-                        unputStr(tmp->text);
-                        rec = "";
-                        yytext = "";
-                        judge = 0;
-                        break;
+                        if(tmp->argHead->num == 0){
+                            unputStr(strCopy(tmp->text));
+                            rec = "";
+                            yytext = "";
+                            judge = 0;
+                            break;
+                        }else{
+                            char next_char = input();
+                            record_char(next_char);
+                            int state = 0;
+                            int count = 0;
+                            Arg *arg = tmp->argHead->next;
+                            while(next_char != EOF){
+                                if(state == 0){
+                                    if(next_char == '('){
+                                        state = 1;
+                                    }else{
+                                        unputStr(rec);
+                                        break;
+                                    }
+                                }else if(state == 1){
+                                    if(next_char == ','){
+                                        if(arg->match == NULL){
+                                            unputStr(rec);
+                                            break;
+                                        }else{
+                                            if(arg->next != NULL){
+                                                count++;
+                                                arg = arg->next;
+                                                state = 1;
+                                            }else{
+                                                unputStr(rec);
+                                                break;
+                                            }
+                                        }
+                                    }else if(next_char == ' '){
+                                        state = 1;
+                                    }else if(next_char == ')'){
+                                        if(arg->match != NULL && count + 1 == tmp->argHead->num){
+                                            if(tmp->semi){
+                                                next_char = input();
+                                                record_char(next_char);
+                                                if(next_char == ';'){
+                                                    /* success */
+                                                    unputStr(replace(tmp->text, tmp->argHead));
+                                                    clearMatch(tmp->argHead);
+                                                    rec = "";
+                                                    yytext = "";
+                                                    judge = 0;
+                                                    break;
+                                                }else{
+                                                    unputStr(rec);
+                                                    break;
+                                                }
+                                            }else{
+                                                /* success */
+                                                unputStr(replace(arg->match, tmp->argHead));
+                                                clearMatch(tmp->argHead);
+                                                rec = "";
+                                                yytext = "";
+                                                judge = 0;
+                                                break;
+                                            }
+                                        }else{
+                                            unputStr(rec);
+                                            break;
+                                        }
+                                    }else{
+                                        arg->match = splice_char(arg->match, next_char);
+                                        state = 1;
+                                    }
+                                }
+                                next_char = input();
+                                record_char(next_char);
+                            }
+                            if(next_char == EOF){
+                                unputStr(rec);
+                            }
+                        }
                     }else{
                         /* fail */
                         unputStr(rec);
@@ -238,6 +344,10 @@ struct_ne [.;,=<>!=+\-*/&|()\[\]{}]
             }
         }
         if(judge) {
+            if(change){
+                yytext = "";
+                yytext = splice_char(yytext, input());
+            }
             BEGIN(C_ID);
             wrong = 0;
             record(yytext);
@@ -413,4 +523,42 @@ void unputStr(char* str){
     for (; i >= 0; i--){
         unput(str[i]);
     }
+}
+
+char *splice(char* a, char* b)
+{
+    char *str = malloc(strlen(a) + strlen(b) + 1);
+    strcpy(str, a);
+    strcat(str, b);
+    str[strlen(a) + strlen(b)] = 0;
+    return str;
+}
+
+int eatLine()
+{
+    register int c;
+    while((c = input()) != '\n' && c != EOF);
+    if(c == '\n'){
+        BEGIN(INITIAL);
+        yylineno++;
+    }else{
+        fprintf(stderr, "Error at Line %d: EOF in macros\n", yylineno);
+        yyterminate();
+    }
+}
+
+char *splice_char(char* a, char b)
+{   
+    char *str;
+    if(a == NULL){
+        str = malloc(2);
+        str[0] = b;
+        str[1] = 0;
+    }else{
+        str = malloc(strlen(a) + 2);
+        strcpy(str, a);
+        str[strlen(a)] = b;
+        str[strlen(a) + 1] = 0;
+    }
+    return str;
 }
