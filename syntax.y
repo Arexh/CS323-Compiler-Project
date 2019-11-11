@@ -398,7 +398,12 @@ void initial(){
 #else
 int main(int count, char **args){
     if(count == 1){
-         fprintf(out, "Please input file names\n");
+        initial();
+        out = stdout;
+        yyparse();
+        if (error == 0) {
+            dfsPrintf(root, 0);
+        }
     }else{
         for(int x = 1; x < count; x++){
             initial();
