@@ -10,8 +10,7 @@ typedef struct ASTNode
     int child_count;
     int terminal;
     int row;
-    struct ASTNode *sibling;
-    struct ASTNode *child;
+    struct ASTNode ** child;
 } ASTNode;
 
 ASTNode *init()
@@ -20,9 +19,10 @@ ASTNode *init()
     node->value = NULL;
     node->type = NULL;
     node->child_count = 0;
+    // node: 0, leaf: 1, notation: -1
     node->terminal = 0;
+    // line number
     node->row = 0;
-    node->sibling = NULL;
     node->child = NULL;
     return node;
 }
@@ -56,22 +56,11 @@ void appendChild(ASTNode *father, int count, ...)
 {
     va_list valist;
     va_start(valist, count);
-    ASTNode *temp = father->child;
-    int key = 0;
-    while(temp != NULL && temp->sibling != NULL)
-    {
-        temp = temp->sibling;
-    }
-    if(temp == NULL) {
-        father->child = va_arg(valist, ASTNode *);
-        father->child_count = 1;
-        temp = father->child;
-        key = 1;
-    }
-    for(key; key < count; key++) {
-        temp->sibling = va_arg(valist, ASTNode *);
-        father->child_count++;
-        temp = temp->sibling;
+    father->child_count = count;
+    father->child = (ASTNode **)malloc(sizeof(ASTNode *) * count);
+    int i = 0;
+    for (i = 0; i < count; i++) {
+        father->child[i] = va_arg(valist, ASTNode *);
     }
 }
 
@@ -93,19 +82,25 @@ void dfsPrintf(ASTNode *node, int count)
     if(node == NULL)
         return;
     printfNode(node, count);
-    dfsPrintf(node->child, count + 2);
-    dfsPrintf(node->sibling, count);
+    if (node->child_count > 0) {
+        dfsPrintf(node->child[0], count + 2);
+        int i;
+        for (i = 1; i < node->child_count; i++) {
+            dfsPrintf(node->child[i], count);
+        }
+    }
 }
 
 // int main()
 // {
-//     ASTNode *node = newNode("Program", "1");
-//     ASTNode *node1 = newNode("ExtDefList", "1");
-//     ASTNode *node2 = newNode("ExtDef", "1");
-//     ASTNode *node3 = newNode("Specifier", "1");
+//     out = stdout;
+//     ASTNode *node = newNode("Program", 1);
+//     ASTNode *node1 = newNode("ExtDefList", 1);
+//     ASTNode *node2 = newNode("ExtDef", 1);
+//     ASTNode *node3 = newNode("Specifier", 1);
 //     ASTNode *node4 = newLeaf("TYPE", "int");
 //     ASTNode *node5 = newNotation("PLUS");
-//     ASTNode *node6 = newNode("VarDec", "1");
+//     ASTNode *node6 = newNode("VarDec", 1);
 //     ASTNode *node7 = newLeaf("ID", "global");
 //     appendChild(node, 5, node1, node2, node3, node4, node5);
 //     dfsPrintf(node, 0);
