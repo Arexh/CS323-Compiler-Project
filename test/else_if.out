@@ -1,0 +1,89 @@
+Program (1)
+  ExtDefList (1)
+    ExtDef (1)
+      Specifier (1)
+        TYPE: int
+      FunDec (1)
+        ID: cmp
+        LP
+        VarList (1)
+          ParamDec (1)
+            Specifier (1)
+              TYPE: int
+            VarDec (1)
+              ID: a
+          COMMA
+          VarList (1)
+            ParamDec (1)
+              Specifier (1)
+                TYPE: int
+              VarDec (1)
+                ID: b
+        RP
+      CompSt (1)
+        LC
+        DefList (2)
+          Def (2)
+            Specifier (2)
+              TYPE: int
+            DecList (2)
+              Dec (2)
+                VarDec (2)
+                  ID: result
+            SEMI
+        StmtList (3)
+          Stmt (3)
+            IF
+            LP
+            Exp (3)
+              Exp (3)
+                ID: a
+              GT
+              Exp (3)
+                ID: b
+            RP
+            Stmt (3)
+              CompSt (3)
+                LC
+                StmtList (4)
+                  Stmt (4)
+                    RETURN
+                    Exp (4)
+                      INT: 1
+                    SEMI
+                RC
+            ELSE
+            Stmt (5)
+              IF
+              LP
+              Exp (5)
+                Exp (5)
+                  ID: a
+                LT
+                Exp (5)
+                  ID: b
+              RP
+              Stmt (5)
+                CompSt (5)
+                  LC
+                  StmtList (6)
+                    Stmt (6)
+                      RETURN
+                      Exp (6)
+                        MINUS
+                        Exp (6)
+                          INT: 1
+                      SEMI
+                  RC
+              ELSE
+              Stmt (7)
+                CompSt (7)
+                  LC
+                  StmtList (8)
+                    Stmt (8)
+                      RETURN
+                      Exp (8)
+                        INT: 0
+                      SEMI
+                  RC
+        RC

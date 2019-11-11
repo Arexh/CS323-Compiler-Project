@@ -1,0 +1,8 @@
+#define PI 3.1415926535898
+#define calc_area(radius); (radius) * (radius) * PI;
+
+int main(){
+    int r = 5;
+    float area = calc_area(r);
+    return 0;
+}
