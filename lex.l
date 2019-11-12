@@ -61,28 +61,6 @@ struct_define [.;,=<>!=+\-*/&|)\[\]{}]
         }
         eatLine();
     }
-"#include" {
-        rec = "";
-        BEGIN(INCLUDE_HEAD);   
-    }
-<INCLUDE_HEAD>[ \r\t] {
-    }
-<INCLUDE_HEAD>"\n" {
-        yylineno++;
-        fprintf(out, "Error INCLUDE at Line %d: empty file\n", yylineno);
-        eatLine();
-    }
-<INCLUDE_HEAD>[^ \r\t\n]* {
-        record(yytext);
-        BEGIN(INCLUDE_FILE);
-    }
-<INCLUDE_FILE>[.\n] {
-        yylval.node = newLeaf("INCLUDE", strCopy(rec));
-        rec = "";
-        BEGIN(INITIAL);
-        yylineno++;
-        return INCLUDE;
-    }
 "#define " {
         BEGIN(DEFINE);
         node = newLstNode();

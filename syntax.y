@@ -15,7 +15,7 @@
 }
 %token <node> INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN DOT SEMI COMMA FOR 
 %token <node> ASSIGN LT LE GT GE NE EQ PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC INCLUDE UNKNOW
-%type  <node> Program ExtDefList ExtDef ExtDecList IncludeList
+%type  <node> Program ExtDefList ExtDef ExtDecList
 %type  <node> Specifier StructSpecifier 
 %type  <node> VarDec FunDec VarList ParamDec
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
@@ -33,18 +33,11 @@
 %nonassoc UNKNOW
 %%
 /* High-Level Definition */
-Program: IncludeList ExtDefList {
+Program: ExtDefList {
         $$ = newNode("Program", @$.first_line); 
         root = $$;
-        appendChild($$, 2, $1, $2); 
+        appendChild($$, 1, $1); 
      };
-IncludeList: INCLUDE IncludeList {
-        $$ = newNode("IncludeList", @$.first_line); 
-        appendChild($$, 2, $1, $2); 
-    }
-    | {
-        $$ = newNode("NONE", @$.first_line);
-    };
 ExtDefList: ExtDef ExtDefList {
     $$ = newNode("ExtDefList", @1.first_line); 
      appendChild($$, 2, $1, $2); 
