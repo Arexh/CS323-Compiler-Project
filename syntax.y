@@ -20,6 +20,7 @@
 %type  <node> VarDec FunDec VarList ParamDec
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
 %type  <node> Exp Args
+%type  <node> FunID FunVar SpecifierTrigger
 %right ASSIGN
 %left OR
 %left AND
@@ -45,21 +46,21 @@ ExtDefList: ExtDef ExtDefList {
     | {
         $$ = newNode("NONE", @$.first_line);
     };
-ExtDef: Specifier ExtDecList SEMI {
+ExtDef: SpecifierTrigger ExtDecList SEMI {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
     }
-    | Specifier ExtDecList error {
+    | SpecifierTrigger ExtDecList error {
         SEMIError(@$.first_line);
     }
-    | Specifier SEMI {
+    | SpecifierTrigger SEMI {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 2, $1, $2);
     }
-    | Specifier error {
+    | SpecifierTrigger error {
         SEMIError(@$.first_line);
     }
-    | Specifier FunDec CompSt {
+    | SpecifierTrigger FunDec CompSt {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
     };
@@ -80,7 +81,7 @@ Specifier: TYPE {
     | StructSpecifier {
         $$ = newNode("Specifier", @$.first_line); 
         appendChild($$, 1, $1);
-    }
+    };
 StructSpecifier: STRUCT ID LC DefList RC {
         $$ = newNode("StructSpecifier", @$.first_line); 
         appendChild($$, 5, $1, $2, $3, $4, $5);
@@ -89,7 +90,10 @@ StructSpecifier: STRUCT ID LC DefList RC {
         $$ = newNode("StructSpecifier", @$.first_line); 
         appendChild($$, 2, $1, $2);
     };
-
+SpecifierTrigger: Specifier {
+        puts("get a specifier");
+        $$ = $1;
+    };
 /* declarator */
 VarDec: ID {
         $$ = newNode("VarDec", @$.first_line); 
@@ -99,21 +103,30 @@ VarDec: ID {
         $$ = newNode("VarDec", @$.first_line); 
         appendChild($$, 4, $1, $2, $3, $4);
     };
-FunDec: ID LP VarList RP {
+FunDec: FunID LP FunVar RP {
         $$ = newNode("FunDec", @$.first_line); 
         appendChild($$, 4, $1, $2, $3, $4);
     } 
-    | ID LP VarList error {
+    | FunID LP FunVar error {
         RPError(@$.first_line);
     }
-    | ID LP RP {
+    | FunID LP RP {
         $$ = newNode("FunDec", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
     }
-    | ID LP error {
+    | FunID LP error {
         RPError(@$.first_line);
-    }
-    ;
+    };
+FunID: ID {
+        puts("get function id");
+        $$ = newNode("FunID", @$.first_line);
+        appendChild($$, 1, $1);
+    };
+FunVar: VarList {
+        puts("get function varlist");
+        $$ = newNode("FunVar", @$.first_line);
+        appendChild($$, 1, $1);
+    };
 VarList: ParamDec COMMA VarList {
         $$ = newNode("VarList", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
@@ -205,14 +218,17 @@ DefList: Def DefList {
     | {
         $$ = newNode("NONE", @$.first_line);
     };
-Def: Specifier DecList SEMI {
+Def: SpecifierTrigger DecList SEMI {
         $$ = newNode("Def", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
     }
-    | Specifier DecList error {
+    | SpecifierTrigger DecList error {
         SEMIError(@$.first_line);
-    }
-    ;
+    } 
+    | SpecifierTrigger FunDec CompSt {
+        $$ = newNode("ExtDef", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3);
+    };
 DecList: Dec {
         $$ = newNode("DecList", @$.first_line); 
         appendChild($$, 1, $1);
@@ -386,6 +402,7 @@ void initial(){
     node = NULL;
     neasted_start = 0;
     root = NULL;
+    
 }
 #ifndef CALC_MAIN
 #else
