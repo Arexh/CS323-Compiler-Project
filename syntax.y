@@ -2,6 +2,10 @@
     #include"lex.yy.c"
     void yyerror(const char*);
     struct ASTNode *root;
+    struct HashTable *currentTable;
+    struct FunctionAttribute *currentFunction;
+    int scopeNumber;
+    char *currentSpecifier;
     void RPError(const int);
     void SEMIError(const int);
     void STRUCTError(const int, const char *);
@@ -20,7 +24,7 @@
 %type  <node> VarDec FunDec VarList ParamDec
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
 %type  <node> Exp Args
-%type  <node> FunID FunVar SpecifierTrigger
+%type  <node> FunID SpecifierTrigger
 %right ASSIGN
 %left OR
 %left AND
@@ -91,7 +95,7 @@ StructSpecifier: STRUCT ID LC DefList RC {
         appendChild($$, 2, $1, $2);
     };
 SpecifierTrigger: Specifier {
-        puts("get a specifier");
+        currentSpecifier = $1->child[0]->value;
         $$ = $1;
     };
 /* declarator */
@@ -103,11 +107,11 @@ VarDec: ID {
         $$ = newNode("VarDec", @$.first_line); 
         appendChild($$, 4, $1, $2, $3, $4);
     };
-FunDec: FunID LP FunVar RP {
+FunDec: FunID LP VarList RP {
         $$ = newNode("FunDec", @$.first_line); 
         appendChild($$, 4, $1, $2, $3, $4);
     } 
-    | FunID LP FunVar error {
+    | FunID LP VarList error {
         RPError(@$.first_line);
     }
     | FunID LP RP {
@@ -118,14 +122,11 @@ FunDec: FunID LP FunVar RP {
         RPError(@$.first_line);
     };
 FunID: ID {
-        puts("get function id");
         $$ = newNode("FunID", @$.first_line);
         appendChild($$, 1, $1);
-    };
-FunVar: VarList {
-        puts("get function varlist");
-        $$ = newNode("FunVar", @$.first_line);
-        appendChild($$, 1, $1);
+        // function start
+        currentFunction = put_function(currentTable, currentSpecifier, $1->value);
+
     };
 VarList: ParamDec COMMA VarList {
         $$ = newNode("VarList", @$.first_line); 
@@ -138,6 +139,7 @@ VarList: ParamDec COMMA VarList {
 ParamDec: Specifier VarDec {
         $$ = newNode("ParamDec", @$.first_line); 
         appendChild($$, 2, $1, $2);
+        put_para(currentFunction, $1, $2);
     };
 
 /* statement */
@@ -402,7 +404,8 @@ void initial(){
     node = NULL;
     neasted_start = 0;
     root = NULL;
-    
+    currentTable = new_hash_table();
+    scopeNumber = 0;
 }
 #ifndef CALC_MAIN
 #else

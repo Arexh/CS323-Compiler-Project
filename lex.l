@@ -1,7 +1,7 @@
 %{
     #include"syntax.tab.h"
-    #include"ASTNode.c"
     #include"LinkedList.c"
+    #include"Attributes.c"
     #include <stdio.h>
     #include <string.h>
     #include <stdlib.h>
