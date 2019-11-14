@@ -1,30 +1,30 @@
 #include "HashTable.c"
 
 typedef struct SymbolTable {
-    struct VariableNode *node;
+    struct VariableNode *first;
     struct VariableNode *last;
 } SymbolTable;
 
 typedef struct VariableNode {
-    struct ListNode *node;
+    struct TableItem *item;
     struct VariableNode *next;
 } VariableNode;
 
 SymbolTable *new_symbol_table() {
     SymbolTable *symbolTable = (SymbolTable *)malloc(sizeof(SymbolTable));
-    symbolTable->node = NULL;
+    symbolTable->first = NULL;
     symbolTable->last = NULL;
 }
 
 VariableNode *new_variable_node() {
     VariableNode *node = (VariableNode *)malloc(sizeof(VariableNode));
-    node->node = NULL;
+    node->item = NULL;
     node->next = NULL;
 }
 
 void free_symbol_table(SymbolTable *table) {
     if (table) {
-        table->node = NULL;
+        table->first = NULL;
         table->last = NULL;
         free(table);
     }
@@ -32,9 +32,9 @@ void free_symbol_table(SymbolTable *table) {
 
 void free_varible_node(VariableNode *variableNode) {
     if (variableNode) {
-        if (variableNode->node) {
-            free_list_node(variableNode->node);
-            variableNode->node = NULL;
+        if (variableNode->item) {
+            free_table_item(variableNode->item);
+            variableNode->item = NULL;
         }
         if (variableNode->next) {
             variableNode->next = NULL;
@@ -44,9 +44,9 @@ void free_varible_node(VariableNode *variableNode) {
 }
 
 void add_table_list(SymbolTable *table, VariableNode *node) {
-    if (table->node == NULL) {
+    if (table->first == NULL) {
         table->last = node;
-        table->node = node;
+        table->first = node;
     } else {
         table->last->next = node;
         table->last = node;
@@ -54,41 +54,27 @@ void add_table_list(SymbolTable *table, VariableNode *node) {
 }
 
 void printf_table_list(SymbolTable *table) {
-    VariableNode *node = table->node;
+    VariableNode *node = table->first;
     int i = 0;
     while(node) {
-        printf("node%d, name: %s, attribute%s.\n", i++, node->node->name, node->node->attribute);
+        printf("node%d, name: %s, type:%s.\n", i++, node->item->name, node->item->type);
         node = node->next;
     }
 }
 
-void symbol_table_add_node(HashTable *hashTable, SymbolTable *symbolTable, char* name, char* attribute) {
+void symbol_table_add_node(HashTable *hashTable, SymbolTable *symbolTable, char* name, char* type, void *attribute) {
     int index = hash_function_pjw(name);
-    ListNode *node = hash_table_put(hashTable, name, attribute);
-    if (node == NULL) {
-        printf("ListNode is NULL!\n");
-    }
+    TableItem *item = hash_table_put(hashTable, name, type, attribute);
     VariableNode *variableNode = new_variable_node();
-    variableNode->node = node;
+    variableNode->item = item;
     add_table_list(symbolTable, variableNode);
 }
 
 void symbol_table_remove(HashTable *hashTable, SymbolTable *symbolTable) {
-    VariableNode *variableNode = symbolTable->node;
+    VariableNode *variableNode = symbolTable->first;
     while (variableNode) {
-        ListNode *node = variableNode->node;
-        int index = hash_function_pjw(node->name);
-        if (node->previous) {
-            node->previous->next = node->next;
-            if (node->next) {
-                node->next->previous = node->previous;
-            }
-        } else {
-            hashTable->table[index] = node->next;
-            if (node->next) {
-                node->next->previous = NULL;
-            }
-        }
+        TableItem *item = variableNode->item;
+        hash_table_remove(hashTable, item);
         VariableNode *temp = variableNode;
         variableNode = variableNode->next;
         free_varible_node(temp);
@@ -100,13 +86,13 @@ void symbol_table_remove(HashTable *hashTable, SymbolTable *symbolTable) {
 //     SymbolTable *symbolTable = new_symbol_table();
 //     SymbolTable *symbolTable1 = new_symbol_table();
 //     HashTable *hashTable = new_hash_table();
-//     symbol_table_add_node(hashTable, symbolTable, "111", "101");
-//     symbol_table_add_node(hashTable, symbolTable, "222", "202");
-//     symbol_table_add_node(hashTable, symbolTable, "333", "303");
-//     symbol_table_add_node(hashTable, symbolTable1, "333", "1213");
-//     symbol_table_add_node(hashTable, symbolTable1, "333", "321321");
+//     symbol_table_add_node(hashTable, symbolTable, "111", "101", NULL);
+//     symbol_table_add_node(hashTable, symbolTable, "222", "202", NULL);
+//     symbol_table_add_node(hashTable, symbolTable, "333", "303", NULL);
+//     symbol_table_add_node(hashTable, symbolTable1, "333", "1213", NULL);
+//     symbol_table_add_node(hashTable, symbolTable1, "333", "321321", NULL);
 //     symbol_table_remove(hashTable, symbolTable1);
-//     ListNode *node = hashTable->table[hash_function_pjw("333")];
-//     printf("%s", node->attribute);
+//     TableItem *node = hashTable->table[hash_function_pjw("333")];
+//     printf("%s\n", node->next->type);
 //     puts("HERE");
 // }

@@ -5,41 +5,33 @@
 #define TABLE_SIZE 0x3FFF
 
 /* retrieve from https://blog.csdn.net/smstong/article/details/51145786 */
+typedef struct TableItem {
+    char *name;
+    char *type;
+    void *attribute;
+    struct TableItem *next;
+    struct TableItem *previous;
+} TableItem;
 
 typedef struct HashTable {
-    struct ListNode ** table;
+    TableItem ** table;
 } HashTable;
-
-typedef struct ListNode {
-    char *name;
-    char *attribute;
-    struct ListNode *next;
-    struct ListNode *previous;
-} ListNode;
 
 HashTable *new_hash_table() {
     HashTable *hashTable = (HashTable *)malloc(sizeof(HashTable));
-    hashTable->table = (ListNode **)malloc(sizeof(ListNode *) * TABLE_SIZE);
-    memset(hashTable->table, 0, sizeof(ListNode *) * TABLE_SIZE);
+    hashTable->table = (TableItem **)malloc(sizeof(TableItem *) * TABLE_SIZE);
+    memset(hashTable->table, 0, sizeof(TableItem *) * TABLE_SIZE);
     return hashTable;
 }
 
-ListNode *new_list_node(char *name, char *attribute) {
-    ListNode *node = (ListNode *)malloc(sizeof(ListNode));
-    int len = strlen(name);
-    node->name = name;
-    node->attribute = attribute;
-    node->next = NULL;
-    node->previous = NULL;
-    return node;
-}
-
-void free_list_node(ListNode *node) {
-    if (node) {
-        node->next = NULL;
-        node->previous = NULL;
-        free(node);
-    }
+TableItem *new_table_item(char *name, char *type, void *attribute) {
+    TableItem *item = (TableItem *)malloc(sizeof(TableItem));
+    item->name = name;
+    item->type = type;
+    item->attribute = attribute;
+    item->next = NULL;
+    item->previous = NULL;
+    return item;
 }
 
 void free_hash_table(HashTable *hashTable) {
@@ -47,13 +39,7 @@ void free_hash_table(HashTable *hashTable) {
         if (hashTable->table) {
             int i = 0;
             for (i = 0; i < TABLE_SIZE; i++) {
-                ListNode *node = hashTable->table[i];
-                ListNode *next = NULL;
-                while (node) {
-                    next = node->next;
-                    free_list_node(node);
-                    node = next;
-                }
+                hashTable->table[i] = NULL;
             }
             free(hashTable->table);
             hashTable->table = NULL;
@@ -73,70 +59,68 @@ unsigned int hash_function_pjw(char* key) {
     return val;
 }
 
-ListNode *hash_table_put(HashTable *hashTable, char *name, char *attribute) {
+TableItem *hash_table_put(HashTable *hashTable, char *name, char *type, void *attribute) {
     int index = hash_function_pjw(name) % TABLE_SIZE;
-    ListNode *node = hashTable->table[index];
-    ListNode *addNode = new_list_node(name, attribute);
-    if (node) {
-        if (strcmp(node->name, name) == 0) {
-            hashTable->table[index] = addNode;
-            addNode->next = node;
-            node->previous = addNode;
-            addNode->previous = NULL;
+    TableItem *item = hashTable->table[index];
+    TableItem *newItem = new_table_item(name, type, attribute);
+    if (item) {
+        if (strcmp(item->name, name) == 0) {
+            hashTable->table[index] = newItem;
+            newItem->next = item;
+            item->previous = newItem;
         } else {
-            ListNode *temp = node;
-            node = node->next;
-            while(node) {
-                if (strcmp(node->name, name) == 0) {
-                    temp->next = addNode;
-                    addNode->previous = temp;
-                    addNode->next = node;
-                    node->previous = addNode;
-                    return addNode;
+            TableItem *temp = item;
+            item = item->next;
+            while(item) {
+                if (strcmp(item->name, name) == 0) {
+                    temp->next = newItem;
+                    newItem->previous = temp;
+                    newItem->next = item;
+                    item->previous = newItem;
+                    return newItem;
                 }
-                temp = node;
-                node = node->next;
+                temp = item;
+                item = item->next;
             }
-            temp->next = addNode;
-            addNode->previous = temp;
+            temp->next = newItem;
+            newItem->previous = temp;
         }
     } else {
-        hashTable->table[index] = addNode;
-        addNode->previous = NULL;
+        hashTable->table[index] = newItem;
     }
-    return addNode;
+    return newItem;
 }
 
-ListNode *hash_table_get(HashTable *hashTable, char *name) {
+TableItem *hash_table_get(HashTable *hashTable, char *name) {
     int index = hash_function_pjw(name) % TABLE_SIZE;
-    struct ListNode *node = hashTable->table[index];
-    if (node == NULL) {
+    TableItem *item = hashTable->table[index];
+    if (item == NULL) {
         return NULL;
     }
-    if (strcmp(node->name, name) == 0) {
-        return node;
+    if (strcmp(item->name, name) == 0) {
+        return item;
     } else {
-        node = node->next;
-        while(node) {
-            if (strcmp(node->name, name) == 0) {
-                return node;
+        item = item->next;
+        while(item) {
+            if (strcmp(item->name, name) == 0) {
+                return item;
             }
-            node = node->next;
+            item = item->next;
         }
         return NULL;
     }
 }
 
-void hash_table_remove(HashTable *hashTable, ListNode *node) {
-    ListNode *previous = node->previous;
-    ListNode *next = node->next;
-    if (previous) {
+void hash_table_remove(HashTable *hashTable, TableItem *item) {
+    TableItem *previous = item->previous;
+    TableItem *next = item->next;
+    if(previous) {
         previous->next = next;
-        if (next) {
-            node->previous = previous;
+        if(next) {
+            next->previous = previous;
         }
     } else {
-        int index = hash_function_pjw(node->name) % TABLE_SIZE;
+        int index = hash_function_pjw(item->name) % TABLE_SIZE;
         if(next) {
             hashTable->table[index] = next;
             next->previous = NULL;
@@ -148,11 +132,27 @@ void hash_table_remove(HashTable *hashTable, ListNode *node) {
 
 // int main() {
 //     HashTable *hashTable = new_hash_table();
-//     hashTable->table[9001] = new_list_node("test", "21312");
-//     ListNode *node1 = hash_table_put(hashTable, "variable", "aaa");
-//     ListNode *node2 = hash_table_put(hashTable, "variable", "bbb");
-//     ListNode *node3 = hash_table_put(hashTable, "variable", "bbc");
-//     ListNode *node = hash_table_get(hashTable, "variable");
-//     hash_table_remove(hashTable, hashTable->table[9001]);
-//     return 0;
+//     hashTable->table[9001] = new_table_item("test", "21312", NULL);
+//     TableItem *node1 = hash_table_put(hashTable, "variable", "aaa", NULL);
+//     TableItem *node2 = hash_table_put(hashTable, "variable", "bbb", NULL);
+//     TableItem *node3 = hash_table_put(hashTable, "variable", "bbc", NULL);
+//     TableItem *node = hash_table_get(hashTable, "variable");
+//     hash_table_remove(hashTable, node3);
+//     TableItem *get = hash_table_get(hashTable, "variable");
+//     // void *pointer = malloc(sizeof(char *) + sizeof(ListNode *));
+//     // memset(pointer, 0, sizeof(char *) + sizeof(ListNode *));
+//     // char *type = "INT";
+//     // printf("type_ind: %lld\n", type);
+//     // ListNode *node = new_list_node("name", "attribute");
+//     // printf("node_ind: %lld\n", node);
+//     // memcpy(pointer, &type, sizeof(char *));
+//     // memcpy(pointer + sizeof(char *), &node, sizeof(ListNode *));
+//     // char *getType;
+//     // memcpy(&getType, pointer, sizeof(char *));
+//     // printf("getType: %lld\n", getType);
+//     // ListNode *getNode;
+//     // memcpy(&getNode, pointer + sizeof(char *), sizeof(ListNode *));
+//     // printf("getNode: %lld\n", getNode);
+//     // printf("%s\n", getNode->name);
+//     puts("HERE");
 // }
