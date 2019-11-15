@@ -5,7 +5,7 @@ FILE *fp;
 FILE *out;
 typedef struct ASTNode
 {
-    char *value;
+    void *value;
     char *type;
     int child_count;
     int terminal;
@@ -68,7 +68,7 @@ void printfNode(ASTNode *node, int count)
 {
     if (node->type != "NONE"){
         if (node->terminal == 1) {
-            fprintf(out, "%*s%s: %s\n", count, "", node->type, node->value);
+            fprintf(out, "%*s%s: %s\n", count, "", node->type, (char*)node->value);
         } else if (node->terminal == 0) {
             fprintf(out, "%*s%s (%d)\n", count, "", node->type, node->row);
         } else {

@@ -3,6 +3,7 @@
     void yyerror(const char*);
     struct ASTNode *root;
     struct ASTNode *currentSpecifier;
+    int structCheck;
     void RPError(const int);
     void SEMIError(const int);
     void STRUCTError(const int, const char *);
@@ -21,7 +22,7 @@
 %type  <node> VarDec FunDec VarList ParamDec
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
 %type  <node> Exp Args
-%type  <node> FunID SpecifierTrigger
+%type  <node> FunID SpecifierTrigger STRUCTTrigger
 %right ASSIGN
 %left OR
 %left AND
@@ -90,13 +91,19 @@ Specifier: TYPE {
         $$ = newNode("Specifier", @$.first_line); 
         appendChild($$, 1, $1);
     };
-StructSpecifier: STRUCT ID LC DefList RC {
+StructSpecifier: STRUCTTrigger ID LC DefList RC {
         $$ = newNode("StructSpecifier", @$.first_line); 
         appendChild($$, 5, $1, $2, $3, $4, $5);
+        structCheck = 0;
     }
-    | STRUCT ID {
+    | STRUCTTrigger ID {
         $$ = newNode("StructSpecifier", @$.first_line); 
         appendChild($$, 2, $1, $2);
+        structCheck = 0;
+    };
+STRUCTTrigger: STRUCT {
+        structCheck = 1;
+        $$ = $1;
     };
 SpecifierTrigger: Specifier {
         currentSpecifier = $1->child[0];
@@ -219,8 +226,16 @@ Stmt: Exp SEMI {
 
 /* local definition */
 DefList: Def DefList {
-        $$ = newNode("DefList", @$.first_line); 
+        $$ = newNode("DefList", @$.first_line);
         appendChild($$, 2, $1, $2);
+        if (strcmp($2->type, "NONE") == 0) {
+            $$->value = malloc(sizeof(int));
+            *(int *)$$->value = *(int*)$1->value + 0;
+        } else {
+            $$->value = malloc(sizeof(int));
+            memcpy($$->value, $2->value, sizeof(int));
+            *(int*)$$->value = *(int *)$$->value + *(int *)$1->value;
+        }
     }
     | {
         $$ = newNode("NONE", @$.first_line);
@@ -228,6 +243,7 @@ DefList: Def DefList {
 Def: SpecifierTrigger DecList SEMI {
         $$ = newNode("Def", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
+        $$->value = $2->value;
     }
     | SpecifierTrigger DecList error {
         SEMIError(@$.first_line);
@@ -243,24 +259,32 @@ Def: SpecifierTrigger DecList SEMI {
 DecList: Dec {
         $$ = newNode("DecList", @$.first_line); 
         appendChild($$, 1, $1);
+        $$->value = malloc(sizeof(int));
+        *((int *)$$->value) = 1;
     }
     | Dec COMMA DecList {
         $$ = newNode("DecList", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
+        $$->value = malloc(sizeof(int));
+        *((int *)$$->value) = *((int *)$3->value) + 1;
     }
     ;
 Dec: VarDec {
         $$ = newNode("Dec", @$.first_line); 
         appendChild($$, 1, $1);
-        // put varDec
-        put_var(currentSpecifier, $1);
+        if (structCheck == 0) {
+            // put varDec
+            put_var(currentSpecifier, $1);
+        }
     }
     | VarDec ASSIGN Exp {
         $$ = newNode("Dec", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
-        // put varDec
-        put_var(currentSpecifier, $1);
-        // assign check here
+        if (structCheck == 0) {
+            // put varDec
+            put_var(currentSpecifier, $1);
+            // assign check here
+        }
     };
 
     /* Expression */
@@ -420,6 +444,7 @@ void initial(){
     root = NULL;
     currentTable = new_hash_table();
     currentScopeNumber = 0;
+    structCheck = 0;
 }
 #ifndef CALC_MAIN
 #else

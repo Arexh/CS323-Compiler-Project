@@ -114,22 +114,45 @@ TypeArrayAttribute *new_type_array_attribute(char *type, int dimension) {
     return attribute;
 }
 
-typedef struct StructAttribute {
-    void *varDec;
-    int varNum;
+typedef struct StructVariable {
+    char *type;
+    char *ID;
     int dimension;
+    struct StructVariable ** varDec;
+    int varNum;
+} StructVariable;
+
+StructVariable *new_struct_variable() {
+    StructVariable *variable = (StructVariable *)malloc(sizeof(StructVariable));
+    variable->type = NULL;
+    variable->ID = NULL;
+    variable->dimension = 0;
+    variable->varDec= NULL;
+    variable->varNum = 0;
+}
+
+typedef struct StructAttribute {
+    struct StructVariable ** varDec;
+    int varNum;
 } StructAttribute;
 
-StructAttribute *new_struct_attribute() {
+StructAttribute *new_struct_attribute(int varNum) {
     StructAttribute *attribute = (StructAttribute *)malloc(sizeof(StructAttribute));
-    attribute->varDec = NULL;
-    attribute->varNum = 0;
-    attribute->dimension = 0;
+    attribute->varDec = (StructVariable **)malloc(sizeof(StructVariable *) * varNum);
+    attribute->varNum = varNum;
     return attribute;
 }
 
-char *get_varDec_ID(ASTNode *varDec) {
-    // varDec-> ID | VarDec LB INT RB
+void printf_struct_attribute(StructAttribute *attribute) {
+    printf("STRUCT, varNum: %d:\n", attribute->varNum);
+    int index = 0;
+    for (int index = 0; index < attribute->varNum; index++) {
+        StructVariable *variable = attribute->varDec[index];
+        printf("Variable %d, type:%s, id: %s\ndimension: %d, varNum: %d\n", index, variable->type, variable->ID, variable->dimension, variable->varNum);
+    }
+}
+
+void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
     char *ID;
     int dimension = 0;
     if (varDec->child_count == 1) {
@@ -144,11 +167,6 @@ char *get_varDec_ID(ASTNode *varDec) {
         }
         ID = node->child[0]->value;
     }
-    return ID;
-}
-
-void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
-    char *ID = get_varDec_ID(varDec);
     char *type;
     // specifier: TYPE | StructSpecifier
     if (strcmp(specifier->type, "TYPE") == 0) {
@@ -156,46 +174,90 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
     } else {
         // StructSpecifier: STRUCT ID LC DefList RC | STRUCT ID
         if (specifier->child_count == 2) {
-            // STRUCT ID
             char *structID = specifier->child[1]->value;
+            // STRUCT ID
             int result = struct_scope_check(currentTable, structID);
             if (result == 0) {
-                
-            } else {
-
+                printf("Error at Line %d: undifined struct \"%s\"\n", specifier->row, structID);
+                return;
             }
         } else {
             // STRUCT ID LC DefList RC
             if (para == 1) {
-                printf("Error type 18 at Line %d: define struct before parameter is not allowed\n", specifier->row);
+                printf("Error at Line %d: define struct before parameter is not allowed\n", specifier->row);
+                return;
             } else {
-                
+                char *structID = specifier->child[1]->value;
+                type = "struct";
+                int varNum = *((int *)specifier->child[3]->value);
+                StructAttribute *attribute = new_struct_attribute(varNum);
+                int index = 0;
+                ASTNode *defList = specifier->child[3];
+                while(strcmp(defList->type, "NONE")) {
+                    ASTNode *def = defList->child[0];
+                    char *specifier;
+                    char *specifierType = def->child[0]->child[0]->type;
+                    if (strcmp(specifierType, "TYPE") == 0) {
+                        // TYPE
+                        specifier = def->child[0]->child[0]->value;
+                    } else {
+                        // StructSpecifier
+                        specifier = "struct";
+                    }
+                    ASTNode *decList = def->child[1];
+                    while(1) {
+                        ASTNode *dec = decList->child[0];
+                        if (dec->child_count == 3) {
+                            printf("Error at Line %d: assignment in struct is not allowed\n", dec->row);
+                        } else {
+                            ASTNode *varDec = dec->child[0];
+                            int dimension = 0;
+                            while (varDec->child_count == 4) {
+                                varDec = varDec->child[0];
+                                dimension++;
+                            }
+                            printf("id: %s,dimension: %d\n", (char *)varDec->child[0]->value, dimension);
+                            StructVariable *var = new_struct_variable();
+                            var->type = specifier;
+                            var->ID = varDec->child[0]->value;
+                            var->dimension = dimension;
+                            attribute->varDec[index++] = var;
+                        }
+                        if (decList->child_count == 1) {
+                            break;
+                        }
+                        decList = decList->child[2];
+                    }
+                    defList = defList->child[1];
+                }
+                printf_struct_attribute(attribute);
             }
         }
-        type = "struct";
     }
     int result = variable_scope_check(currentTable, ID, type);
-    if (result == -1) {
+    if (result == -1 || result == 1) {
         // already been used
         if (strcmp(type, "struct") == 0) {
-            
+            printf("Error type 15 at Line %d: redeﬁne the same structure type\n", varDec->row);
         } else {
             if (para) {
-                printf("Error type 20 at Line %d: parameter is redifined in the same function\n", varDec->row);
+                printf("Error at Line %d: parameter is redifined in the same function\n", varDec->row);
             } else {
                 printf("Error type 3 at Line %d: variable is redeﬁned in the same scope\n", varDec->row);
             }
         }
-    }
-    if (strcmp(type, "struct") == 0) {
-        // put struct here
-    } else {
-        // put variable here
-        if (dimension) {
-            TypeArrayAttribute *attribute = new_type_array_attribute(type, dimension);
-            hash_table_put(currentTable, ID, "array", attribute, currentScopeNumber);
+    } else if (result == 0) {
+        if (strcmp(type, "struct") == 0) {
+            // put struct here
+            
         } else {
-            hash_table_put(currentTable, ID, type, NULL, currentScopeNumber);
+            // put variable here
+            if (dimension) {
+                TypeArrayAttribute *attribute = new_type_array_attribute(type, dimension);
+                hash_table_put(currentTable, ID, "array", attribute, currentScopeNumber);
+            } else {
+                hash_table_put(currentTable, ID, type, NULL, currentScopeNumber);
+            }
         }
     }
 }
