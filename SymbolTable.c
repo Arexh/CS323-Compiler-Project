@@ -3,6 +3,7 @@
 typedef struct SymbolTable {
     struct VariableNode *first;
     struct VariableNode *last;
+    struct SymbolTable *next;
 } SymbolTable;
 
 typedef struct VariableNode {
@@ -14,6 +15,7 @@ SymbolTable *new_symbol_table() {
     SymbolTable *symbolTable = (SymbolTable *)malloc(sizeof(SymbolTable));
     symbolTable->first = NULL;
     symbolTable->last = NULL;
+    symbolTable->next = NULL;
 }
 
 VariableNode *new_variable_node() {
@@ -57,14 +59,14 @@ void printf_table_list(SymbolTable *table) {
     VariableNode *node = table->first;
     int i = 0;
     while(node) {
-        printf("node%d, name: %s, type:%s.\n", i++, node->item->name, node->item->type);
+        printf("node%d, ID: %s, type:%s.\n", i++, node->item->ID, node->item->type);
         node = node->next;
     }
 }
 
-void symbol_table_add_node(HashTable *hashTable, SymbolTable *symbolTable, char* name, char* type, void *attribute) {
-    int index = hash_function_pjw(name);
-    TableItem *item = hash_table_put(hashTable, name, type, attribute);
+void symbol_table_add_node(HashTable *hashTable, SymbolTable *symbolTable, char* ID, char* type, void *attribute) {
+    int index = hash_function_pjw(ID);
+    TableItem *item = hash_table_put(hashTable, ID, type, attribute);
     VariableNode *variableNode = new_variable_node();
     variableNode->item = item;
     add_table_list(symbolTable, variableNode);

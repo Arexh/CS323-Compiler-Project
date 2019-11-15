@@ -2,10 +2,8 @@
     #include"lex.yy.c"
     void yyerror(const char*);
     struct ASTNode *root;
-    struct HashTable *currentTable;
-    struct FunctionAttribute *currentFunction;
     int scopeNumber;
-    char *currentSpecifier;
+    struct ASTNode *currentSpecifier;
     void RPError(const int);
     void SEMIError(const int);
     void STRUCTError(const int, const char *);
@@ -67,6 +65,9 @@ ExtDef: SpecifierTrigger ExtDecList SEMI {
     | SpecifierTrigger FunDec CompSt {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
+        // global function end
+        function_stack_pop();
+        hash_table_stack_pop();
     };
 ExtDecList: VarDec {
         $$ = newNode("ExtDecList", @$.first_line); 
@@ -95,7 +96,7 @@ StructSpecifier: STRUCT ID LC DefList RC {
         appendChild($$, 2, $1, $2);
     };
 SpecifierTrigger: Specifier {
-        currentSpecifier = $1->child[0]->value;
+        currentSpecifier = $1->child[0];
         $$ = $1;
     };
 /* declarator */
@@ -125,8 +126,9 @@ FunID: ID {
         $$ = newNode("FunID", @$.first_line);
         appendChild($$, 1, $1);
         // function start
-        currentFunction = put_function(currentTable, currentSpecifier, $1->value);
-
+        scopeNumber++;
+        function_stack_push(currentSpecifier, $1->value);
+        hash_table_stack_push(currentFunction->hashTable);
     };
 VarList: ParamDec COMMA VarList {
         $$ = newNode("VarList", @$.first_line); 
@@ -139,7 +141,7 @@ VarList: ParamDec COMMA VarList {
 ParamDec: Specifier VarDec {
         $$ = newNode("ParamDec", @$.first_line); 
         appendChild($$, 2, $1, $2);
-        put_para(currentFunction, $1, $2);
+        put_para($1, $2);
     };
 
 /* statement */
@@ -230,7 +232,10 @@ Def: SpecifierTrigger DecList SEMI {
     | SpecifierTrigger FunDec CompSt {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
-    };
+        // internal function end
+        function_stack_pop();
+        hash_table_stack_pop();
+    };  
 DecList: Dec {
         $$ = newNode("DecList", @$.first_line); 
         appendChild($$, 1, $1);
@@ -243,10 +248,13 @@ DecList: Dec {
 Dec: VarDec {
         $$ = newNode("Dec", @$.first_line); 
         appendChild($$, 1, $1);
+        // put_dec($1);
     }
     | VarDec ASSIGN Exp {
         $$ = newNode("Dec", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
+        // put_dec();
+        // assign_type_check(currentSpecifier, $3);
     };
 
     /* Expression */

@@ -4,11 +4,14 @@
 
 #define TABLE_SIZE 0x3FFF
 
+struct HashTable *currentTable;
+
 /* retrieve from https://blog.csdn.net/smstong/article/details/51145786 */
 typedef struct TableItem {
     char *ID;
     char *type;
     void *attribute;
+    int scopeNum;
     struct TableItem *next;
     struct TableItem *previous;
 } TableItem;
@@ -21,6 +24,7 @@ typedef struct HashTable {
 HashTable *new_hash_table() {
     HashTable *hashTable = (HashTable *)malloc(sizeof(HashTable));
     hashTable->table = (TableItem **)malloc(sizeof(TableItem *) * TABLE_SIZE);
+    hashTable->next = NULL;
     memset(hashTable->table, 0, sizeof(TableItem *) * TABLE_SIZE);
     return hashTable;
 }
@@ -35,6 +39,17 @@ TableItem *new_table_item(char *ID, char *type, void *attribute) {
     return item;
 }
 
+void free_table_item(TableItem *item) {
+    if(item) {
+        item->ID = NULL;
+        item->type = NULL;
+        item->attribute = NULL;
+        item->next = NULL;
+        item->previous = NULL;
+    }
+    free(item);
+}
+
 void free_hash_table(HashTable *hashTable) {
     if (hashTable) {
         if (hashTable->table) {
@@ -47,6 +62,16 @@ void free_hash_table(HashTable *hashTable) {
         }
         free(hashTable);
     }
+}
+
+void hash_table_stack_push() {
+    HashTable *newTable = new_hash_table();
+    newTable->next = currentTable;
+    currentTable = newTable;
+}
+
+HashTable *hash_table_stack_pop() {
+    currentTable = currentTable->next;
 }
 
 unsigned int hash_function_pjw(char* key) {
