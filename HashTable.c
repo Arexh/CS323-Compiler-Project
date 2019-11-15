@@ -29,14 +29,14 @@ HashTable *new_hash_table() {
     return hashTable;
 }
 
-TableItem *new_table_item(char *ID, char *type, void *attribute) {
+TableItem *new_table_item(char *ID, char *type, void *attribute, int scopeNum) {
     TableItem *item = (TableItem *)malloc(sizeof(TableItem));
     item->ID = ID;
     item->type = type;
     item->attribute = attribute;
     item->next = NULL;
     item->previous = NULL;
-    item->scopeNum = 0;
+    item->scopeNum = scopeNum;
     return item;
 }
 
@@ -86,10 +86,10 @@ unsigned int hash_function_pjw(char* key) {
     return val;
 }
 
-TableItem *hash_table_put(HashTable *hashTable, char *ID, char *type, void *attribute) {
+TableItem *hash_table_put(HashTable *hashTable, char *ID, char *type, void *attribute, int scopeNum) {
     int index = hash_function_pjw(ID) % TABLE_SIZE;
     TableItem *item = hashTable->table[index];
-    TableItem *newItem = new_table_item(ID, type, attribute);
+    TableItem *newItem = new_table_item(ID, type, attribute, scopeNum);
     if (item) {
         if (strcmp(item->ID, ID) == 0) {
             hashTable->table[index] = newItem;

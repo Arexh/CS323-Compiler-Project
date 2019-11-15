@@ -64,9 +64,9 @@ void printf_table_list(SymbolTable *table) {
     }
 }
 
-void symbol_table_add_node(HashTable *hashTable, SymbolTable *symbolTable, char* ID, char* type, void *attribute) {
+void symbol_table_add_node(HashTable *hashTable, SymbolTable *symbolTable, char* ID, char* type, void *attribute, int scopeNum) {
     int index = hash_function_pjw(ID);
-    TableItem *item = hash_table_put(hashTable, ID, type, attribute);
+    TableItem *item = hash_table_put(hashTable, ID, type, attribute, scopeNum);
     VariableNode *variableNode = new_variable_node();
     variableNode->item = item;
     add_table_list(symbolTable, variableNode);

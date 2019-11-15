@@ -20,18 +20,20 @@ FunctionAttribute *new_function_attribute(char *returnType, char *ID) {
     return attribute;
 }
 
-// 0: not initialized, 1: initialize, -1: ID already used by variable
+// 0: not initialized, 1: initialize, -1: ID already used
 int scope_check(HashTable *hashTable, char *ID, char *type) {
     TableItem *item = hash_table_get(hashTable, ID);
     if (item == NULL) {
         return 0;
     }
     while(item) {
-        if (strcmp(item->ID, ID) == 0) {
+        if (strcmp(item->ID, ID) == 0 && currentScopeNumber == item->scopeNum) {
             if (strcmp(item->type, type) == 0) {
                 return 1;
             } else {
-                return -1;
+                if (strcmp(type, "struct") && strcmp(item->type, "struct")) {
+                    return -1;
+                }
             }
         }
         item = item->next;
@@ -47,12 +49,16 @@ int function_scope_check(HashTable *hashTable, char *ID) {
     return scope_check(hashTable, ID, "function");
 }
 
+int variable_scope_check(HashTable *hashTable, char *ID, char *type) {
+    return scope_check(hashTable, ID, type);
+}
+
 void function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
     int check = function_scope_check(currentTable, ID);
     if (check == 1) {
         printf("Error type 4 at Line %d: function is redeﬁned\n", IDLineNo);
     } else if (check == -1) {
-        
+        printf("Error type 21 at Line %d: function ID is already used by a variable.\n", IDLineNo);
     }
     FunctionAttribute *attribute;
     if (specifier->child_count == 0) {
@@ -60,7 +66,7 @@ void function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
         char *returnType = specifier->value;
         attribute = new_function_attribute(returnType, ID);
         // put function into symbol table
-        hash_table_put(currentTable, ID, "function", attribute);
+        hash_table_put(currentTable, ID, "function", attribute, currentScopeNumber);
     } else if (specifier->child_count == 2) {
         // STRUCT ID, scope check
         char *StructID = specifier->child[1]->value;
@@ -72,7 +78,7 @@ void function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
         } else if (check == 1) {
             // returnType = struct ID
             attribute = new_function_attribute(specifier->child[1]->value, ID);
-            hash_table_put(currentTable, ID, "function", attribute);
+            hash_table_put(currentTable, ID, "function", attribute, currentScopeNumber);
         } else if (check == -1) {
             printf("Error type 19 at Line %d: use variable as struct ID\n", specifier->child[1]->row);
             attribute = new_function_attribute("error", ID);
@@ -122,36 +128,7 @@ StructAttribute *new_struct_attribute() {
     return attribute;
 }
 
-int variable_initialize_check(char *ID, int lineNo) {
-    TableItem *item = hash_table_get(currentTable, ID);
-    while(item) {
-        if (strcmp(item->ID, ID) == 0) {
-            break;
-        }
-        item = item->next;
-    }
-    if (item == NULL) {
-        return 0;
-    } else {
-        if (item->scopeNum == currentScopeNumber) {
-            return -1;
-        }
-    }
-}
-
-void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
-    char *type;
-    // specifier: TYPE | StructSpecifier
-    if (strcmp(specifier->type, "TYPE") == 0) {
-        type = specifier->value;
-    } else {
-        // StructSpecifier, not allowed, print error, support it latter
-        if (para == 1) {
-            printf("Error type 18 at Line %d: struct parameter is not allowed\n", specifier->row);
-        }
-        type = "struct";
-        return;
-    }
+char *get_varDec_ID(ASTNode *varDec) {
     // varDec-> ID | VarDec LB INT RB
     char *ID;
     int dimension = 0;
@@ -167,21 +144,38 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
         }
         ID = node->child[0]->value;
     }
-    int result = variable_initialize_check(ID, varDec->row);
-    if (result == 0) {
-        // ok
-        if (strcmp(type, "struct") == 0) {
-            // put struct here
-        } else {
-            // put variable here
-            if (dimension) {
-                TypeArrayAttribute *attribute = new_type_array_attribute(type, dimension);
-                hash_table_put(currentTable, ID, "array", attribute);
+    return ID;
+}
+
+void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
+    char *ID = get_varDec_ID(varDec);
+    char *type;
+    // specifier: TYPE | StructSpecifier
+    if (strcmp(specifier->type, "TYPE") == 0) {
+        type = specifier->value;
+    } else {
+        // StructSpecifier: STRUCT ID LC DefList RC | STRUCT ID
+        if (specifier->child_count == 2) {
+            // STRUCT ID
+            char *structID = specifier->child[1]->value;
+            int result = struct_scope_check(currentTable, structID);
+            if (result == 0) {
+                
             } else {
-                hash_table_put(currentTable, ID, type, NULL);
+
+            }
+        } else {
+            // STRUCT ID LC DefList RC
+            if (para == 1) {
+                printf("Error type 18 at Line %d: define struct before parameter is not allowed\n", specifier->row);
+            } else {
+                
             }
         }
-    } else {
+        type = "struct";
+    }
+    int result = variable_scope_check(currentTable, ID, type);
+    if (result == -1) {
         // already been used
         if (strcmp(type, "struct") == 0) {
             
@@ -191,6 +185,17 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             } else {
                 printf("Error type 3 at Line %d: variable is redeﬁned in the same scope\n", varDec->row);
             }
+        }
+    }
+    if (strcmp(type, "struct") == 0) {
+        // put struct here
+    } else {
+        // put variable here
+        if (dimension) {
+            TypeArrayAttribute *attribute = new_type_array_attribute(type, dimension);
+            hash_table_put(currentTable, ID, "array", attribute, currentScopeNumber);
+        } else {
+            hash_table_put(currentTable, ID, type, NULL, currentScopeNumber);
         }
     }
 }

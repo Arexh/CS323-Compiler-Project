@@ -1737,8 +1737,8 @@ yyreduce:
         (yyval.node) = newNode("FunID", (yyloc).first_line);
         appendChild((yyval.node), 1, (yyvsp[0].node));
         // function start
-        currentScopeNumber++;
         function_stack_push(currentSpecifier, (yyvsp[0].node)->value, (yyloc).first_line);
+        currentScopeNumber++;
         hash_table_stack_push(currentFunction->hashTable);
     }
 #line 1745 "syntax.tab.c" /* yacc.c:1646  */
