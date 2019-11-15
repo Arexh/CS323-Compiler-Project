@@ -21,18 +21,16 @@ FunctionAttribute *new_function_attribute(char *returnType, char *ID) {
 }
 
 // 0: not initialized, 1: initialize, -1: ID already used by variable
-int struct_scope_check(HashTable *hashTable, ASTNode *structSpecifier) {
-    char *ID = structSpecifier->child[1]->value;
+int scope_check(HashTable *hashTable, char *ID, char *type) {
     TableItem *item = hash_table_get(hashTable, ID);
     if (item == NULL) {
         return 0;
     }
     while(item) {
         if (strcmp(item->ID, ID) == 0) {
-            if (strcmp(item->type, "struct") == 0) {
+            if (strcmp(item->type, type) == 0) {
                 return 1;
             } else {
-                printf("Error type 19 at Line %d: use variable as struct ID\n", structSpecifier->child[0]->row);
                 return -1;
             }
         }
@@ -41,7 +39,21 @@ int struct_scope_check(HashTable *hashTable, ASTNode *structSpecifier) {
     return 0;
 }
 
-void function_stack_push(ASTNode *specifier, char *ID) {
+int struct_scope_check(HashTable *hashTable, char *ID) {
+    return scope_check(hashTable, ID, "struct");
+}
+
+int function_scope_check(HashTable *hashTable, char *ID) {
+    return scope_check(hashTable, ID, "function");
+}
+
+void function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
+    int check = function_scope_check(currentTable, ID);
+    if (check == 1) {
+        printf("Error type 4 at Line %d: function is redeﬁned\n", IDLineNo);
+    } else if (check == -1) {
+        
+    }
     FunctionAttribute *attribute;
     if (specifier->child_count == 0) {
         // TYPE
@@ -51,18 +63,24 @@ void function_stack_push(ASTNode *specifier, char *ID) {
         hash_table_put(currentTable, ID, "function", attribute);
     } else if (specifier->child_count == 2) {
         // STRUCT ID, scope check
-        int check = struct_scope_check(currentTable, specifier);
+        char *StructID = specifier->child[1]->value;
+        int check = struct_scope_check(currentTable, StructID);
         if (check == 0) {
             // struct is not defined, print error
-            printf("Error type 15 at Line %d: struct is used without deﬁnition\n", specifier->row);
+            printf("Error type 15 at Line %d: struct is used without deﬁnition\n", specifier->child[1]->row);
+            attribute = new_function_attribute("error", ID);
         } else if (check == 1) {
             // returnType = struct ID
             attribute = new_function_attribute(specifier->child[1]->value, ID);
             hash_table_put(currentTable, ID, "function", attribute);
+        } else if (check == -1) {
+            printf("Error type 19 at Line %d: use variable as struct ID\n", specifier->child[1]->row);
+            attribute = new_function_attribute("error", ID);
         }
     } else {
         // declare strunct is not allowed, print error
         printf("Error type 17 at Line %d: declare struct in function specifier is not allowed\n", specifier->child[0]->row);
+        attribute = new_function_attribute("error", ID);
     }
     if (attribute) {
         if (currentFunction) {

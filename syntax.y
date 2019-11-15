@@ -130,7 +130,7 @@ FunID: ID {
         appendChild($$, 1, $1);
         // function start
         currentScopeNumber++;
-        function_stack_push(currentSpecifier, $1->value);
+        function_stack_push(currentSpecifier, $1->value, @$.first_line);
         hash_table_stack_push(currentFunction->hashTable);
     };
 VarList: ParamDec COMMA VarList {
