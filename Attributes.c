@@ -2,6 +2,7 @@
 #include "SymbolTable.c"
 
 struct FunctionAttribute *currentFunction;
+int currentScopeNumber;
 
 typedef struct FunctionAttribute {
     char *returnType;
@@ -27,8 +28,8 @@ int struct_scope_check(HashTable *hashTable, ASTNode *structSpecifier) {
         return 0;
     }
     while(item) {
-        if(strcmp(item->ID, ID) == 0) {
-            if(strcmp(item->type, "struct") == 0) {
+        if (strcmp(item->ID, ID) == 0) {
+            if (strcmp(item->type, "struct") == 0) {
                 return 1;
             } else {
                 printf("Error type 19 at Line %d: use variable as struct ID\n", structSpecifier->child[0]->row);
@@ -41,7 +42,6 @@ int struct_scope_check(HashTable *hashTable, ASTNode *structSpecifier) {
 }
 
 void function_stack_push(ASTNode *specifier, char *ID) {
-    printf("push function %s.\n", ID);
     FunctionAttribute *attribute;
     if (specifier->child_count == 0) {
         // TYPE
@@ -49,13 +49,13 @@ void function_stack_push(ASTNode *specifier, char *ID) {
         attribute = new_function_attribute(returnType, ID);
         // put function into symbol table
         hash_table_put(currentTable, ID, "function", attribute);
-    } else if(specifier->child_count == 2) {
+    } else if (specifier->child_count == 2) {
         // STRUCT ID, scope check
         int check = struct_scope_check(currentTable, specifier);
         if (check == 0) {
             // struct is not defined, print error
             printf("Error type 15 at Line %d: struct is used without deﬁnition\n", specifier->row);
-        } else if(check == 1) {
+        } else if (check == 1) {
             // returnType = struct ID
             attribute = new_function_attribute(specifier->child[1]->value, ID);
             hash_table_put(currentTable, ID, "function", attribute);
@@ -75,55 +75,114 @@ void function_stack_push(ASTNode *specifier, char *ID) {
 }
 
 void function_stack_pop() {
-    printf("pop function %s.\n", currentFunction->ID);
     currentFunction = currentFunction->next;
 }
 
-typedef struct ArrayAttribute {
+typedef struct TypeArrayAttribute {
     char *type;
     int dimension;
-} ArrayAttribute;
+} TypeArrayAttribute;
 
-ArrayAttribute *new_array_attribute(char *type, int dimension) {
-    ArrayAttribute *attribute = (ArrayAttribute *)malloc(sizeof(ArrayAttribute));
+TypeArrayAttribute *new_type_array_attribute(char *type, int dimension) {
+    TypeArrayAttribute *attribute = (TypeArrayAttribute *)malloc(sizeof(TypeArrayAttribute));
     attribute->type = type;
     attribute->dimension = dimension;
     return attribute;
 }
 
-void put_para(ASTNode *specifier, ASTNode *varDec) {
-    // specifier: TYPE | StructSpecifier
-    ASTNode *specifierChild = specifier->child[0];
-    char *type;
-    char *id;
-    if (strcmp(specifierChild->type, "TYPE") == 0) {
-        type = specifierChild->value;
+typedef struct StructAttribute {
+    void *varDec;
+    int varNum;
+    int dimension;
+} StructAttribute;
+
+StructAttribute *new_struct_attribute() {
+    StructAttribute *attribute = (StructAttribute *)malloc(sizeof(StructAttribute));
+    attribute->varDec = NULL;
+    attribute->varNum = 0;
+    attribute->dimension = 0;
+    return attribute;
+}
+
+int variable_initialize_check(char *ID, int lineNo) {
+    TableItem *item = hash_table_get(currentTable, ID);
+    while(item) {
+        if (strcmp(item->ID, ID) == 0) {
+            break;
+        }
+        item = item->next;
+    }
+    if (item == NULL) {
+        return 0;
     } else {
-        // StructSpecifier, not allowed, print error
-        printf("Error type 18 at Line %d: struct parameter is not allowed\n", specifierChild->row);
+        if (item->scopeNum == currentScopeNumber) {
+            return -1;
+        }
+    }
+}
+
+void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
+    char *type;
+    // specifier: TYPE | StructSpecifier
+    if (strcmp(specifier->type, "TYPE") == 0) {
+        type = specifier->value;
+    } else {
+        // StructSpecifier, not allowed, print error, support it latter
+        if (para == 1) {
+            printf("Error type 18 at Line %d: struct parameter is not allowed\n", specifier->row);
+        }
+        type = "struct";
         return;
     }
-    // varDec: ID | VarDec LB INT RB
+    // varDec-> ID | VarDec LB INT RB
+    char *ID;
+    int dimension = 0;
     if (varDec->child_count == 1) {
         // ID
-        id = varDec->child[0]->value;
-        hash_table_put(currentTable, id, type, NULL);
-        // printf("rType, id: %s, type: %s\n", id, type);
+        ID = varDec->child[0]->value;
     } else {
         // VarDec LB INT RB
-        int dimension = 1;
         ASTNode *node = varDec->child[0];
         while(node->child_count == 4) {
             dimension++;
             node = node->child[0];
         }
-        id = node->child[0]->value;
-        ArrayAttribute *attribute = new_array_attribute(type, dimension);
-        hash_table_put(currentTable, id, "array", attribute);
-        // TableItem *item = hash_table_get(attribute->hashTable, id);
-        // printf("ID %s, TYPE: %s, Atype: %s\n", item->ID, item->type, ((ArrayAttribute *)item->attribute)->type);
-        // printf("arrType, id: %s, dimension: %d, type: %s\n", id, dimension, type);
+        ID = node->child[0]->value;
     }
+    int result = variable_initialize_check(ID, varDec->row);
+    if (result == 0) {
+        // ok
+        if (strcmp(type, "struct") == 0) {
+            // put struct here
+        } else {
+            // put variable here
+            if (dimension) {
+                TypeArrayAttribute *attribute = new_type_array_attribute(type, dimension);
+                hash_table_put(currentTable, ID, "array", attribute);
+            } else {
+                hash_table_put(currentTable, ID, type, NULL);
+            }
+        }
+    } else {
+        // already been used
+        if (strcmp(type, "struct") == 0) {
+            
+        } else {
+            if (para) {
+                printf("Error type 20 at Line %d: parameter is redifined in the same function\n", varDec->row);
+            } else {
+                printf("Error type 3 at Line %d: variable is redeﬁned in the same scope\n", varDec->row);
+            }
+        }
+    }
+}
+
+void put_var(ASTNode *currentSpecifier, ASTNode *varDec) {
+    put_para_or_var(currentSpecifier, varDec, 0);
+}
+
+void put_para(ASTNode *specifier, ASTNode *varDec) {
+    put_para_or_var(specifier, varDec, 1);
 }
 
 void add_into_symbol_table(HashTable *hashTable, SymbolTable *symbolTable, ASTNode *newNode) {
@@ -146,19 +205,4 @@ void *get_attribute(ASTNode *node) {
 
 void assign_type_check(ASTNode *specifier, ASTNode *exp) {
 
-}
-
-void variable_scope_check() {
-
-}
-
-void new_dec(int scopeNum, HashTable *table, SymbolTable *symbolTable, ASTNode *specifier, ASTNode *newNode) {
-    // // add dec into hashTable
-    // if (temporaryScope->scopeNum) {
-    //     // temporary scope
-    //     add_into_symbol_table(currentTable, currentSymbolTable, newNode);
-    // } else {
-    //     // function scope
-    //     add_into_hash_table(currentTable, newNode);
-    // }
 }

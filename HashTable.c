@@ -36,11 +36,12 @@ TableItem *new_table_item(char *ID, char *type, void *attribute) {
     item->attribute = attribute;
     item->next = NULL;
     item->previous = NULL;
+    item->scopeNum = 0;
     return item;
 }
 
 void free_table_item(TableItem *item) {
-    if(item) {
+    if (item) {
         item->ID = NULL;
         item->type = NULL;
         item->attribute = NULL;
@@ -140,14 +141,14 @@ TableItem *hash_table_get(HashTable *hashTable, char *ID) {
 void hash_table_remove(HashTable *hashTable, TableItem *item) {
     TableItem *previous = item->previous;
     TableItem *next = item->next;
-    if(previous) {
+    if (previous) {
         previous->next = next;
-        if(next) {
+        if (next) {
             next->previous = previous;
         }
     } else {
         int index = hash_function_pjw(item->ID) % TABLE_SIZE;
-        if(next) {
+        if (next) {
             hashTable->table[index] = next;
             next->previous = NULL;
         } else {

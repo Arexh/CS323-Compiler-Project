@@ -66,8 +66,8 @@ void appendChild(ASTNode *father, int count, ...)
 
 void printfNode(ASTNode *node, int count)
 {
-    if(node->type != "NONE"){
-        if(node->terminal == 1) {
+    if (node->type != "NONE"){
+        if (node->terminal == 1) {
             fprintf(out, "%*s%s: %s\n", count, "", node->type, node->value);
         } else if (node->terminal == 0) {
             fprintf(out, "%*s%s (%d)\n", count, "", node->type, node->row);
@@ -79,7 +79,7 @@ void printfNode(ASTNode *node, int count)
 
 void dfsPrintf(ASTNode *node, int count)
 {   
-    if(node == NULL)
+    if (node == NULL)
         return;
     printfNode(node, count);
     if (node->child_count > 0) {

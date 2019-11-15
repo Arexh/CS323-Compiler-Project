@@ -1009,9 +1009,9 @@ YY_RULE_SETUP
 #line 55 "lex.l"
 {
         char *name = strCopy(yytext);
-        if(head == NULL || !checkName(head, name)){
+        if (head == NULL || !checkName(head, name)){
             fprintf(out, "Error UNDEF at Line %d: not exist macro name\n", yylineno);
-        }else{
+        } else {
             removeNode(head, name);
         }
         eatLine();
@@ -1077,10 +1077,10 @@ case 12:
 YY_RULE_SETUP
 #line 90 "lex.l"
 {
-        if(checkArg(node->argHead, yytext)){
+        if (checkArg(node->argHead, yytext)){
             fprintf(out, "Error macro at Line %d: duplicate parameter\n", yylineno);
             eatLine();
-        }else{
+        } else {
             appendArgId(node->argHead, strCopy(yytext));
             BEGIN(PARA);
         }
@@ -1263,10 +1263,10 @@ case 33:
 YY_RULE_SETUP
 #line 180 "lex.l"
 { 
-        if(yytext == "\n"){
+        if (yytext == "\n"){
             yylineno++;
         }
-        if(wrong == 1){
+        if (wrong == 1){
             fprintf(out, "Error type A at Line %d: unknown lexeme %s\n", yylineno, rec);
             error = 1;
             yylval.node = newLeaf("INT", strCopy(rec));
@@ -1305,10 +1305,10 @@ case 36:
 YY_RULE_SETUP
 #line 209 "lex.l"
 {
-        if(yytext == "\n"){
+        if (yytext == "\n"){
             yylineno++;
         }
-        if(wrong == 1){
+        if (wrong == 1){
             fprintf(out, "Error type A at Line %d: unknown lexeme %s\n", yylineno, rec);
             error = 1;
             yylval.node = newLeaf("ID", strCopy(rec));
@@ -1317,7 +1317,7 @@ YY_RULE_SETUP
             yyless(yyleng - 1);
             rec = "";
             return ID;
-        }else{
+        } else {
             yylval.node = newLeaf("INT", strCopy(rec));
             BEGIN(INITIAL);
             yyless(yyleng - 1);
@@ -1442,75 +1442,75 @@ YY_RULE_SETUP
         rec = "";
         int judge = 1;
         int change = 0;
-        if(head != NULL) {
+        if (head != NULL) {
             int i;
             LstNode *tmp = head->next;
             register int c = 0;
             for(i = 0; i < head->num; i++){
-                if(yytext[0] == tmp->name[0]){
+                if (yytext[0] == tmp->name[0]){
                     record(yytext);
                     change = 1;
                     int j;
                     for(j = 0; j < tmp->name_len - 1; j++){
                         c = input();
-                        if(c != EOF){
+                        if (c != EOF){
                             record_char(c);
-                        }else{
+                        } else {
                             /* fail */
                             unputStr(rec);
                             rec = "";
                             break;
                         }
                     }
-                    if(c == EOF){
+                    if (c == EOF){
                         /* fail */
                         continue;
                     }
-                    if(!strcmp(tmp->name, rec)){
+                    if (!strcmp(tmp->name, rec)){
                         /* success */
-                        if(tmp->argHead->num == 0){
+                        if (tmp->argHead->num == 0){
                             unputStr(strCopy(tmp->text));
                             rec = "";
                             yytext = "";
                             judge = 0;
                             break;
-                        }else{
+                        } else {
                             char next_char = input();
                             record_char(next_char);
                             int state = 0;
                             int count = 0;
                             Arg *arg = tmp->argHead->next;
                             while(next_char != EOF){
-                                if(state == 0){
-                                    if(next_char == '('){
+                                if (state == 0){
+                                    if (next_char == '('){
                                         state = 1;
-                                    }else{
+                                    } else {
                                         unputStr(rec);
                                         break;
                                     }
-                                }else if(state == 1){
-                                    if(next_char == ','){
-                                        if(arg->match == NULL){
+                                } else if (state == 1){
+                                    if (next_char == ','){
+                                        if (arg->match == NULL){
                                             unputStr(rec);
                                             break;
-                                        }else{
-                                            if(arg->next != NULL){
+                                        } else {
+                                            if (arg->next != NULL){
                                                 count++;
                                                 arg = arg->next;
                                                 state = 1;
-                                            }else{
+                                            } else {
                                                 unputStr(rec);
                                                 break;
                                             }
                                         }
-                                    }else if(next_char == ' '){
+                                    } else if (next_char == ' '){
                                         state = 1;
-                                    }else if(next_char == ')'){
-                                        if(arg->match != NULL && count + 1 == tmp->argHead->num){
-                                            if(tmp->semi){
+                                    } else if (next_char == ')'){
+                                        if (arg->match != NULL && count + 1 == tmp->argHead->num){
+                                            if (tmp->semi){
                                                 next_char = input();
                                                 record_char(next_char);
-                                                if(next_char == ';'){
+                                                if (next_char == ';'){
                                                     /* success */
                                                     unputStr(replace(tmp->text, tmp->argHead));
                                                     clearMatch(tmp->argHead);
@@ -1518,11 +1518,11 @@ YY_RULE_SETUP
                                                     yytext = "";
                                                     judge = 0;
                                                     break;
-                                                }else{
+                                                } else {
                                                     unputStr(rec);
                                                     break;
                                                 }
-                                            }else{
+                                            } else {
                                                 /* success */
                                                 unputStr(replace(arg->match, tmp->argHead));
                                                 clearMatch(tmp->argHead);
@@ -1531,11 +1531,11 @@ YY_RULE_SETUP
                                                 judge = 0;
                                                 break;
                                             }
-                                        }else{
+                                        } else {
                                             unputStr(rec);
                                             break;
                                         }
-                                    }else{
+                                    } else {
                                         arg->match = splice_char(arg->match, next_char);
                                         state = 1;
                                     }
@@ -1543,11 +1543,11 @@ YY_RULE_SETUP
                                 next_char = input();
                                 record_char(next_char);
                             }
-                            if(next_char == EOF){
+                            if (next_char == EOF){
                                 unputStr(rec);
                             }
                         }
-                    }else{
+                    } else {
                         /* fail */
                         unputStr(rec);
                         rec = "";
@@ -1556,8 +1556,8 @@ YY_RULE_SETUP
                 tmp = tmp->next;
             }
         }
-        if(judge) {
-            if(change){
+        if (judge) {
+            if (change){
                 yytext = "";
                 yytext = splice_char(yytext, input());
             }
@@ -1572,10 +1572,10 @@ case 51:
 YY_RULE_SETUP
 #line 415 "lex.l"
 {
-        if(yytext == "\n"){
+        if (yytext == "\n"){
             yylineno++;
         }
-        if(wrong == 1){
+        if (wrong == 1){
             fprintf(out, "Error type A at Line %d: unknown lexeme %s\n", yylineno, rec);
             error = 1;
             wrong = 0;
@@ -1583,7 +1583,7 @@ YY_RULE_SETUP
             yyless(yyleng - 1);
             rec = "";
             return UNKNOW;
-        }else{
+        } else {
             yylval.node = newLeaf("ID", strCopy(rec));
             wrong = 0;
             BEGIN(INITIAL);
@@ -2890,7 +2890,7 @@ void record(char* ipt)
 
 void appendLst(LstNode *node)
 {
-    if(head == NULL){
+    if (head == NULL){
         head = newLstHead();
     }
     appendNode(head, node);
@@ -2925,10 +2925,10 @@ int eatLine()
 {
     register int c;
     while((c = input()) != '\n' && c != EOF);
-    if(c == '\n'){
+    if (c == '\n'){
         BEGIN(INITIAL);
         yylineno++;
-    }else{
+    } else {
         fprintf(out, "Error at Line %d: EOF in macros\n", yylineno);
         yyterminate();
     }
@@ -2937,11 +2937,11 @@ int eatLine()
 char *splice_char(char* a, char b)
 {   
     char *str;
-    if(a == NULL){
+    if (a == NULL){
         str = malloc(2);
         str[0] = b;
         str[1] = 0;
-    }else{
+    } else {
         str = malloc(strlen(a) + 2);
         strcpy(str, a);
         str[strlen(a)] = b;

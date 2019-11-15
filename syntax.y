@@ -2,7 +2,6 @@
     #include"lex.yy.c"
     void yyerror(const char*);
     struct ASTNode *root;
-    int scopeNumber;
     struct ASTNode *currentSpecifier;
     void RPError(const int);
     void SEMIError(const int);
@@ -49,7 +48,7 @@ ExtDefList: ExtDef ExtDefList {
         $$ = newNode("NONE", @$.first_line);
     };
 ExtDef: SpecifierTrigger ExtDecList SEMI {
-        $$ = newNode("ExtDef", @$.first_line); 
+        $$ = newNode("ExtDef", @$.first_line);
         appendChild($$, 3, $1, $2, $3);
     }
     | SpecifierTrigger ExtDecList error {
@@ -72,10 +71,14 @@ ExtDef: SpecifierTrigger ExtDecList SEMI {
 ExtDecList: VarDec {
         $$ = newNode("ExtDecList", @$.first_line); 
         appendChild($$, 1, $1);
+        // put varDec
+        put_var(currentSpecifier, $1);
     }
     | VarDec COMMA ExtDecList {
         $$ = newNode("ExtDecList", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
+        // put varDec
+        put_var(currentSpecifier, $1);
     };
 
 /* specifier */
@@ -126,7 +129,7 @@ FunID: ID {
         $$ = newNode("FunID", @$.first_line);
         appendChild($$, 1, $1);
         // function start
-        scopeNumber++;
+        currentScopeNumber++;
         function_stack_push(currentSpecifier, $1->value);
         hash_table_stack_push(currentFunction->hashTable);
     };
@@ -141,7 +144,7 @@ VarList: ParamDec COMMA VarList {
 ParamDec: Specifier VarDec {
         $$ = newNode("ParamDec", @$.first_line); 
         appendChild($$, 2, $1, $2);
-        put_para($1, $2);
+        put_para($1->child[0], $2);
     };
 
 /* statement */
@@ -235,6 +238,7 @@ Def: SpecifierTrigger DecList SEMI {
         // internal function end
         function_stack_pop();
         hash_table_stack_pop();
+        currentScopeNumber--;
     };  
 DecList: Dec {
         $$ = newNode("DecList", @$.first_line); 
@@ -248,13 +252,15 @@ DecList: Dec {
 Dec: VarDec {
         $$ = newNode("Dec", @$.first_line); 
         appendChild($$, 1, $1);
-        // put_dec($1);
+        // put varDec
+        put_var(currentSpecifier, $1);
     }
     | VarDec ASSIGN Exp {
         $$ = newNode("Dec", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
-        // put_dec();
-        // assign_type_check(currentSpecifier, $3);
+        // put varDec
+        put_var(currentSpecifier, $1);
+        // assign check here
     };
 
     /* Expression */
@@ -413,19 +419,19 @@ void initial(){
     neasted_start = 0;
     root = NULL;
     currentTable = new_hash_table();
-    scopeNumber = 0;
+    currentScopeNumber = 0;
 }
 #ifndef CALC_MAIN
 #else
 int main(int count, char **args){
-    if(count == 1){
+    if (count == 1){
         initial();
         out = stdout;
         yyparse();
         if (error == 0) {
             dfsPrintf(root, 0);
         }
-    }else{
+    } else {
         for(int x = 1; x < count; x++){
             initial();
             int length = strlen(args[x]);
@@ -437,7 +443,7 @@ int main(int count, char **args){
             output[length - 3] = 'o';
             char buf[MAX_LINE];
             int len;
-            if((fp = fopen(args[x],"r")) == NULL)
+            if ((fp = fopen(args[x],"r")) == NULL)
             {
                 perror("fail to read");
                 exit (1) ;
@@ -445,7 +451,7 @@ int main(int count, char **args){
             out = fopen(output, "w");
             yyrestart(fp);
             yyparse();
-            if(error == 0)
+            if (error == 0)
                 dfsPrintf(root, 0);
             fclose(fp);
             fclose(out);

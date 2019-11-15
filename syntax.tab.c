@@ -67,7 +67,6 @@
     #include"lex.yy.c"
     void yyerror(const char*);
     struct ASTNode *root;
-    int scopeNumber;
     struct ASTNode *currentSpecifier;
     void RPError(const int);
     void SEMIError(const int);
@@ -76,7 +75,7 @@
     void initial();
     #define MAX_LINE 1024
 
-#line 80 "syntax.tab.c" /* yacc.c:339  */
+#line 79 "syntax.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -157,11 +156,11 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 15 "syntax.y" /* yacc.c:355  */
+#line 14 "syntax.y" /* yacc.c:355  */
 
     struct ASTNode *node;
 
-#line 165 "syntax.tab.c" /* yacc.c:355  */
+#line 164 "syntax.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -192,7 +191,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 196 "syntax.tab.c" /* yacc.c:358  */
+#line 195 "syntax.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -495,15 +494,15 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    39,    39,    44,    48,    51,    55,    58,    62,    65,
-      72,    76,    82,    86,    90,    94,    98,   103,   107,   111,
-     115,   118,   122,   125,   133,   137,   141,   148,   152,   155,
-     159,   162,   166,   169,   173,   177,   180,   184,   187,   191,
-     194,   198,   201,   205,   208,   212,   218,   222,   225,   229,
-     232,   239,   243,   248,   253,   261,   265,   270,   274,   278,
-     282,   286,   290,   294,   298,   302,   306,   310,   314,   317,
-     321,   324,   328,   332,   336,   339,   343,   346,   350,   354,
-     358,   362,   366,   370,   374,   378
+       0,    38,    38,    43,    47,    50,    54,    57,    61,    64,
+      71,    76,    83,    87,    91,    95,    99,   104,   108,   112,
+     116,   119,   123,   126,   134,   138,   142,   149,   153,   156,
+     160,   163,   167,   170,   174,   178,   181,   185,   188,   192,
+     195,   199,   202,   206,   209,   213,   219,   223,   226,   230,
+     233,   241,   245,   250,   255,   262,   266,   271,   275,   279,
+     283,   287,   291,   295,   299,   303,   307,   311,   315,   318,
+     322,   325,   329,   333,   337,   340,   344,   347,   351,   355,
+     359,   363,   367,   371,   375,   379
 };
 #endif
 
@@ -1541,68 +1540,68 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 39 "syntax.y" /* yacc.c:1646  */
+#line 38 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Program", (yyloc).first_line); 
         root = (yyval.node);
         appendChild((yyval.node), 1, (yyvsp[0].node)); 
      }
-#line 1551 "syntax.tab.c" /* yacc.c:1646  */
+#line 1550 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 44 "syntax.y" /* yacc.c:1646  */
+#line 43 "syntax.y" /* yacc.c:1646  */
     {
     (yyval.node) = newNode("ExtDefList", (yylsp[-1]).first_line); 
      appendChild((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 1560 "syntax.tab.c" /* yacc.c:1646  */
+#line 1559 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 48 "syntax.y" /* yacc.c:1646  */
+#line 47 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("NONE", (yyloc).first_line);
     }
-#line 1568 "syntax.tab.c" /* yacc.c:1646  */
+#line 1567 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 51 "syntax.y" /* yacc.c:1646  */
+#line 50 "syntax.y" /* yacc.c:1646  */
     {
-        (yyval.node) = newNode("ExtDef", (yyloc).first_line); 
+        (yyval.node) = newNode("ExtDef", (yyloc).first_line);
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1577 "syntax.tab.c" /* yacc.c:1646  */
+#line 1576 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 55 "syntax.y" /* yacc.c:1646  */
+#line 54 "syntax.y" /* yacc.c:1646  */
     {
         SEMIError((yyloc).first_line);
     }
-#line 1585 "syntax.tab.c" /* yacc.c:1646  */
+#line 1584 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 58 "syntax.y" /* yacc.c:1646  */
+#line 57 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("ExtDef", (yyloc).first_line); 
         appendChild((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1594 "syntax.tab.c" /* yacc.c:1646  */
+#line 1593 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 62 "syntax.y" /* yacc.c:1646  */
+#line 61 "syntax.y" /* yacc.c:1646  */
     {
         SEMIError((yyloc).first_line);
     }
-#line 1602 "syntax.tab.c" /* yacc.c:1646  */
+#line 1601 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 65 "syntax.y" /* yacc.c:1646  */
+#line 64 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("ExtDef", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
@@ -1610,14 +1609,15 @@ yyreduce:
         function_stack_pop();
         hash_table_stack_pop();
     }
-#line 1614 "syntax.tab.c" /* yacc.c:1646  */
+#line 1613 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 72 "syntax.y" /* yacc.c:1646  */
+#line 71 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("ExtDecList", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node));
+        put_var(currentSpecifier, (yyvsp[0].node));
     }
 #line 1623 "syntax.tab.c" /* yacc.c:1646  */
     break;
@@ -1627,671 +1627,672 @@ yyreduce:
     {
         (yyval.node) = newNode("ExtDecList", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
+        put_var(currentSpecifier, (yyvsp[-2].node));
     }
-#line 1632 "syntax.tab.c" /* yacc.c:1646  */
+#line 1633 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 82 "syntax.y" /* yacc.c:1646  */
+#line 83 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Specifier", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node));
     }
-#line 1641 "syntax.tab.c" /* yacc.c:1646  */
+#line 1642 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 86 "syntax.y" /* yacc.c:1646  */
+#line 87 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Specifier", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node));
     }
-#line 1650 "syntax.tab.c" /* yacc.c:1646  */
+#line 1651 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 90 "syntax.y" /* yacc.c:1646  */
+#line 91 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("StructSpecifier", (yyloc).first_line); 
         appendChild((yyval.node), 5, (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1659 "syntax.tab.c" /* yacc.c:1646  */
+#line 1660 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 94 "syntax.y" /* yacc.c:1646  */
+#line 95 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("StructSpecifier", (yyloc).first_line); 
         appendChild((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1668 "syntax.tab.c" /* yacc.c:1646  */
+#line 1669 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 98 "syntax.y" /* yacc.c:1646  */
+#line 99 "syntax.y" /* yacc.c:1646  */
     {
         currentSpecifier = (yyvsp[0].node)->child[0];
         (yyval.node) = (yyvsp[0].node);
     }
-#line 1677 "syntax.tab.c" /* yacc.c:1646  */
+#line 1678 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 103 "syntax.y" /* yacc.c:1646  */
+#line 104 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("VarDec", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node));
     }
-#line 1686 "syntax.tab.c" /* yacc.c:1646  */
+#line 1687 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 107 "syntax.y" /* yacc.c:1646  */
+#line 108 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("VarDec", (yyloc).first_line); 
         appendChild((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1695 "syntax.tab.c" /* yacc.c:1646  */
+#line 1696 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 111 "syntax.y" /* yacc.c:1646  */
+#line 112 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("FunDec", (yyloc).first_line); 
         appendChild((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1704 "syntax.tab.c" /* yacc.c:1646  */
+#line 1705 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 115 "syntax.y" /* yacc.c:1646  */
+#line 116 "syntax.y" /* yacc.c:1646  */
     {
         RPError((yyloc).first_line);
     }
-#line 1712 "syntax.tab.c" /* yacc.c:1646  */
+#line 1713 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 118 "syntax.y" /* yacc.c:1646  */
+#line 119 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("FunDec", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1721 "syntax.tab.c" /* yacc.c:1646  */
+#line 1722 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 122 "syntax.y" /* yacc.c:1646  */
+#line 123 "syntax.y" /* yacc.c:1646  */
     {
         RPError((yyloc).first_line);
     }
-#line 1729 "syntax.tab.c" /* yacc.c:1646  */
+#line 1730 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 125 "syntax.y" /* yacc.c:1646  */
+#line 126 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("FunID", (yyloc).first_line);
         appendChild((yyval.node), 1, (yyvsp[0].node));
         // function start
-        scopeNumber++;
+        currentScopeNumber++;
         function_stack_push(currentSpecifier, (yyvsp[0].node)->value);
         hash_table_stack_push(currentFunction->hashTable);
     }
-#line 1742 "syntax.tab.c" /* yacc.c:1646  */
+#line 1743 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 133 "syntax.y" /* yacc.c:1646  */
+#line 134 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("VarList", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1751 "syntax.tab.c" /* yacc.c:1646  */
+#line 1752 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 137 "syntax.y" /* yacc.c:1646  */
+#line 138 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("VarList", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node));
     }
-#line 1760 "syntax.tab.c" /* yacc.c:1646  */
+#line 1761 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 141 "syntax.y" /* yacc.c:1646  */
+#line 142 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("ParamDec", (yyloc).first_line); 
         appendChild((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
-        put_para((yyvsp[-1].node), (yyvsp[0].node));
+        put_para((yyvsp[-1].node)->child[0], (yyvsp[0].node));
     }
-#line 1770 "syntax.tab.c" /* yacc.c:1646  */
+#line 1771 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 148 "syntax.y" /* yacc.c:1646  */
+#line 149 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("CompSt", (yyloc).first_line); 
         appendChild((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1779 "syntax.tab.c" /* yacc.c:1646  */
+#line 1780 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 152 "syntax.y" /* yacc.c:1646  */
+#line 153 "syntax.y" /* yacc.c:1646  */
     {
         DEFError((yylsp[-3]).first_line);
     }
-#line 1787 "syntax.tab.c" /* yacc.c:1646  */
+#line 1788 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 155 "syntax.y" /* yacc.c:1646  */
+#line 156 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("StmtList", (yyloc).first_line); 
         appendChild((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1796 "syntax.tab.c" /* yacc.c:1646  */
+#line 1797 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 159 "syntax.y" /* yacc.c:1646  */
+#line 160 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("NONE", (yyloc).first_line);
     }
-#line 1804 "syntax.tab.c" /* yacc.c:1646  */
+#line 1805 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 162 "syntax.y" /* yacc.c:1646  */
+#line 163 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Stmt", (yyloc).first_line); 
         appendChild((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1813 "syntax.tab.c" /* yacc.c:1646  */
+#line 1814 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 166 "syntax.y" /* yacc.c:1646  */
+#line 167 "syntax.y" /* yacc.c:1646  */
     {
         SEMIError((yyloc).first_line);
     }
-#line 1821 "syntax.tab.c" /* yacc.c:1646  */
+#line 1822 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 169 "syntax.y" /* yacc.c:1646  */
+#line 170 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Stmt", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node));
     }
-#line 1830 "syntax.tab.c" /* yacc.c:1646  */
+#line 1831 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 173 "syntax.y" /* yacc.c:1646  */
+#line 174 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Stmt", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1839 "syntax.tab.c" /* yacc.c:1646  */
+#line 1840 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 177 "syntax.y" /* yacc.c:1646  */
+#line 178 "syntax.y" /* yacc.c:1646  */
     {
         SEMIError((yyloc).first_line);
     }
-#line 1847 "syntax.tab.c" /* yacc.c:1646  */
+#line 1848 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 180 "syntax.y" /* yacc.c:1646  */
+#line 181 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Stmt", (yyloc).first_line); 
         appendChild((yyval.node), 5, (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1856 "syntax.tab.c" /* yacc.c:1646  */
+#line 1857 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 184 "syntax.y" /* yacc.c:1646  */
+#line 185 "syntax.y" /* yacc.c:1646  */
     {
         RPError((yyloc).first_line);
     }
-#line 1864 "syntax.tab.c" /* yacc.c:1646  */
+#line 1865 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 187 "syntax.y" /* yacc.c:1646  */
+#line 188 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Stmt", (yyloc).first_line); 
         appendChild((yyval.node), 7, (yyvsp[-6].node), (yyvsp[-5].node), (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1873 "syntax.tab.c" /* yacc.c:1646  */
+#line 1874 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 191 "syntax.y" /* yacc.c:1646  */
+#line 192 "syntax.y" /* yacc.c:1646  */
     {
         RPError((yyloc).first_line);
     }
-#line 1881 "syntax.tab.c" /* yacc.c:1646  */
+#line 1882 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 194 "syntax.y" /* yacc.c:1646  */
+#line 195 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Stmt", (yyloc).first_line); 
         appendChild((yyval.node), 5, (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1890 "syntax.tab.c" /* yacc.c:1646  */
+#line 1891 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 198 "syntax.y" /* yacc.c:1646  */
+#line 199 "syntax.y" /* yacc.c:1646  */
     {
         RPError((yyloc).first_line);
     }
-#line 1898 "syntax.tab.c" /* yacc.c:1646  */
+#line 1899 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 201 "syntax.y" /* yacc.c:1646  */
+#line 202 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Stmt", (yyloc).first_line); 
         appendChild((yyval.node), 8, (yyvsp[-7].node), (yyvsp[-6].node), (yyvsp[-5].node), (yyvsp[-4].node), (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1907 "syntax.tab.c" /* yacc.c:1646  */
+#line 1908 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 205 "syntax.y" /* yacc.c:1646  */
+#line 206 "syntax.y" /* yacc.c:1646  */
     {
         SEMIError((yyloc).first_line);
     }
-#line 1915 "syntax.tab.c" /* yacc.c:1646  */
+#line 1916 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 208 "syntax.y" /* yacc.c:1646  */
+#line 209 "syntax.y" /* yacc.c:1646  */
     {
         SEMIError((yyloc).first_line);
         RPError((yyloc).first_line);
     }
-#line 1924 "syntax.tab.c" /* yacc.c:1646  */
+#line 1925 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 212 "syntax.y" /* yacc.c:1646  */
+#line 213 "syntax.y" /* yacc.c:1646  */
     {
         RPError((yyloc).first_line);
     }
-#line 1932 "syntax.tab.c" /* yacc.c:1646  */
+#line 1933 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 218 "syntax.y" /* yacc.c:1646  */
+#line 219 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("DefList", (yyloc).first_line); 
         appendChild((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1941 "syntax.tab.c" /* yacc.c:1646  */
+#line 1942 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 222 "syntax.y" /* yacc.c:1646  */
+#line 223 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("NONE", (yyloc).first_line);
     }
-#line 1949 "syntax.tab.c" /* yacc.c:1646  */
+#line 1950 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 225 "syntax.y" /* yacc.c:1646  */
+#line 226 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Def", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1958 "syntax.tab.c" /* yacc.c:1646  */
+#line 1959 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 229 "syntax.y" /* yacc.c:1646  */
+#line 230 "syntax.y" /* yacc.c:1646  */
     {
         SEMIError((yyloc).first_line);
     }
-#line 1966 "syntax.tab.c" /* yacc.c:1646  */
+#line 1967 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 232 "syntax.y" /* yacc.c:1646  */
+#line 233 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("ExtDef", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
         // internal function end
         function_stack_pop();
         hash_table_stack_pop();
+        currentScopeNumber--;
     }
-#line 1978 "syntax.tab.c" /* yacc.c:1646  */
+#line 1980 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 239 "syntax.y" /* yacc.c:1646  */
+#line 241 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("DecList", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node));
     }
-#line 1987 "syntax.tab.c" /* yacc.c:1646  */
+#line 1989 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 243 "syntax.y" /* yacc.c:1646  */
+#line 245 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("DecList", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1996 "syntax.tab.c" /* yacc.c:1646  */
+#line 1998 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 248 "syntax.y" /* yacc.c:1646  */
+#line 250 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Dec", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node));
-        // put_dec($1);
+        put_var(currentSpecifier, (yyvsp[0].node));
     }
-#line 2006 "syntax.tab.c" /* yacc.c:1646  */
+#line 2008 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 253 "syntax.y" /* yacc.c:1646  */
+#line 255 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Dec", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
-        // put_dec();
-        // assign_type_check(currentSpecifier, $3);
+        put_var(currentSpecifier, (yyvsp[-2].node));
     }
-#line 2017 "syntax.tab.c" /* yacc.c:1646  */
+#line 2018 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 261 "syntax.y" /* yacc.c:1646  */
+#line 262 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2026 "syntax.tab.c" /* yacc.c:1646  */
+#line 2027 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 266 "syntax.y" /* yacc.c:1646  */
+#line 267 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2035 "syntax.tab.c" /* yacc.c:1646  */
+#line 2036 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 270 "syntax.y" /* yacc.c:1646  */
+#line 271 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2044 "syntax.tab.c" /* yacc.c:1646  */
+#line 2045 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 274 "syntax.y" /* yacc.c:1646  */
+#line 275 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2053 "syntax.tab.c" /* yacc.c:1646  */
+#line 2054 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 278 "syntax.y" /* yacc.c:1646  */
+#line 279 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2062 "syntax.tab.c" /* yacc.c:1646  */
+#line 2063 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 282 "syntax.y" /* yacc.c:1646  */
+#line 283 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2071 "syntax.tab.c" /* yacc.c:1646  */
+#line 2072 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 61:
-#line 286 "syntax.y" /* yacc.c:1646  */
+#line 287 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2080 "syntax.tab.c" /* yacc.c:1646  */
+#line 2081 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 290 "syntax.y" /* yacc.c:1646  */
+#line 291 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2089 "syntax.tab.c" /* yacc.c:1646  */
+#line 2090 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 294 "syntax.y" /* yacc.c:1646  */
+#line 295 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2098 "syntax.tab.c" /* yacc.c:1646  */
+#line 2099 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 298 "syntax.y" /* yacc.c:1646  */
+#line 299 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2107 "syntax.tab.c" /* yacc.c:1646  */
+#line 2108 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 302 "syntax.y" /* yacc.c:1646  */
+#line 303 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2116 "syntax.tab.c" /* yacc.c:1646  */
+#line 2117 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 306 "syntax.y" /* yacc.c:1646  */
+#line 307 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2125 "syntax.tab.c" /* yacc.c:1646  */
+#line 2126 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 310 "syntax.y" /* yacc.c:1646  */
+#line 311 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2134 "syntax.tab.c" /* yacc.c:1646  */
+#line 2135 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 314 "syntax.y" /* yacc.c:1646  */
+#line 315 "syntax.y" /* yacc.c:1646  */
     {
         STRUCTError((yyloc).first_line, (yyvsp[-1].node)->value);
     }
-#line 2142 "syntax.tab.c" /* yacc.c:1646  */
+#line 2143 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 69:
-#line 317 "syntax.y" /* yacc.c:1646  */
+#line 318 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2151 "syntax.tab.c" /* yacc.c:1646  */
+#line 2152 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 321 "syntax.y" /* yacc.c:1646  */
+#line 322 "syntax.y" /* yacc.c:1646  */
     {
         RPError((yyloc).first_line);
     }
-#line 2159 "syntax.tab.c" /* yacc.c:1646  */
+#line 2160 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 71:
-#line 324 "syntax.y" /* yacc.c:1646  */
+#line 325 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2168 "syntax.tab.c" /* yacc.c:1646  */
+#line 2169 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 72:
-#line 328 "syntax.y" /* yacc.c:1646  */
+#line 329 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 2, (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2177 "syntax.tab.c" /* yacc.c:1646  */
+#line 2178 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 73:
-#line 332 "syntax.y" /* yacc.c:1646  */
+#line 333 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2186 "syntax.tab.c" /* yacc.c:1646  */
+#line 2187 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 74:
-#line 336 "syntax.y" /* yacc.c:1646  */
+#line 337 "syntax.y" /* yacc.c:1646  */
     {
         RPError((yyloc).first_line);
     }
-#line 2194 "syntax.tab.c" /* yacc.c:1646  */
+#line 2195 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 75:
-#line 339 "syntax.y" /* yacc.c:1646  */
+#line 340 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2203 "syntax.tab.c" /* yacc.c:1646  */
+#line 2204 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 76:
-#line 343 "syntax.y" /* yacc.c:1646  */
+#line 344 "syntax.y" /* yacc.c:1646  */
     {
         RPError((yyloc).first_line);
     }
-#line 2211 "syntax.tab.c" /* yacc.c:1646  */
+#line 2212 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 346 "syntax.y" /* yacc.c:1646  */
+#line 347 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2220 "syntax.tab.c" /* yacc.c:1646  */
+#line 2221 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 350 "syntax.y" /* yacc.c:1646  */
+#line 351 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2229 "syntax.tab.c" /* yacc.c:1646  */
+#line 2230 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 354 "syntax.y" /* yacc.c:1646  */
+#line 355 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node)); 
     }
-#line 2238 "syntax.tab.c" /* yacc.c:1646  */
+#line 2239 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 80:
-#line 358 "syntax.y" /* yacc.c:1646  */
+#line 359 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node)); 
     }
-#line 2247 "syntax.tab.c" /* yacc.c:1646  */
+#line 2248 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 81:
-#line 362 "syntax.y" /* yacc.c:1646  */
+#line 363 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node));
     }
-#line 2256 "syntax.tab.c" /* yacc.c:1646  */
+#line 2257 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 82:
-#line 366 "syntax.y" /* yacc.c:1646  */
+#line 367 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node)); 
     }
-#line 2265 "syntax.tab.c" /* yacc.c:1646  */
+#line 2266 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 83:
-#line 370 "syntax.y" /* yacc.c:1646  */
+#line 371 "syntax.y" /* yacc.c:1646  */
     {
 
     }
-#line 2273 "syntax.tab.c" /* yacc.c:1646  */
+#line 2274 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 84:
-#line 374 "syntax.y" /* yacc.c:1646  */
+#line 375 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Args", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2282 "syntax.tab.c" /* yacc.c:1646  */
+#line 2283 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 85:
-#line 378 "syntax.y" /* yacc.c:1646  */
+#line 379 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Args", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node)); 
     }
-#line 2291 "syntax.tab.c" /* yacc.c:1646  */
+#line 2292 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2295 "syntax.tab.c" /* yacc.c:1646  */
+#line 2296 "syntax.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2526,7 +2527,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 383 "syntax.y" /* yacc.c:1906  */
+#line 384 "syntax.y" /* yacc.c:1906  */
 
 void RPError(const int lineno){
     fprintf(out, "Error type B at Line %d: Missing closing parenthesis ')'\n", lineno);
@@ -2560,19 +2561,19 @@ void initial(){
     neasted_start = 0;
     root = NULL;
     currentTable = new_hash_table();
-    scopeNumber = 0;
+    currentScopeNumber = 0;
 }
 #ifndef CALC_MAIN
 #else
 int main(int count, char **args){
-    if(count == 1){
+    if (count == 1){
         initial();
         out = stdout;
         yyparse();
         if (error == 0) {
             dfsPrintf(root, 0);
         }
-    }else{
+    } else {
         for(int x = 1; x < count; x++){
             initial();
             int length = strlen(args[x]);
@@ -2584,7 +2585,7 @@ int main(int count, char **args){
             output[length - 3] = 'o';
             char buf[MAX_LINE];
             int len;
-            if((fp = fopen(args[x],"r")) == NULL)
+            if ((fp = fopen(args[x],"r")) == NULL)
             {
                 perror("fail to read");
                 exit (1) ;
@@ -2592,7 +2593,7 @@ int main(int count, char **args){
             out = fopen(output, "w");
             yyrestart(fp);
             yyparse();
-            if(error == 0)
+            if (error == 0)
                 dfsPrintf(root, 0);
             fclose(fp);
             fclose(out);
