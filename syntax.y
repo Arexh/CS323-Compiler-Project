@@ -68,6 +68,7 @@ ExtDef: SpecifierTrigger ExtDecList SEMI {
         // global function end
         function_stack_pop();
         hash_table_stack_pop();
+        currentScopeNumber--;
     };
 ExtDecList: VarDec {
         $$ = newNode("ExtDecList", @$.first_line); 
@@ -255,6 +256,8 @@ Def: SpecifierTrigger DecList SEMI {
         function_stack_pop();
         hash_table_stack_pop();
         currentScopeNumber--;
+        $$->value = malloc(sizeof(int));
+        *((int *)$$->value) = 1;
     };  
 DecList: Dec {
         $$ = newNode("DecList", @$.first_line); 
