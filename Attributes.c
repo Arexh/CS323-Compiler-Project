@@ -131,7 +131,6 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
         ID = node->child[0]->value;
     }
     char *type;
-    char *structID;
     StructAttribute *structAttribute;
     // specifier: TYPE | StructSpecifier
     if (strcmp(specifier->type, "TYPE") == 0) {
@@ -153,7 +152,7 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
                 return;
             } else {
                 ASTNode *defList = specifier->child[3];
-                structID = specifier->child[1]->value;
+                char *structID = specifier->child[1]->value;
                 type = "structVariable";
                 if (strcmp(defList->type, "NONE")) {
                     int varNum = *((int *)specifier->child[3]->value);
@@ -163,12 +162,28 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
                         ASTNode *def = defList->child[0];
                         char *specifier;
                         char *specifierType = def->child[0]->child[0]->type;
+                        char *insideStructID;
+                        TableItem *structItem;
                         if (strcmp(specifierType, "TYPE") == 0) {
                             // TYPE
                             specifier = def->child[0]->child[0]->value;
                         } else {
                             // StructSpecifier
                             specifier = "struct";
+                            ASTNode *structSpecifier = def->child[0]->child[0];
+                            if (structSpecifier->child_count == 5) {
+                                printf("Error at Line %d: declare a struct inside another struct is not allowed\n", structSpecifier->row);
+                            } else {
+                                insideStructID = structSpecifier->child[1]->value;
+                                if (strcmp(insideStructID, structID)) {
+                                    structItem = find_struct(currentTable, insideStructID);
+                                    if (structItem == NULL) {
+                                        printf("Error at Line %d: undifined struct \"%s\"\n", structSpecifier->row, insideStructID);
+                                        defList = defList->child[1];
+                                        continue;
+                                    }
+                                }
+                            }
                         }
                         ASTNode *decList = def->child[1];
                         while(1) {
@@ -186,6 +201,14 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
                                 var->type = specifier;
                                 var->ID = varDec->child[0]->value;
                                 var->dimension = dimension;
+                                if (strcmp(specifier, "struct") == 0) {
+                                    var->structID = insideStructID;
+                                    if (strcmp(insideStructID, structID) == 0) {
+                                        var->attribute = structAttribute;
+                                    } else {
+                                        var->attribute = structItem->attribute;
+                                    }
+                                }
                                 structAttribute->varDec[index++] = var;
                             }
                             if (decList->child_count == 1) {
@@ -217,12 +240,13 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             printf("Error type 3 at Line %d: variable is redeﬁned in the same scope\n", varDec->row);
         }
     } else if (result == 0) {
-        if (strcmp(type, "struct") == 0) {
+        if (strcmp(type, "structVariable") == 0) {
             // put struct here
             StructVariableAttribute *structVariableAttribute = new_struct_variable_attribute();
             structVariableAttribute->dimension = dimension;
             structVariableAttribute->structAttribute = structAttribute;
-            hash_table_put(currentTable, ID, "struct", structVariableAttribute, currentScopeNumber);
+            hash_table_put(currentTable, ID, "structVariable", structVariableAttribute, currentScopeNumber);
+            TableItem *item = hash_table_get(currentTable, "a");
         } else {
             // put variable here
             if (dimension) {

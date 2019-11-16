@@ -4,6 +4,7 @@
     struct ASTNode *root;
     struct ASTNode *currentSpecifier;
     int structCheck;
+    int structFather;
     void RPError(const int);
     void SEMIError(const int);
     void STRUCTError(const int, const char *);
@@ -95,15 +96,29 @@ Specifier: TYPE {
 StructSpecifier: STRUCTTrigger ID LC DefList RC {
         $$ = newNode("StructSpecifier", @$.first_line); 
         appendChild($$, 5, $1, $2, $3, $4, $5);
-        structCheck = 0;
+        if (structFather) {
+            structCheck = 1;
+            structFather = 0;
+        } else {
+            structCheck = 0;
+        }
     }
     | STRUCTTrigger ID {
         $$ = newNode("StructSpecifier", @$.first_line); 
         appendChild($$, 2, $1, $2);
-        structCheck = 0;
+        if (structFather) {
+            structCheck = 1;
+            structFather = 0;
+        } else {
+            structCheck = 0;
+        }
     };
 STRUCTTrigger: STRUCT {
-        structCheck = 1;
+        if (structCheck) {
+            structFather = 1;
+        } else {
+            structCheck = 1;
+        }
         $$ = $1;
     };
 SpecifierTrigger: Specifier {
@@ -277,6 +292,7 @@ Dec: VarDec {
         appendChild($$, 1, $1);
         if (structCheck == 0) {
             // put varDec
+            puts("HERE");
             put_var(currentSpecifier, $1);
         }
     }
@@ -448,6 +464,7 @@ void initial(){
     currentTable = new_hash_table();
     currentScopeNumber = 0;
     structCheck = 0;
+    structFather = 0;
 }
 #ifndef CALC_MAIN
 #else

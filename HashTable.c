@@ -157,6 +157,24 @@ void hash_table_remove(HashTable *hashTable, TableItem *item) {
     }
 }
 
+TableItem *find_struct(HashTable *hashTable, char *ID) {
+    HashTable *current = hashTable;
+    while (current) {
+        TableItem *item = hash_table_get(current, ID);
+        while (item) {
+            if (strcmp(item->ID, ID)) {
+                break;
+            }
+            if (strcmp(item->type, "struct") == 0) {
+                return item;
+            }
+            item = item->next;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
 // int main() {
 //     HashTable *hashTable = new_hash_table();
 //     hashTable->table[9001] = new_table_item("test", "21312", NULL);

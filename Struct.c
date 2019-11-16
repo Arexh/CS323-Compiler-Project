@@ -3,7 +3,7 @@ typedef struct StructVariable {
     char *ID;
     int dimension;
     char *structID;
-    struct StructVariable ** varDec;
+    struct StructAttribute * attribute;
 } StructVariable;
 
 StructVariable *new_struct_variable() {
@@ -12,7 +12,7 @@ StructVariable *new_struct_variable() {
     variable->ID = NULL;
     variable->dimension = 0;
     variable->structID = NULL;
-    variable->varDec= NULL;
+    variable->attribute = NULL;
 }
 
 typedef struct StructAttribute {
@@ -24,6 +24,7 @@ StructAttribute *new_struct_attribute(int varNum) {
     StructAttribute *attribute = (StructAttribute *)malloc(sizeof(StructAttribute));
     attribute->varDec = (StructVariable **)malloc(sizeof(StructVariable *) * varNum);
     attribute->varNum = varNum;
+    memset(attribute->varDec, 0, sizeof(StructVariable *) * varNum);
     return attribute;
 }
 
@@ -78,13 +79,24 @@ void swapVariable(StructVariable **left, StructVariable **right) {
     *right = tmp;
 }
 
+void printf_struct_varDec(StructVariable **varDec, int varNum) {
+    int index = 0;
+    for (int index = 0; index < varNum; index++) {
+        StructVariable *variable = varDec[index];
+        printf("Variable %d, type:%s, id: %s\ndimension: %d, structID: %s\n", index, variable->type, variable->ID, variable->dimension, variable->structID);
+        if (strcmp(variable->type, "struct") == 0) {
+            printf("##############\n");
+            StructAttribute *attribute = (StructAttribute *)variable->attribute;
+            printf("NUM: %d\n", attribute->varNum);
+            printf_struct_varDec(attribute->varDec, attribute->varNum);
+            printf("##############\n");
+        }
+    }
+}
+
 void printf_struct_attribute(StructAttribute *attribute) {
     printf("STRUCT, varNum: %d:\n", attribute->varNum);
-    int index = 0;
-    for (int index = 0; index < attribute->varNum; index++) {
-        StructVariable *variable = attribute->varDec[index];
-        printf("Variable %d, type:%s, id: %s\ndimension: %d, structID: %s\n", index, variable->type, variable->ID, variable->dimension, variable->structID);
-    }
+    printf_struct_varDec(attribute->varDec, attribute->varNum);
 }
 
 /* https://www.cnblogs.com/hehehaha/p/6332205.html */
@@ -133,6 +145,8 @@ void sort_struct_attribute_varDec(StructAttribute *attribute) {
     char **arr = (char **)malloc(sizeof(char *) * attribute->varNum);
     int index = 0;
     for (index = 0; index < attribute->varNum; index ++) {
+        if (attribute->varDec[index] == NULL)
+            return;
         arr[index] = concat(attribute->varDec[index]);
     }
     quickSort(arr, attribute->varDec, 0, attribute->varNum - 1);
