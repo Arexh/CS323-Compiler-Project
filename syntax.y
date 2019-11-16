@@ -5,6 +5,7 @@
     struct ASTNode *currentSpecifier;
     int structCheck;
     int structFather;
+    int firstAssign;
     void RPError(const int);
     void SEMIError(const int);
     void STRUCTError(const int, const char *);
@@ -293,7 +294,6 @@ Dec: VarDec {
         appendChild($$, 1, $1);
         if (structCheck == 0) {
             // put varDec
-            puts("HERE");
             put_var(currentSpecifier, $1);
         }
     }
@@ -301,16 +301,16 @@ Dec: VarDec {
         $$ = newNode("Dec", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
         if (structCheck == 0) {
+            // assign check here
+            check_assign_exp(currentSpecifier, $3);
             // put varDec
             put_var(currentSpecifier, $1);
-            // assign check here
         }
     };
-
     /* Expression */
 Exp:  Exp ASSIGN Exp { 
         $$ = newNode("Exp", @$.first_line); 
-        appendChild($$, 3, $1, $2, $3); 
+        appendChild($$, 3, $1, $2, $3);
     }
     | Exp AND Exp 
     { 
@@ -402,19 +402,19 @@ Exp:  Exp ASSIGN Exp {
         appendChild($$, 3, $1, $2, $3); 
     }
     | ID { 
-        $$ = newNode("Exp", @$.first_line); 
-        appendChild($$, 1, $1); 
+        $$ = newNode("Exp", @$.first_line);
+        appendChild($$, 1, $1);
     }
     | INT { 
-        $$ = newNode("Exp", @$.first_line); 
+        $$ = newNode("Exp", @$.first_line);
         appendChild($$, 1, $1); 
     }
     | FLOAT { 
         $$ = newNode("Exp", @$.first_line); 
         appendChild($$, 1, $1);
     }
-    | CHAR { 
-        $$ = newNode("Exp", @$.first_line); 
+    | CHAR {
+        $$ = newNode("Exp", @$.first_line);
         appendChild($$, 1, $1); 
     }
     | UNKNOW {
@@ -466,6 +466,7 @@ void initial(){
     currentScopeNumber = 0;
     structCheck = 0;
     structFather = 0;
+    firstAssign = 0;
 }
 #ifndef CALC_MAIN
 #else

@@ -158,6 +158,9 @@ void sort_struct_attribute_varDec(StructAttribute *attribute) {
 
 // 0: not equal, 1: equal
 int compare_if_equal(StructAttribute *struct1, StructAttribute *struct2) {
+    if (struct1 == NULL || struct2 == NULL) {
+        return 0;
+    }
     if (struct1->varNum == struct2->varNum) {
         int index = 0;
         for (index = 0; index < struct1->varNum; index++) {

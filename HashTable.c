@@ -162,10 +162,22 @@ TableItem *find_struct(HashTable *hashTable, char *ID) {
     while (current) {
         TableItem *item = hash_table_get(current, ID);
         while (item) {
-            if (strcmp(item->ID, ID)) {
-                break;
+            if (strcmp(item->ID, ID) == 0 && strcmp(item->type, "struct") == 0) {
+                return item;
             }
-            if (strcmp(item->type, "struct") == 0) {
+            item = item->next;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+TableItem *find_variable(HashTable *hashTable, char *ID) {
+    HashTable *current = hashTable;
+    while (current) {
+        TableItem *item = hash_table_get(current, ID);
+        while (item) {
+            if (strcmp(item->ID, ID) == 0 && strcmp(item->type, "struct")) {
                 return item;
             }
             item = item->next;
