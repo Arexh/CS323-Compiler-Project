@@ -115,6 +115,88 @@ TypeArrayAttribute *new_type_array_attribute(char *type, int dimension) {
     return attribute;
 }
 
+StructAttribute *put_struct_specifier(ASTNode *specifier) {
+    // STRUCT ID LC DefList RC
+    ASTNode *defList = specifier->child[3];
+    StructAttribute *structAttribute;
+    char *structID = specifier->child[1]->value;
+    if (strcmp(defList->type, "NONE")) {
+        int varNum = *((int *)specifier->child[3]->value);
+        structAttribute = new_struct_attribute(varNum);
+        int index = 0;
+        while(strcmp(defList->type, "NONE")) {
+            ASTNode *def = defList->child[0];
+            char *specifier;
+            char *specifierType = def->child[0]->child[0]->type;
+            char *insideStructID;
+            TableItem *structItem;
+            if (strcmp(specifierType, "TYPE") == 0) {
+                // TYPE
+                specifier = def->child[0]->child[0]->value;
+            } else {
+                // StructSpecifier
+                specifier = "struct";
+                ASTNode *structSpecifier = def->child[0]->child[0];
+                if (structSpecifier->child_count == 5) {
+                    printf("Error at Line %d: declare a struct inside another struct is not allowed\n", structSpecifier->row);
+                } else {
+                    insideStructID = structSpecifier->child[1]->value;
+                    if (strcmp(insideStructID, structID)) {
+                        structItem = find_struct(currentTable, insideStructID);
+                        if (structItem == NULL) {
+                            printf("Error at Line %d: undifined struct \"%s\"\n", structSpecifier->row, insideStructID);
+                            defList = defList->child[1];
+                            continue;
+                        }
+                    }
+                }
+            }
+            ASTNode *decList = def->child[1];
+            while(1) {
+                ASTNode *dec = decList->child[0];
+                if (dec->child_count == 3) {
+                    printf("Error at Line %d: assignment in struct is not allowed\n", dec->row);
+                } else {
+                    ASTNode *varDec = dec->child[0];
+                    int dimension = 0;
+                    while (varDec->child_count == 4) {
+                        varDec = varDec->child[0];
+                        dimension++;
+                    }
+                    StructVariable *var = new_struct_variable();
+                    var->type = specifier;
+                    var->ID = varDec->child[0]->value;
+                    var->dimension = dimension;
+                    if (strcmp(specifier, "struct") == 0) {
+                        var->structID = insideStructID;
+                        if (strcmp(insideStructID, structID) == 0) {
+                            var->attribute = structAttribute;
+                        } else {
+                            var->attribute = structItem->attribute;
+                        }
+                    }
+                    structAttribute->varDec[index++] = var;
+                }
+                if (decList->child_count == 1) {
+                    break;
+                }
+                decList = decList->child[2];
+            }
+            defList = defList->child[1];
+        }
+    } else {
+        structAttribute = new_struct_attribute(0);
+    }
+    int result = variable_scope_check(currentTable, structID, "struct");
+    if (result == 1) {
+        printf("Error type 15 at Line %d: redeﬁne the same structure type\n", specifier->row);
+    } else {
+        sort_struct_attribute_varDec(structAttribute);
+        hash_table_put(currentTable, structID, "struct", structAttribute, currentScopeNumber);
+    }
+    return structAttribute;
+}
+
 void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
     char *ID;
     int dimension = 0;
@@ -151,83 +233,8 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
                 printf("Error at Line %d: define struct before parameter is not allowed\n", specifier->row);
                 return;
             } else {
-                ASTNode *defList = specifier->child[3];
-                char *structID = specifier->child[1]->value;
                 type = "structVariable";
-                if (strcmp(defList->type, "NONE")) {
-                    int varNum = *((int *)specifier->child[3]->value);
-                    structAttribute = new_struct_attribute(varNum);
-                    int index = 0;
-                    while(strcmp(defList->type, "NONE")) {
-                        ASTNode *def = defList->child[0];
-                        char *specifier;
-                        char *specifierType = def->child[0]->child[0]->type;
-                        char *insideStructID;
-                        TableItem *structItem;
-                        if (strcmp(specifierType, "TYPE") == 0) {
-                            // TYPE
-                            specifier = def->child[0]->child[0]->value;
-                        } else {
-                            // StructSpecifier
-                            specifier = "struct";
-                            ASTNode *structSpecifier = def->child[0]->child[0];
-                            if (structSpecifier->child_count == 5) {
-                                printf("Error at Line %d: declare a struct inside another struct is not allowed\n", structSpecifier->row);
-                            } else {
-                                insideStructID = structSpecifier->child[1]->value;
-                                if (strcmp(insideStructID, structID)) {
-                                    structItem = find_struct(currentTable, insideStructID);
-                                    if (structItem == NULL) {
-                                        printf("Error at Line %d: undifined struct \"%s\"\n", structSpecifier->row, insideStructID);
-                                        defList = defList->child[1];
-                                        continue;
-                                    }
-                                }
-                            }
-                        }
-                        ASTNode *decList = def->child[1];
-                        while(1) {
-                            ASTNode *dec = decList->child[0];
-                            if (dec->child_count == 3) {
-                                printf("Error at Line %d: assignment in struct is not allowed\n", dec->row);
-                            } else {
-                                ASTNode *varDec = dec->child[0];
-                                int dimension = 0;
-                                while (varDec->child_count == 4) {
-                                    varDec = varDec->child[0];
-                                    dimension++;
-                                }
-                                StructVariable *var = new_struct_variable();
-                                var->type = specifier;
-                                var->ID = varDec->child[0]->value;
-                                var->dimension = dimension;
-                                if (strcmp(specifier, "struct") == 0) {
-                                    var->structID = insideStructID;
-                                    if (strcmp(insideStructID, structID) == 0) {
-                                        var->attribute = structAttribute;
-                                    } else {
-                                        var->attribute = structItem->attribute;
-                                    }
-                                }
-                                structAttribute->varDec[index++] = var;
-                            }
-                            if (decList->child_count == 1) {
-                                break;
-                            }
-                            decList = decList->child[2];
-                        }
-                        defList = defList->child[1];
-                    }
-                } else {
-                    structAttribute = new_struct_attribute(0);
-                }
-                int result = variable_scope_check(currentTable, structID, "struct");
-                if (result == 1) {
-                    printf("Error type 15 at Line %d: redeﬁne the same structure type\n", varDec->row);
-                } else {
-                    sort_struct_attribute_varDec(structAttribute);
-                    hash_table_put(currentTable, structID, "struct", structAttribute, currentScopeNumber);
-                }
+                structAttribute = put_struct_specifier(specifier);
             }
         }
     }
@@ -246,7 +253,6 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             structVariableAttribute->dimension = dimension;
             structVariableAttribute->structAttribute = structAttribute;
             hash_table_put(currentTable, ID, "structVariable", structVariableAttribute, currentScopeNumber);
-            TableItem *item = hash_table_get(currentTable, "a");
         } else {
             // put variable here
             if (dimension) {

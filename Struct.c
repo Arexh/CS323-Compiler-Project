@@ -83,7 +83,7 @@ void printf_struct_varDec(StructVariable **varDec, int varNum) {
     int index = 0;
     for (int index = 0; index < varNum; index++) {
         StructVariable *variable = varDec[index];
-        printf("Variable %d, type:%s, id: %s\ndimension: %d, structID: %s\n", index, variable->type, variable->ID, variable->dimension, variable->structID);
+        printf("Variable %d, type:%s, id: %s, dimension: %d, structID: %s\n", index, variable->type, variable->ID, variable->dimension, variable->structID);
         if (strcmp(variable->type, "struct") == 0) {
             printf("##############\n");
             StructAttribute *attribute = (StructAttribute *)variable->attribute;

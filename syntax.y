@@ -59,6 +59,7 @@ ExtDef: SpecifierTrigger ExtDecList SEMI {
     | SpecifierTrigger SEMI {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 2, $1, $2);
+        put_struct_specifier(currentSpecifier);
     }
     | SpecifierTrigger error {
         SEMIError(@$.first_line);
