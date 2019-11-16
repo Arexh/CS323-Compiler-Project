@@ -5,6 +5,7 @@
     struct ASTNode *currentSpecifier;
     int structCheck;
     int structFather;
+    int functionStart;
     int firstAssign;
     void RPError(const int);
     void SEMIError(const int);
@@ -24,7 +25,7 @@
 %type  <node> VarDec FunDec VarList ParamDec
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
 %type  <node> Exp Args
-%type  <node> FunID SpecifierTrigger STRUCTTrigger
+%type  <node> FunID SpecifierTrigger STRUCTTrigger LCTrigger RCTrigger
 %right ASSIGN
 %left OR
 %left AND
@@ -157,6 +158,7 @@ FunID: ID {
         function_stack_push(currentSpecifier, $1->value, @$.first_line);
         currentScopeNumber++;
         hash_table_stack_push(currentFunction->hashTable);
+        functionStart = 1;
     };
 VarList: ParamDec COMMA VarList {
         $$ = newNode("VarList", @$.first_line); 
@@ -173,13 +175,25 @@ ParamDec: Specifier VarDec {
     };
 
 /* statement */
-CompSt: LC DefList StmtList RC {
+CompSt: LCTrigger DefList StmtList RCTrigger {
         $$ = newNode("CompSt", @$.first_line); 
         appendChild($$, 4, $1, $2, $3, $4);
     }
     | LC error DefList StmtList RC {
         DEFError(@2.first_line);
     };
+LCTrigger: LC {
+        $$ = $1;
+        if (functionStart == 0) {
+            currentScopeNumber++;
+        } else {
+            functionStart = 0;
+        }
+    }
+RCTrigger: RC {
+        $$ = $1;
+        currentScopeNumber--;
+    }
 StmtList: Stmt StmtList {
         $$ = newNode("StmtList", @$.first_line); 
         appendChild($$, 2, $1, $2);
@@ -201,6 +215,7 @@ Stmt: Exp SEMI {
     | RETURN Exp SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
+        travel_exp($2);
     }
     | RETURN Exp error {
         SEMIError(@$.first_line);
@@ -272,7 +287,6 @@ Def: SpecifierTrigger DecList SEMI {
         // internal function end
         function_stack_pop();
         hash_table_stack_pop();
-        currentScopeNumber--;
         $$->value = malloc(sizeof(int));
         *((int *)$$->value) = 1;
     };  
@@ -467,6 +481,7 @@ void initial(){
     structCheck = 0;
     structFather = 0;
     firstAssign = 0;
+    functionStart = 0;
 }
 #ifndef CALC_MAIN
 #else

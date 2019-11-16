@@ -46,115 +46,119 @@ Grammar
 
    26 ParamDec: Specifier VarDec
 
-   27 CompSt: LC DefList StmtList RC
+   27 CompSt: LCTrigger DefList StmtList RCTrigger
    28       | LC error DefList StmtList RC
 
-   29 StmtList: Stmt StmtList
-   30         | %empty
+   29 LCTrigger: LC
 
-   31 Stmt: Exp SEMI
-   32     | Exp error
-   33     | CompSt
-   34     | RETURN Exp SEMI
-   35     | RETURN Exp error
-   36     | IF LP Exp RP Stmt
-   37     | IF LP Exp error Stmt
-   38     | IF LP Exp RP Stmt ELSE Stmt
-   39     | IF LP Exp error Stmt ELSE Stmt
-   40     | WHILE LP Exp RP Stmt
-   41     | WHILE LP Exp error Stmt
-   42     | FOR LP Def Exp SEMI Exp RP Stmt
-   43     | FOR LP Def Exp error Exp RP Stmt
-   44     | FOR LP Def Exp error Exp error Stmt
-   45     | FOR LP Def Exp SEMI Exp error Stmt
+   30 RCTrigger: RC
 
-   46 DefList: Def DefList
-   47        | %empty
+   31 StmtList: Stmt StmtList
+   32         | %empty
 
-   48 Def: SpecifierTrigger DecList SEMI
-   49    | SpecifierTrigger DecList error
-   50    | SpecifierTrigger FunDec CompSt
+   33 Stmt: Exp SEMI
+   34     | Exp error
+   35     | CompSt
+   36     | RETURN Exp SEMI
+   37     | RETURN Exp error
+   38     | IF LP Exp RP Stmt
+   39     | IF LP Exp error Stmt
+   40     | IF LP Exp RP Stmt ELSE Stmt
+   41     | IF LP Exp error Stmt ELSE Stmt
+   42     | WHILE LP Exp RP Stmt
+   43     | WHILE LP Exp error Stmt
+   44     | FOR LP Def Exp SEMI Exp RP Stmt
+   45     | FOR LP Def Exp error Exp RP Stmt
+   46     | FOR LP Def Exp error Exp error Stmt
+   47     | FOR LP Def Exp SEMI Exp error Stmt
 
-   51 DecList: Dec
-   52        | Dec COMMA DecList
+   48 DefList: Def DefList
+   49        | %empty
 
-   53 Dec: VarDec
-   54    | VarDec ASSIGN Exp
+   50 Def: SpecifierTrigger DecList SEMI
+   51    | SpecifierTrigger DecList error
+   52    | SpecifierTrigger FunDec CompSt
 
-   55 Exp: Exp ASSIGN Exp
-   56    | Exp AND Exp
-   57    | Exp OR Exp
-   58    | Exp LT Exp
-   59    | Exp LE Exp
-   60    | Exp GT Exp
-   61    | Exp GE Exp
-   62    | Exp NE Exp
-   63    | Exp EQ Exp
-   64    | Exp PLUS Exp
-   65    | Exp MINUS Exp
-   66    | Exp MUL Exp
-   67    | Exp DIV Exp
-   68    | Exp UNKNOW Exp
-   69    | LP Exp RP
-   70    | LP Exp error
-   71    | MINUS Exp
-   72    | NOT Exp
-   73    | ID LP Args RP
-   74    | ID LP Args error
-   75    | ID LP RP
-   76    | ID LP error
-   77    | Exp LB Exp RB
-   78    | Exp DOT ID
-   79    | ID
-   80    | INT
-   81    | FLOAT
-   82    | CHAR
-   83    | UNKNOW
+   53 DecList: Dec
+   54        | Dec COMMA DecList
 
-   84 Args: Exp COMMA Args
-   85     | Exp
+   55 Dec: VarDec
+   56    | VarDec ASSIGN Exp
+
+   57 Exp: Exp ASSIGN Exp
+   58    | Exp AND Exp
+   59    | Exp OR Exp
+   60    | Exp LT Exp
+   61    | Exp LE Exp
+   62    | Exp GT Exp
+   63    | Exp GE Exp
+   64    | Exp NE Exp
+   65    | Exp EQ Exp
+   66    | Exp PLUS Exp
+   67    | Exp MINUS Exp
+   68    | Exp MUL Exp
+   69    | Exp DIV Exp
+   70    | Exp UNKNOW Exp
+   71    | LP Exp RP
+   72    | LP Exp error
+   73    | MINUS Exp
+   74    | NOT Exp
+   75    | ID LP Args RP
+   76    | ID LP Args error
+   77    | ID LP RP
+   78    | ID LP error
+   79    | Exp LB Exp RB
+   80    | Exp DOT ID
+   81    | ID
+   82    | INT
+   83    | FLOAT
+   84    | CHAR
+   85    | UNKNOW
+
+   86 Args: Exp COMMA Args
+   87     | Exp
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-error (256) 5 7 20 22 28 32 35 37 39 41 43 44 45 49 70 74 76
-INT (258) 18 80
-FLOAT (259) 81
-CHAR (260) 82
-ID (261) 13 14 17 23 73 74 75 76 78 79
+error (256) 5 7 20 22 28 34 37 39 41 43 45 46 47 51 72 76 78
+INT (258) 18 82
+FLOAT (259) 83
+CHAR (260) 84
+ID (261) 13 14 17 23 75 76 77 78 80 81
 TYPE (262) 11
 STRUCT (263) 15
-IF (264) 36 37 38 39
-ELSE (265) 38 39
-WHILE (266) 40 41
-RETURN (267) 34 35
-DOT (268) 78
-SEMI (269) 4 6 31 34 42 45 48
-COMMA (270) 10 24 52 84
-FOR (271) 42 43 44 45
-ASSIGN (272) 54 55
-LT (273) 58
-LE (274) 59
-GT (275) 60
-GE (276) 61
-NE (277) 62
-EQ (278) 63
-PLUS (279) 64
-MINUS (280) 65 71
-MUL (281) 66
-DIV (282) 67
-AND (283) 56
-OR (284) 57
-NOT (285) 72
-LP (286) 19 20 21 22 36 37 38 39 40 41 42 43 44 45 69 70 73 74 75 76
-RP (287) 19 21 36 38 40 42 43 69 73 75
-LB (288) 18 77
-RB (289) 18 77
-LC (290) 13 27 28
-RC (291) 13 27 28
+IF (264) 38 39 40 41
+ELSE (265) 40 41
+WHILE (266) 42 43
+RETURN (267) 36 37
+DOT (268) 80
+SEMI (269) 4 6 33 36 44 47 50
+COMMA (270) 10 24 54 86
+FOR (271) 44 45 46 47
+ASSIGN (272) 56 57
+LT (273) 60
+LE (274) 61
+GT (275) 62
+GE (276) 63
+NE (277) 64
+EQ (278) 65
+PLUS (279) 66
+MINUS (280) 67 73
+MUL (281) 68
+DIV (282) 69
+AND (283) 58
+OR (284) 59
+NOT (285) 74
+LP (286) 19 20 21 22 38 39 40 41 42 43 44 45 46 47 71 72 75 76 77 78
+RP (287) 19 21 38 40 42 44 45 71 75 77
+LB (288) 18 79
+RB (289) 18 79
+LC (290) 13 28 29
+RC (291) 13 28 30
 INCLUDE (292)
-UNKNOW (293) 68 83
+UNKNOW (293) 70 85
 HIGH_MINUS (294)
 LOWER_ELSE (295)
 
@@ -178,11 +182,11 @@ StructSpecifier (47)
 STRUCTTrigger (48)
     on left: 15, on right: 13 14
 SpecifierTrigger (49)
-    on left: 16, on right: 4 5 6 7 8 48 49 50
+    on left: 16, on right: 4 5 6 7 8 50 51 52
 VarDec (50)
-    on left: 17 18, on right: 9 10 18 26 53 54
+    on left: 17 18, on right: 9 10 18 26 55 56
 FunDec (51)
-    on left: 19 20 21 22, on right: 8 50
+    on left: 19 20 21 22, on right: 8 52
 FunID (52)
     on left: 23, on right: 19 20 21 22
 VarList (53)
@@ -190,27 +194,31 @@ VarList (53)
 ParamDec (54)
     on left: 26, on right: 24 25
 CompSt (55)
-    on left: 27 28, on right: 8 33 50
-StmtList (56)
-    on left: 29 30, on right: 27 28 29
-Stmt (57)
-    on left: 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45, on right:
-    29 36 37 38 39 40 41 42 43 44 45
-DefList (58)
-    on left: 46 47, on right: 13 27 28 46
-Def (59)
-    on left: 48 49 50, on right: 42 43 44 45 46
-DecList (60)
-    on left: 51 52, on right: 48 49 52
-Dec (61)
-    on left: 53 54, on right: 51 52
-Exp (62)
-    on left: 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72
-    73 74 75 76 77 78 79 80 81 82 83, on right: 31 32 34 35 36 37 38
-    39 40 41 42 43 44 45 54 55 56 57 58 59 60 61 62 63 64 65 66 67
-    68 69 70 71 72 77 78 84 85
-Args (63)
-    on left: 84 85, on right: 73 74 84
+    on left: 27 28, on right: 8 35 52
+LCTrigger (56)
+    on left: 29, on right: 27
+RCTrigger (57)
+    on left: 30, on right: 27
+StmtList (58)
+    on left: 31 32, on right: 27 28 31
+Stmt (59)
+    on left: 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47, on right:
+    31 38 39 40 41 42 43 44 45 46 47
+DefList (60)
+    on left: 48 49, on right: 13 27 28 48
+Def (61)
+    on left: 50 51 52, on right: 44 45 46 47 48
+DecList (62)
+    on left: 53 54, on right: 50 51 54
+Dec (63)
+    on left: 55 56, on right: 53 54
+Exp (64)
+    on left: 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74
+    75 76 77 78 79 80 81 82 83 84 85, on right: 33 34 36 37 38 39 40
+    41 42 43 44 45 46 47 56 57 58 59 60 61 62 63 64 65 66 67 68 69
+    70 71 72 73 74 79 80 86 87
+Args (65)
+    on left: 86 87, on right: 75 76 86
 
 
 State 0
@@ -390,7 +398,8 @@ State 18
 
     LC  shift, and go to state 25
 
-    CompSt  go to state 26
+    CompSt     go to state 26
+    LCTrigger  go to state 27
 
 
 State 19
@@ -400,7 +409,7 @@ State 19
    21       | FunID . LP RP
    22       | FunID . LP error
 
-    LP  shift, and go to state 27
+    LP  shift, and go to state 28
 
 
 State 20
@@ -410,14 +419,14 @@ State 20
     TYPE    shift, and go to state 1
     STRUCT  shift, and go to state 2
 
-    $default  reduce using rule 47 (DefList)
+    $default  reduce using rule 49 (DefList)
 
     Specifier         go to state 6
     StructSpecifier   go to state 7
     STRUCTTrigger     go to state 8
-    SpecifierTrigger  go to state 28
-    DefList           go to state 29
-    Def               go to state 30
+    SpecifierTrigger  go to state 29
+    DefList           go to state 30
+    Def               go to state 31
 
 
 State 21
@@ -438,9 +447,9 @@ State 23
 
    10 ExtDecList: VarDec COMMA . ExtDecList
 
-    ID  shift, and go to state 31
+    ID  shift, and go to state 32
 
-    ExtDecList  go to state 32
+    ExtDecList  go to state 33
     VarDec      go to state 17
 
 
@@ -448,39 +457,32 @@ State 24
 
    18 VarDec: VarDec LB . INT RB
 
-    INT  shift, and go to state 33
+    INT  shift, and go to state 34
 
 
 State 25
 
-   27 CompSt: LC . DefList StmtList RC
-   28       | LC . error DefList StmtList RC
+   28 CompSt: LC . error DefList StmtList RC
+   29 LCTrigger: LC .
 
-    error   shift, and go to state 34
-    TYPE    shift, and go to state 1
-    STRUCT  shift, and go to state 2
+    error  shift, and go to state 35
 
-    INT     reduce using rule 47 (DefList)
-    FLOAT   reduce using rule 47 (DefList)
-    CHAR    reduce using rule 47 (DefList)
-    ID      reduce using rule 47 (DefList)
-    IF      reduce using rule 47 (DefList)
-    WHILE   reduce using rule 47 (DefList)
-    RETURN  reduce using rule 47 (DefList)
-    FOR     reduce using rule 47 (DefList)
-    MINUS   reduce using rule 47 (DefList)
-    NOT     reduce using rule 47 (DefList)
-    LP      reduce using rule 47 (DefList)
-    LC      reduce using rule 47 (DefList)
-    RC      reduce using rule 47 (DefList)
-    UNKNOW  reduce using rule 47 (DefList)
-
-    Specifier         go to state 6
-    StructSpecifier   go to state 7
-    STRUCTTrigger     go to state 8
-    SpecifierTrigger  go to state 28
-    DefList           go to state 35
-    Def               go to state 30
+    INT     reduce using rule 29 (LCTrigger)
+    FLOAT   reduce using rule 29 (LCTrigger)
+    CHAR    reduce using rule 29 (LCTrigger)
+    ID      reduce using rule 29 (LCTrigger)
+    TYPE    reduce using rule 29 (LCTrigger)
+    STRUCT  reduce using rule 29 (LCTrigger)
+    IF      reduce using rule 29 (LCTrigger)
+    WHILE   reduce using rule 29 (LCTrigger)
+    RETURN  reduce using rule 29 (LCTrigger)
+    FOR     reduce using rule 29 (LCTrigger)
+    MINUS   reduce using rule 29 (LCTrigger)
+    NOT     reduce using rule 29 (LCTrigger)
+    LP      reduce using rule 29 (LCTrigger)
+    LC      reduce using rule 29 (LCTrigger)
+    RC      reduce using rule 29 (LCTrigger)
+    UNKNOW  reduce using rule 29 (LCTrigger)
 
 
 State 26
@@ -492,472 +494,495 @@ State 26
 
 State 27
 
+   27 CompSt: LCTrigger . DefList StmtList RCTrigger
+
+    TYPE    shift, and go to state 1
+    STRUCT  shift, and go to state 2
+
+    $default  reduce using rule 49 (DefList)
+
+    Specifier         go to state 6
+    StructSpecifier   go to state 7
+    STRUCTTrigger     go to state 8
+    SpecifierTrigger  go to state 29
+    DefList           go to state 36
+    Def               go to state 31
+
+
+State 28
+
    19 FunDec: FunID LP . VarList RP
    20       | FunID LP . VarList error
    21       | FunID LP . RP
    22       | FunID LP . error
 
-    error   shift, and go to state 36
+    error   shift, and go to state 37
     TYPE    shift, and go to state 1
     STRUCT  shift, and go to state 2
-    RP      shift, and go to state 37
+    RP      shift, and go to state 38
 
-    Specifier        go to state 38
+    Specifier        go to state 39
     StructSpecifier  go to state 7
     STRUCTTrigger    go to state 8
-    VarList          go to state 39
-    ParamDec         go to state 40
-
-
-State 28
-
-   48 Def: SpecifierTrigger . DecList SEMI
-   49    | SpecifierTrigger . DecList error
-   50    | SpecifierTrigger . FunDec CompSt
-
-    ID  shift, and go to state 14
-
-    VarDec   go to state 41
-    FunDec   go to state 42
-    FunID    go to state 19
-    DecList  go to state 43
-    Dec      go to state 44
+    VarList          go to state 40
+    ParamDec         go to state 41
 
 
 State 29
 
-   13 StructSpecifier: STRUCTTrigger ID LC DefList . RC
+   50 Def: SpecifierTrigger . DecList SEMI
+   51    | SpecifierTrigger . DecList error
+   52    | SpecifierTrigger . FunDec CompSt
 
-    RC  shift, and go to state 45
+    ID  shift, and go to state 14
+
+    VarDec   go to state 42
+    FunDec   go to state 43
+    FunID    go to state 19
+    DecList  go to state 44
+    Dec      go to state 45
 
 
 State 30
 
-   46 DefList: Def . DefList
+   13 StructSpecifier: STRUCTTrigger ID LC DefList . RC
+
+    RC  shift, and go to state 46
+
+
+State 31
+
+   48 DefList: Def . DefList
 
     TYPE    shift, and go to state 1
     STRUCT  shift, and go to state 2
 
-    $default  reduce using rule 47 (DefList)
+    $default  reduce using rule 49 (DefList)
 
     Specifier         go to state 6
     StructSpecifier   go to state 7
     STRUCTTrigger     go to state 8
-    SpecifierTrigger  go to state 28
-    DefList           go to state 46
-    Def               go to state 30
+    SpecifierTrigger  go to state 29
+    DefList           go to state 47
+    Def               go to state 31
 
 
-State 31
+State 32
 
    17 VarDec: ID .
 
     $default  reduce using rule 17 (VarDec)
 
 
-State 32
+State 33
 
    10 ExtDecList: VarDec COMMA ExtDecList .
 
     $default  reduce using rule 10 (ExtDecList)
 
 
-State 33
+State 34
 
    18 VarDec: VarDec LB INT . RB
 
-    RB  shift, and go to state 47
+    RB  shift, and go to state 48
 
 
-State 34
+State 35
 
    28 CompSt: LC error . DefList StmtList RC
 
     TYPE    shift, and go to state 1
     STRUCT  shift, and go to state 2
 
-    $default  reduce using rule 47 (DefList)
+    $default  reduce using rule 49 (DefList)
 
     Specifier         go to state 6
     StructSpecifier   go to state 7
     STRUCTTrigger     go to state 8
-    SpecifierTrigger  go to state 28
-    DefList           go to state 48
-    Def               go to state 30
-
-
-State 35
-
-   27 CompSt: LC DefList . StmtList RC
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
-
-    $default  reduce using rule 30 (StmtList)
-
-    CompSt    go to state 61
-    StmtList  go to state 62
-    Stmt      go to state 63
-    Exp       go to state 64
+    SpecifierTrigger  go to state 29
+    DefList           go to state 49
+    Def               go to state 31
 
 
 State 36
+
+   27 CompSt: LCTrigger DefList . StmtList RCTrigger
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    $default  reduce using rule 32 (StmtList)
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    StmtList   go to state 63
+    Stmt       go to state 64
+    Exp        go to state 65
+
+
+State 37
 
    22 FunDec: FunID LP error .
 
     $default  reduce using rule 22 (FunDec)
 
 
-State 37
+State 38
 
    21 FunDec: FunID LP RP .
 
     $default  reduce using rule 21 (FunDec)
 
 
-State 38
+State 39
 
    26 ParamDec: Specifier . VarDec
 
-    ID  shift, and go to state 31
+    ID  shift, and go to state 32
 
-    VarDec  go to state 65
-
-
-State 39
-
-   19 FunDec: FunID LP VarList . RP
-   20       | FunID LP VarList . error
-
-    error  shift, and go to state 66
-    RP     shift, and go to state 67
+    VarDec  go to state 66
 
 
 State 40
 
-   24 VarList: ParamDec . COMMA VarList
-   25        | ParamDec .
+   19 FunDec: FunID LP VarList . RP
+   20       | FunID LP VarList . error
 
-    COMMA  shift, and go to state 68
-
-    $default  reduce using rule 25 (VarList)
+    error  shift, and go to state 67
+    RP     shift, and go to state 68
 
 
 State 41
 
-   18 VarDec: VarDec . LB INT RB
-   53 Dec: VarDec .
-   54    | VarDec . ASSIGN Exp
+   24 VarList: ParamDec . COMMA VarList
+   25        | ParamDec .
 
-    ASSIGN  shift, and go to state 69
-    LB      shift, and go to state 24
+    COMMA  shift, and go to state 69
 
-    $default  reduce using rule 53 (Dec)
+    $default  reduce using rule 25 (VarList)
 
 
 State 42
 
-   50 Def: SpecifierTrigger FunDec . CompSt
+   18 VarDec: VarDec . LB INT RB
+   55 Dec: VarDec .
+   56    | VarDec . ASSIGN Exp
 
-    LC  shift, and go to state 25
+    ASSIGN  shift, and go to state 70
+    LB      shift, and go to state 24
 
-    CompSt  go to state 70
+    $default  reduce using rule 55 (Dec)
 
 
 State 43
 
-   48 Def: SpecifierTrigger DecList . SEMI
-   49    | SpecifierTrigger DecList . error
+   52 Def: SpecifierTrigger FunDec . CompSt
 
-    error  shift, and go to state 71
-    SEMI   shift, and go to state 72
+    LC  shift, and go to state 25
+
+    CompSt     go to state 71
+    LCTrigger  go to state 27
 
 
 State 44
 
-   51 DecList: Dec .
-   52        | Dec . COMMA DecList
+   50 Def: SpecifierTrigger DecList . SEMI
+   51    | SpecifierTrigger DecList . error
 
-    COMMA  shift, and go to state 73
-
-    $default  reduce using rule 51 (DecList)
+    error  shift, and go to state 72
+    SEMI   shift, and go to state 73
 
 
 State 45
+
+   53 DecList: Dec .
+   54        | Dec . COMMA DecList
+
+    COMMA  shift, and go to state 74
+
+    $default  reduce using rule 53 (DecList)
+
+
+State 46
 
    13 StructSpecifier: STRUCTTrigger ID LC DefList RC .
 
     $default  reduce using rule 13 (StructSpecifier)
 
 
-State 46
-
-   46 DefList: Def DefList .
-
-    $default  reduce using rule 46 (DefList)
-
-
 State 47
+
+   48 DefList: Def DefList .
+
+    $default  reduce using rule 48 (DefList)
+
+
+State 48
 
    18 VarDec: VarDec LB INT RB .
 
     $default  reduce using rule 18 (VarDec)
 
 
-State 48
+State 49
 
    28 CompSt: LC error DefList . StmtList RC
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
     LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
-    $default  reduce using rule 30 (StmtList)
+    $default  reduce using rule 32 (StmtList)
 
-    CompSt    go to state 61
-    StmtList  go to state 74
-    Stmt      go to state 63
-    Exp       go to state 64
-
-
-State 49
-
-   80 Exp: INT .
-
-    $default  reduce using rule 80 (Exp)
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    StmtList   go to state 75
+    Stmt       go to state 64
+    Exp        go to state 65
 
 
 State 50
 
-   81 Exp: FLOAT .
-
-    $default  reduce using rule 81 (Exp)
-
-
-State 51
-
-   82 Exp: CHAR .
+   82 Exp: INT .
 
     $default  reduce using rule 82 (Exp)
 
 
+State 51
+
+   83 Exp: FLOAT .
+
+    $default  reduce using rule 83 (Exp)
+
+
 State 52
 
-   73 Exp: ID . LP Args RP
-   74    | ID . LP Args error
-   75    | ID . LP RP
-   76    | ID . LP error
-   79    | ID .
+   84 Exp: CHAR .
 
-    LP  shift, and go to state 75
-
-    $default  reduce using rule 79 (Exp)
+    $default  reduce using rule 84 (Exp)
 
 
 State 53
 
-   36 Stmt: IF . LP Exp RP Stmt
-   37     | IF . LP Exp error Stmt
-   38     | IF . LP Exp RP Stmt ELSE Stmt
-   39     | IF . LP Exp error Stmt ELSE Stmt
+   75 Exp: ID . LP Args RP
+   76    | ID . LP Args error
+   77    | ID . LP RP
+   78    | ID . LP error
+   81    | ID .
 
     LP  shift, and go to state 76
+
+    $default  reduce using rule 81 (Exp)
 
 
 State 54
 
-   40 Stmt: WHILE . LP Exp RP Stmt
-   41     | WHILE . LP Exp error Stmt
+   38 Stmt: IF . LP Exp RP Stmt
+   39     | IF . LP Exp error Stmt
+   40     | IF . LP Exp RP Stmt ELSE Stmt
+   41     | IF . LP Exp error Stmt ELSE Stmt
 
     LP  shift, and go to state 77
 
 
 State 55
 
-   34 Stmt: RETURN . Exp SEMI
-   35     | RETURN . Exp error
+   42 Stmt: WHILE . LP Exp RP Stmt
+   43     | WHILE . LP Exp error Stmt
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
-
-    Exp  go to state 78
+    LP  shift, and go to state 78
 
 
 State 56
 
-   42 Stmt: FOR . LP Def Exp SEMI Exp RP Stmt
-   43     | FOR . LP Def Exp error Exp RP Stmt
-   44     | FOR . LP Def Exp error Exp error Stmt
-   45     | FOR . LP Def Exp SEMI Exp error Stmt
+   36 Stmt: RETURN . Exp SEMI
+   37     | RETURN . Exp error
 
-    LP  shift, and go to state 79
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp  go to state 79
 
 
 State 57
 
-   71 Exp: MINUS . Exp
+   44 Stmt: FOR . LP Def Exp SEMI Exp RP Stmt
+   45     | FOR . LP Def Exp error Exp RP Stmt
+   46     | FOR . LP Def Exp error Exp error Stmt
+   47     | FOR . LP Def Exp SEMI Exp error Stmt
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
-
-    Exp  go to state 80
+    LP  shift, and go to state 80
 
 
 State 58
 
-   72 Exp: NOT . Exp
+   73 Exp: MINUS . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 81
 
 
 State 59
 
-   69 Exp: LP . Exp RP
-   70    | LP . Exp error
+   74 Exp: NOT . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 82
 
 
 State 60
 
-   83 Exp: UNKNOW .
+   71 Exp: LP . Exp RP
+   72    | LP . Exp error
 
-    $default  reduce using rule 83 (Exp)
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp  go to state 83
 
 
 State 61
 
-   33 Stmt: CompSt .
+   85 Exp: UNKNOW .
 
-    $default  reduce using rule 33 (Stmt)
+    $default  reduce using rule 85 (Exp)
 
 
 State 62
 
-   27 CompSt: LC DefList StmtList . RC
+   35 Stmt: CompSt .
 
-    RC  shift, and go to state 83
+    $default  reduce using rule 35 (Stmt)
 
 
 State 63
 
-   29 StmtList: Stmt . StmtList
+   27 CompSt: LCTrigger DefList StmtList . RCTrigger
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
+    RC  shift, and go to state 84
 
-    $default  reduce using rule 30 (StmtList)
-
-    CompSt    go to state 61
-    StmtList  go to state 84
-    Stmt      go to state 63
-    Exp       go to state 64
+    RCTrigger  go to state 85
 
 
 State 64
 
-   31 Stmt: Exp . SEMI
-   32     | Exp . error
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   31 StmtList: Stmt . StmtList
 
-    error   shift, and go to state 85
-    DOT     shift, and go to state 86
-    SEMI    shift, and go to state 87
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    $default  reduce using rule 32 (StmtList)
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    StmtList   go to state 86
+    Stmt       go to state 64
+    Exp        go to state 65
 
 
 State 65
+
+   33 Stmt: Exp . SEMI
+   34     | Exp . error
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    error   shift, and go to state 87
+    DOT     shift, and go to state 88
+    SEMI    shift, and go to state 89
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+
+State 66
 
    18 VarDec: VarDec . LB INT RB
    26 ParamDec: Specifier VarDec .
@@ -967,194 +992,194 @@ State 65
     $default  reduce using rule 26 (ParamDec)
 
 
-State 66
+State 67
 
    20 FunDec: FunID LP VarList error .
 
     $default  reduce using rule 20 (FunDec)
 
 
-State 67
+State 68
 
    19 FunDec: FunID LP VarList RP .
 
     $default  reduce using rule 19 (FunDec)
 
 
-State 68
+State 69
 
    24 VarList: ParamDec COMMA . VarList
 
     TYPE    shift, and go to state 1
     STRUCT  shift, and go to state 2
 
-    Specifier        go to state 38
+    Specifier        go to state 39
     StructSpecifier  go to state 7
     STRUCTTrigger    go to state 8
-    VarList          go to state 103
-    ParamDec         go to state 40
-
-
-State 69
-
-   54 Dec: VarDec ASSIGN . Exp
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
-
-    Exp  go to state 104
+    VarList          go to state 105
+    ParamDec         go to state 41
 
 
 State 70
 
-   50 Def: SpecifierTrigger FunDec CompSt .
+   56 Dec: VarDec ASSIGN . Exp
 
-    $default  reduce using rule 50 (Def)
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp  go to state 106
 
 
 State 71
 
-   49 Def: SpecifierTrigger DecList error .
+   52 Def: SpecifierTrigger FunDec CompSt .
 
-    $default  reduce using rule 49 (Def)
+    $default  reduce using rule 52 (Def)
 
 
 State 72
 
-   48 Def: SpecifierTrigger DecList SEMI .
+   51 Def: SpecifierTrigger DecList error .
 
-    $default  reduce using rule 48 (Def)
+    $default  reduce using rule 51 (Def)
 
 
 State 73
 
-   52 DecList: Dec COMMA . DecList
+   50 Def: SpecifierTrigger DecList SEMI .
 
-    ID  shift, and go to state 31
-
-    VarDec   go to state 41
-    DecList  go to state 105
-    Dec      go to state 44
+    $default  reduce using rule 50 (Def)
 
 
 State 74
 
-   28 CompSt: LC error DefList StmtList . RC
+   54 DecList: Dec COMMA . DecList
 
-    RC  shift, and go to state 106
+    ID  shift, and go to state 32
+
+    VarDec   go to state 42
+    DecList  go to state 107
+    Dec      go to state 45
 
 
 State 75
 
-   73 Exp: ID LP . Args RP
-   74    | ID LP . Args error
-   75    | ID LP . RP
-   76    | ID LP . error
+   28 CompSt: LC error DefList StmtList . RC
 
-    error   shift, and go to state 107
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    RP      shift, and go to state 108
-    UNKNOW  shift, and go to state 60
-
-    Exp   go to state 109
-    Args  go to state 110
+    RC  shift, and go to state 108
 
 
 State 76
 
-   36 Stmt: IF LP . Exp RP Stmt
-   37     | IF LP . Exp error Stmt
-   38     | IF LP . Exp RP Stmt ELSE Stmt
-   39     | IF LP . Exp error Stmt ELSE Stmt
+   75 Exp: ID LP . Args RP
+   76    | ID LP . Args error
+   77    | ID LP . RP
+   78    | ID LP . error
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    error   shift, and go to state 109
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    RP      shift, and go to state 110
+    UNKNOW  shift, and go to state 61
 
-    Exp  go to state 111
+    Exp   go to state 111
+    Args  go to state 112
 
 
 State 77
 
-   40 Stmt: WHILE LP . Exp RP Stmt
-   41     | WHILE LP . Exp error Stmt
+   38 Stmt: IF LP . Exp RP Stmt
+   39     | IF LP . Exp error Stmt
+   40     | IF LP . Exp RP Stmt ELSE Stmt
+   41     | IF LP . Exp error Stmt ELSE Stmt
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
-    Exp  go to state 112
+    Exp  go to state 113
 
 
 State 78
 
-   34 Stmt: RETURN Exp . SEMI
-   35     | RETURN Exp . error
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   42 Stmt: WHILE LP . Exp RP Stmt
+   43     | WHILE LP . Exp error Stmt
 
-    error   shift, and go to state 113
-    DOT     shift, and go to state 86
-    SEMI    shift, and go to state 114
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp  go to state 114
 
 
 State 79
 
-   42 Stmt: FOR LP . Def Exp SEMI Exp RP Stmt
-   43     | FOR LP . Def Exp error Exp RP Stmt
-   44     | FOR LP . Def Exp error Exp error Stmt
-   45     | FOR LP . Def Exp SEMI Exp error Stmt
+   36 Stmt: RETURN Exp . SEMI
+   37     | RETURN Exp . error
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    error   shift, and go to state 115
+    DOT     shift, and go to state 88
+    SEMI    shift, and go to state 116
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+
+State 80
+
+   44 Stmt: FOR LP . Def Exp SEMI Exp RP Stmt
+   45     | FOR LP . Def Exp error Exp RP Stmt
+   46     | FOR LP . Def Exp error Exp error Stmt
+   47     | FOR LP . Def Exp SEMI Exp error Stmt
 
     TYPE    shift, and go to state 1
     STRUCT  shift, and go to state 2
@@ -1162,1628 +1187,1645 @@ State 79
     Specifier         go to state 6
     StructSpecifier   go to state 7
     STRUCTTrigger     go to state 8
-    SpecifierTrigger  go to state 28
-    Def               go to state 115
-
-
-State 80
-
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   71    | MINUS Exp .
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
-
-    DOT     shift, and go to state 86
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-    $default  reduce using rule 71 (Exp)
+    SpecifierTrigger  go to state 29
+    Def               go to state 117
 
 
 State 81
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   72    | NOT Exp .
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   73    | MINUS Exp .
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
-    $default  reduce using rule 72 (Exp)
+    $default  reduce using rule 73 (Exp)
 
 
 State 82
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   69    | LP Exp . RP
-   70    | LP Exp . error
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   74    | NOT Exp .
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    error   shift, and go to state 116
-    DOT     shift, and go to state 86
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    RP      shift, and go to state 117
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+    $default  reduce using rule 74 (Exp)
 
 
 State 83
 
-   27 CompSt: LC DefList StmtList RC .
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   71    | LP Exp . RP
+   72    | LP Exp . error
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    $default  reduce using rule 27 (CompSt)
+    error   shift, and go to state 118
+    DOT     shift, and go to state 88
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    RP      shift, and go to state 119
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
 
 State 84
 
-   29 StmtList: Stmt StmtList .
+   30 RCTrigger: RC .
 
-    $default  reduce using rule 29 (StmtList)
+    $default  reduce using rule 30 (RCTrigger)
 
 
 State 85
 
-   32 Stmt: Exp error .
+   27 CompSt: LCTrigger DefList StmtList RCTrigger .
 
-    $default  reduce using rule 32 (Stmt)
+    $default  reduce using rule 27 (CompSt)
 
 
 State 86
 
-   78 Exp: Exp DOT . ID
+   31 StmtList: Stmt StmtList .
 
-    ID  shift, and go to state 118
+    $default  reduce using rule 31 (StmtList)
 
 
 State 87
 
-   31 Stmt: Exp SEMI .
+   34 Stmt: Exp error .
 
-    $default  reduce using rule 31 (Stmt)
+    $default  reduce using rule 34 (Stmt)
 
 
 State 88
 
-   55 Exp: Exp ASSIGN . Exp
+   80 Exp: Exp DOT . ID
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
-
-    Exp  go to state 119
+    ID  shift, and go to state 120
 
 
 State 89
 
-   58 Exp: Exp LT . Exp
+   33 Stmt: Exp SEMI .
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
-
-    Exp  go to state 120
+    $default  reduce using rule 33 (Stmt)
 
 
 State 90
 
-   59 Exp: Exp LE . Exp
+   57 Exp: Exp ASSIGN . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 121
 
 
 State 91
 
-   60 Exp: Exp GT . Exp
+   60 Exp: Exp LT . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 122
 
 
 State 92
 
-   61 Exp: Exp GE . Exp
+   61 Exp: Exp LE . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 123
 
 
 State 93
 
-   62 Exp: Exp NE . Exp
+   62 Exp: Exp GT . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 124
 
 
 State 94
 
-   63 Exp: Exp EQ . Exp
+   63 Exp: Exp GE . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 125
 
 
 State 95
 
-   64 Exp: Exp PLUS . Exp
+   64 Exp: Exp NE . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 126
 
 
 State 96
 
-   65 Exp: Exp MINUS . Exp
+   65 Exp: Exp EQ . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 127
 
 
 State 97
 
-   66 Exp: Exp MUL . Exp
+   66 Exp: Exp PLUS . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 128
 
 
 State 98
 
-   67 Exp: Exp DIV . Exp
+   67 Exp: Exp MINUS . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 129
 
 
 State 99
 
-   56 Exp: Exp AND . Exp
+   68 Exp: Exp MUL . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 130
 
 
 State 100
 
-   57 Exp: Exp OR . Exp
+   69 Exp: Exp DIV . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 131
 
 
 State 101
 
-   77 Exp: Exp LB . Exp RB
+   58 Exp: Exp AND . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 132
 
 
 State 102
 
-   68 Exp: Exp UNKNOW . Exp
+   59 Exp: Exp OR . Exp
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
     Exp  go to state 133
 
 
 State 103
 
+   79 Exp: Exp LB . Exp RB
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp  go to state 134
+
+
+State 104
+
+   70 Exp: Exp UNKNOW . Exp
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp  go to state 135
+
+
+State 105
+
    24 VarList: ParamDec COMMA VarList .
 
     $default  reduce using rule 24 (VarList)
 
 
-State 104
-
-   54 Dec: VarDec ASSIGN Exp .
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
-
-    DOT     shift, and go to state 86
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-    $default  reduce using rule 54 (Dec)
-
-
-State 105
-
-   52 DecList: Dec COMMA DecList .
-
-    $default  reduce using rule 52 (DecList)
-
-
 State 106
+
+   56 Dec: VarDec ASSIGN Exp .
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    DOT     shift, and go to state 88
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+    $default  reduce using rule 56 (Dec)
+
+
+State 107
+
+   54 DecList: Dec COMMA DecList .
+
+    $default  reduce using rule 54 (DecList)
+
+
+State 108
 
    28 CompSt: LC error DefList StmtList RC .
 
     $default  reduce using rule 28 (CompSt)
 
 
-State 107
-
-   76 Exp: ID LP error .
-
-    $default  reduce using rule 76 (Exp)
-
-
-State 108
-
-   75 Exp: ID LP RP .
-
-    $default  reduce using rule 75 (Exp)
-
-
 State 109
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
-   84 Args: Exp . COMMA Args
-   85     | Exp .
-
-    DOT     shift, and go to state 86
-    COMMA   shift, and go to state 134
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-    $default  reduce using rule 85 (Args)
-
-
-State 110
-
-   73 Exp: ID LP Args . RP
-   74    | ID LP Args . error
-
-    error  shift, and go to state 135
-    RP     shift, and go to state 136
-
-
-State 111
-
-   36 Stmt: IF LP Exp . RP Stmt
-   37     | IF LP Exp . error Stmt
-   38     | IF LP Exp . RP Stmt ELSE Stmt
-   39     | IF LP Exp . error Stmt ELSE Stmt
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
-
-    error   shift, and go to state 137
-    DOT     shift, and go to state 86
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    RP      shift, and go to state 138
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-
-State 112
-
-   40 Stmt: WHILE LP Exp . RP Stmt
-   41     | WHILE LP Exp . error Stmt
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
-
-    error   shift, and go to state 139
-    DOT     shift, and go to state 86
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    RP      shift, and go to state 140
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-
-State 113
-
-   35 Stmt: RETURN Exp error .
-
-    $default  reduce using rule 35 (Stmt)
-
-
-State 114
-
-   34 Stmt: RETURN Exp SEMI .
-
-    $default  reduce using rule 34 (Stmt)
-
-
-State 115
-
-   42 Stmt: FOR LP Def . Exp SEMI Exp RP Stmt
-   43     | FOR LP Def . Exp error Exp RP Stmt
-   44     | FOR LP Def . Exp error Exp error Stmt
-   45     | FOR LP Def . Exp SEMI Exp error Stmt
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
-
-    Exp  go to state 141
-
-
-State 116
-
-   70 Exp: LP Exp error .
-
-    $default  reduce using rule 70 (Exp)
-
-
-State 117
-
-   69 Exp: LP Exp RP .
-
-    $default  reduce using rule 69 (Exp)
-
-
-State 118
-
-   78 Exp: Exp DOT ID .
+   78 Exp: ID LP error .
 
     $default  reduce using rule 78 (Exp)
 
 
+State 110
+
+   77 Exp: ID LP RP .
+
+    $default  reduce using rule 77 (Exp)
+
+
+State 111
+
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+   86 Args: Exp . COMMA Args
+   87     | Exp .
+
+    DOT     shift, and go to state 88
+    COMMA   shift, and go to state 136
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+    $default  reduce using rule 87 (Args)
+
+
+State 112
+
+   75 Exp: ID LP Args . RP
+   76    | ID LP Args . error
+
+    error  shift, and go to state 137
+    RP     shift, and go to state 138
+
+
+State 113
+
+   38 Stmt: IF LP Exp . RP Stmt
+   39     | IF LP Exp . error Stmt
+   40     | IF LP Exp . RP Stmt ELSE Stmt
+   41     | IF LP Exp . error Stmt ELSE Stmt
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    error   shift, and go to state 139
+    DOT     shift, and go to state 88
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    RP      shift, and go to state 140
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+
+State 114
+
+   42 Stmt: WHILE LP Exp . RP Stmt
+   43     | WHILE LP Exp . error Stmt
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    error   shift, and go to state 141
+    DOT     shift, and go to state 88
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    RP      shift, and go to state 142
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+
+State 115
+
+   37 Stmt: RETURN Exp error .
+
+    $default  reduce using rule 37 (Stmt)
+
+
+State 116
+
+   36 Stmt: RETURN Exp SEMI .
+
+    $default  reduce using rule 36 (Stmt)
+
+
+State 117
+
+   44 Stmt: FOR LP Def . Exp SEMI Exp RP Stmt
+   45     | FOR LP Def . Exp error Exp RP Stmt
+   46     | FOR LP Def . Exp error Exp error Stmt
+   47     | FOR LP Def . Exp SEMI Exp error Stmt
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp  go to state 143
+
+
+State 118
+
+   72 Exp: LP Exp error .
+
+    $default  reduce using rule 72 (Exp)
+
+
 State 119
 
-   55 Exp: Exp . ASSIGN Exp
-   55    | Exp ASSIGN Exp .
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   71 Exp: LP Exp RP .
 
-    DOT     shift, and go to state 86
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-    $default  reduce using rule 55 (Exp)
+    $default  reduce using rule 71 (Exp)
 
 
 State 120
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   58    | Exp LT Exp .
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   80 Exp: Exp DOT ID .
 
-    DOT     shift, and go to state 86
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-    $default  reduce using rule 58 (Exp)
+    $default  reduce using rule 80 (Exp)
 
 
 State 121
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   59    | Exp LE Exp .
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   57    | Exp ASSIGN Exp .
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
-    $default  reduce using rule 59 (Exp)
+    $default  reduce using rule 57 (Exp)
 
 
 State 122
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   60    | Exp GT Exp .
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   60    | Exp LT Exp .
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
     $default  reduce using rule 60 (Exp)
 
 
 State 123
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   61    | Exp GE Exp .
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   61    | Exp LE Exp .
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
     $default  reduce using rule 61 (Exp)
 
 
 State 124
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   62    | Exp NE Exp .
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   62    | Exp GT Exp .
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
     $default  reduce using rule 62 (Exp)
 
 
 State 125
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   63    | Exp EQ Exp .
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   63    | Exp GE Exp .
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
     $default  reduce using rule 63 (Exp)
 
 
 State 126
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   64    | Exp PLUS Exp .
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   64    | Exp NE Exp .
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
     $default  reduce using rule 64 (Exp)
 
 
 State 127
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   65    | Exp MINUS Exp .
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   65    | Exp EQ Exp .
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
     $default  reduce using rule 65 (Exp)
 
 
 State 128
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   66    | Exp MUL Exp .
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   66    | Exp PLUS Exp .
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
     $default  reduce using rule 66 (Exp)
 
 
 State 129
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   67    | Exp DIV Exp .
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   67    | Exp MINUS Exp .
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    DOT     shift, and go to state 88
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
     $default  reduce using rule 67 (Exp)
 
 
 State 130
 
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   56    | Exp AND Exp .
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   68    | Exp MUL Exp .
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    DOT     shift, and go to state 86
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-    $default  reduce using rule 56 (Exp)
-
-
-State 131
-
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   57    | Exp OR Exp .
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
-
-    DOT     shift, and go to state 86
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-    $default  reduce using rule 57 (Exp)
-
-
-State 132
-
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   77    | Exp LB Exp . RB
-   78    | Exp . DOT ID
-
-    DOT     shift, and go to state 86
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    LB      shift, and go to state 101
-    RB      shift, and go to state 142
-    UNKNOW  shift, and go to state 102
-
-
-State 133
-
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   68    | Exp UNKNOW Exp .
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
-
-    UNKNOW  error (nonassociative)
+    DOT     shift, and go to state 88
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
     $default  reduce using rule 68 (Exp)
 
 
+State 131
+
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   69    | Exp DIV Exp .
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    DOT     shift, and go to state 88
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+    $default  reduce using rule 69 (Exp)
+
+
+State 132
+
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   58    | Exp AND Exp .
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    DOT     shift, and go to state 88
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+    $default  reduce using rule 58 (Exp)
+
+
+State 133
+
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   59    | Exp OR Exp .
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    DOT     shift, and go to state 88
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+    $default  reduce using rule 59 (Exp)
+
+
 State 134
 
-   84 Args: Exp COMMA . Args
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   79    | Exp LB Exp . RB
+   80    | Exp . DOT ID
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
-
-    Exp   go to state 109
-    Args  go to state 143
+    DOT     shift, and go to state 88
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    LB      shift, and go to state 103
+    RB      shift, and go to state 144
+    UNKNOW  shift, and go to state 104
 
 
 State 135
 
-   74 Exp: ID LP Args error .
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   70    | Exp UNKNOW Exp .
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    $default  reduce using rule 74 (Exp)
+    UNKNOW  error (nonassociative)
+
+    $default  reduce using rule 70 (Exp)
 
 
 State 136
 
-   73 Exp: ID LP Args RP .
+   86 Args: Exp COMMA . Args
 
-    $default  reduce using rule 73 (Exp)
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp   go to state 111
+    Args  go to state 145
 
 
 State 137
 
-   37 Stmt: IF LP Exp error . Stmt
-   39     | IF LP Exp error . Stmt ELSE Stmt
+   76 Exp: ID LP Args error .
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
-
-    CompSt  go to state 61
-    Stmt    go to state 144
-    Exp     go to state 64
+    $default  reduce using rule 76 (Exp)
 
 
 State 138
 
-   36 Stmt: IF LP Exp RP . Stmt
-   38     | IF LP Exp RP . Stmt ELSE Stmt
+   75 Exp: ID LP Args RP .
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
-
-    CompSt  go to state 61
-    Stmt    go to state 145
-    Exp     go to state 64
+    $default  reduce using rule 75 (Exp)
 
 
 State 139
 
-   41 Stmt: WHILE LP Exp error . Stmt
+   39 Stmt: IF LP Exp error . Stmt
+   41     | IF LP Exp error . Stmt ELSE Stmt
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
     LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
-    CompSt  go to state 61
-    Stmt    go to state 146
-    Exp     go to state 64
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 146
+    Exp        go to state 65
 
 
 State 140
 
-   40 Stmt: WHILE LP Exp RP . Stmt
+   38 Stmt: IF LP Exp RP . Stmt
+   40     | IF LP Exp RP . Stmt ELSE Stmt
 
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
     LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
+    UNKNOW  shift, and go to state 61
 
-    CompSt  go to state 61
-    Stmt    go to state 147
-    Exp     go to state 64
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 147
+    Exp        go to state 65
 
 
 State 141
 
-   42 Stmt: FOR LP Def Exp . SEMI Exp RP Stmt
-   43     | FOR LP Def Exp . error Exp RP Stmt
-   44     | FOR LP Def Exp . error Exp error Stmt
-   45     | FOR LP Def Exp . SEMI Exp error Stmt
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
+   43 Stmt: WHILE LP Exp error . Stmt
 
-    error   shift, and go to state 148
-    DOT     shift, and go to state 86
-    SEMI    shift, and go to state 149
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 148
+    Exp        go to state 65
 
 
 State 142
 
-   77 Exp: Exp LB Exp RB .
+   42 Stmt: WHILE LP Exp RP . Stmt
 
-    $default  reduce using rule 77 (Exp)
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 149
+    Exp        go to state 65
 
 
 State 143
 
-   84 Args: Exp COMMA Args .
+   44 Stmt: FOR LP Def Exp . SEMI Exp RP Stmt
+   45     | FOR LP Def Exp . error Exp RP Stmt
+   46     | FOR LP Def Exp . error Exp error Stmt
+   47     | FOR LP Def Exp . SEMI Exp error Stmt
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
 
-    $default  reduce using rule 84 (Args)
+    error   shift, and go to state 150
+    DOT     shift, and go to state 88
+    SEMI    shift, and go to state 151
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
 
 
 State 144
 
-   37 Stmt: IF LP Exp error Stmt .
-   39     | IF LP Exp error Stmt . ELSE Stmt
+   79 Exp: Exp LB Exp RB .
 
-    ELSE  shift, and go to state 150
-
-    $default  reduce using rule 37 (Stmt)
+    $default  reduce using rule 79 (Exp)
 
 
 State 145
 
-   36 Stmt: IF LP Exp RP Stmt .
-   38     | IF LP Exp RP Stmt . ELSE Stmt
+   86 Args: Exp COMMA Args .
 
-    ELSE  shift, and go to state 151
-
-    $default  reduce using rule 36 (Stmt)
+    $default  reduce using rule 86 (Args)
 
 
 State 146
 
-   41 Stmt: WHILE LP Exp error Stmt .
+   39 Stmt: IF LP Exp error Stmt .
+   41     | IF LP Exp error Stmt . ELSE Stmt
 
-    $default  reduce using rule 41 (Stmt)
-
-
-State 147
-
-   40 Stmt: WHILE LP Exp RP Stmt .
-
-    $default  reduce using rule 40 (Stmt)
-
-
-State 148
-
-   43 Stmt: FOR LP Def Exp error . Exp RP Stmt
-   44     | FOR LP Def Exp error . Exp error Stmt
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
-
-    Exp  go to state 152
-
-
-State 149
-
-   42 Stmt: FOR LP Def Exp SEMI . Exp RP Stmt
-   45     | FOR LP Def Exp SEMI . Exp error Stmt
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    UNKNOW  shift, and go to state 60
-
-    Exp  go to state 153
-
-
-State 150
-
-   39 Stmt: IF LP Exp error Stmt ELSE . Stmt
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
-
-    CompSt  go to state 61
-    Stmt    go to state 154
-    Exp     go to state 64
-
-
-State 151
-
-   38 Stmt: IF LP Exp RP Stmt ELSE . Stmt
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
-
-    CompSt  go to state 61
-    Stmt    go to state 155
-    Exp     go to state 64
-
-
-State 152
-
-   43 Stmt: FOR LP Def Exp error Exp . RP Stmt
-   44     | FOR LP Def Exp error Exp . error Stmt
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
-
-    error   shift, and go to state 156
-    DOT     shift, and go to state 86
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    RP      shift, and go to state 157
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-
-State 153
-
-   42 Stmt: FOR LP Def Exp SEMI Exp . RP Stmt
-   45     | FOR LP Def Exp SEMI Exp . error Stmt
-   55 Exp: Exp . ASSIGN Exp
-   56    | Exp . AND Exp
-   57    | Exp . OR Exp
-   58    | Exp . LT Exp
-   59    | Exp . LE Exp
-   60    | Exp . GT Exp
-   61    | Exp . GE Exp
-   62    | Exp . NE Exp
-   63    | Exp . EQ Exp
-   64    | Exp . PLUS Exp
-   65    | Exp . MINUS Exp
-   66    | Exp . MUL Exp
-   67    | Exp . DIV Exp
-   68    | Exp . UNKNOW Exp
-   77    | Exp . LB Exp RB
-   78    | Exp . DOT ID
-
-    error   shift, and go to state 158
-    DOT     shift, and go to state 86
-    ASSIGN  shift, and go to state 88
-    LT      shift, and go to state 89
-    LE      shift, and go to state 90
-    GT      shift, and go to state 91
-    GE      shift, and go to state 92
-    NE      shift, and go to state 93
-    EQ      shift, and go to state 94
-    PLUS    shift, and go to state 95
-    MINUS   shift, and go to state 96
-    MUL     shift, and go to state 97
-    DIV     shift, and go to state 98
-    AND     shift, and go to state 99
-    OR      shift, and go to state 100
-    RP      shift, and go to state 159
-    LB      shift, and go to state 101
-    UNKNOW  shift, and go to state 102
-
-
-State 154
-
-   39 Stmt: IF LP Exp error Stmt ELSE Stmt .
+    ELSE  shift, and go to state 152
 
     $default  reduce using rule 39 (Stmt)
 
 
-State 155
+State 147
 
-   38 Stmt: IF LP Exp RP Stmt ELSE Stmt .
+   38 Stmt: IF LP Exp RP Stmt .
+   40     | IF LP Exp RP Stmt . ELSE Stmt
+
+    ELSE  shift, and go to state 153
 
     $default  reduce using rule 38 (Stmt)
 
 
-State 156
+State 148
 
-   44 Stmt: FOR LP Def Exp error Exp error . Stmt
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
-
-    CompSt  go to state 61
-    Stmt    go to state 160
-    Exp     go to state 64
-
-
-State 157
-
-   43 Stmt: FOR LP Def Exp error Exp RP . Stmt
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
-
-    CompSt  go to state 61
-    Stmt    go to state 161
-    Exp     go to state 64
-
-
-State 158
-
-   45 Stmt: FOR LP Def Exp SEMI Exp error . Stmt
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
-
-    CompSt  go to state 61
-    Stmt    go to state 162
-    Exp     go to state 64
-
-
-State 159
-
-   42 Stmt: FOR LP Def Exp SEMI Exp RP . Stmt
-
-    INT     shift, and go to state 49
-    FLOAT   shift, and go to state 50
-    CHAR    shift, and go to state 51
-    ID      shift, and go to state 52
-    IF      shift, and go to state 53
-    WHILE   shift, and go to state 54
-    RETURN  shift, and go to state 55
-    FOR     shift, and go to state 56
-    MINUS   shift, and go to state 57
-    NOT     shift, and go to state 58
-    LP      shift, and go to state 59
-    LC      shift, and go to state 25
-    UNKNOW  shift, and go to state 60
-
-    CompSt  go to state 61
-    Stmt    go to state 163
-    Exp     go to state 64
-
-
-State 160
-
-   44 Stmt: FOR LP Def Exp error Exp error Stmt .
-
-    $default  reduce using rule 44 (Stmt)
-
-
-State 161
-
-   43 Stmt: FOR LP Def Exp error Exp RP Stmt .
+   43 Stmt: WHILE LP Exp error Stmt .
 
     $default  reduce using rule 43 (Stmt)
 
 
+State 149
+
+   42 Stmt: WHILE LP Exp RP Stmt .
+
+    $default  reduce using rule 42 (Stmt)
+
+
+State 150
+
+   45 Stmt: FOR LP Def Exp error . Exp RP Stmt
+   46     | FOR LP Def Exp error . Exp error Stmt
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp  go to state 154
+
+
+State 151
+
+   44 Stmt: FOR LP Def Exp SEMI . Exp RP Stmt
+   47     | FOR LP Def Exp SEMI . Exp error Stmt
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    UNKNOW  shift, and go to state 61
+
+    Exp  go to state 155
+
+
+State 152
+
+   41 Stmt: IF LP Exp error Stmt ELSE . Stmt
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 156
+    Exp        go to state 65
+
+
+State 153
+
+   40 Stmt: IF LP Exp RP Stmt ELSE . Stmt
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 157
+    Exp        go to state 65
+
+
+State 154
+
+   45 Stmt: FOR LP Def Exp error Exp . RP Stmt
+   46     | FOR LP Def Exp error Exp . error Stmt
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    error   shift, and go to state 158
+    DOT     shift, and go to state 88
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    RP      shift, and go to state 159
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+
+State 155
+
+   44 Stmt: FOR LP Def Exp SEMI Exp . RP Stmt
+   47     | FOR LP Def Exp SEMI Exp . error Stmt
+   57 Exp: Exp . ASSIGN Exp
+   58    | Exp . AND Exp
+   59    | Exp . OR Exp
+   60    | Exp . LT Exp
+   61    | Exp . LE Exp
+   62    | Exp . GT Exp
+   63    | Exp . GE Exp
+   64    | Exp . NE Exp
+   65    | Exp . EQ Exp
+   66    | Exp . PLUS Exp
+   67    | Exp . MINUS Exp
+   68    | Exp . MUL Exp
+   69    | Exp . DIV Exp
+   70    | Exp . UNKNOW Exp
+   79    | Exp . LB Exp RB
+   80    | Exp . DOT ID
+
+    error   shift, and go to state 160
+    DOT     shift, and go to state 88
+    ASSIGN  shift, and go to state 90
+    LT      shift, and go to state 91
+    LE      shift, and go to state 92
+    GT      shift, and go to state 93
+    GE      shift, and go to state 94
+    NE      shift, and go to state 95
+    EQ      shift, and go to state 96
+    PLUS    shift, and go to state 97
+    MINUS   shift, and go to state 98
+    MUL     shift, and go to state 99
+    DIV     shift, and go to state 100
+    AND     shift, and go to state 101
+    OR      shift, and go to state 102
+    RP      shift, and go to state 161
+    LB      shift, and go to state 103
+    UNKNOW  shift, and go to state 104
+
+
+State 156
+
+   41 Stmt: IF LP Exp error Stmt ELSE Stmt .
+
+    $default  reduce using rule 41 (Stmt)
+
+
+State 157
+
+   40 Stmt: IF LP Exp RP Stmt ELSE Stmt .
+
+    $default  reduce using rule 40 (Stmt)
+
+
+State 158
+
+   46 Stmt: FOR LP Def Exp error Exp error . Stmt
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 162
+    Exp        go to state 65
+
+
+State 159
+
+   45 Stmt: FOR LP Def Exp error Exp RP . Stmt
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 163
+    Exp        go to state 65
+
+
+State 160
+
+   47 Stmt: FOR LP Def Exp SEMI Exp error . Stmt
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 164
+    Exp        go to state 65
+
+
+State 161
+
+   44 Stmt: FOR LP Def Exp SEMI Exp RP . Stmt
+
+    INT     shift, and go to state 50
+    FLOAT   shift, and go to state 51
+    CHAR    shift, and go to state 52
+    ID      shift, and go to state 53
+    IF      shift, and go to state 54
+    WHILE   shift, and go to state 55
+    RETURN  shift, and go to state 56
+    FOR     shift, and go to state 57
+    MINUS   shift, and go to state 58
+    NOT     shift, and go to state 59
+    LP      shift, and go to state 60
+    LC      shift, and go to state 25
+    UNKNOW  shift, and go to state 61
+
+    CompSt     go to state 62
+    LCTrigger  go to state 27
+    Stmt       go to state 165
+    Exp        go to state 65
+
+
 State 162
 
-   45 Stmt: FOR LP Def Exp SEMI Exp error Stmt .
+   46 Stmt: FOR LP Def Exp error Exp error Stmt .
 
-    $default  reduce using rule 45 (Stmt)
+    $default  reduce using rule 46 (Stmt)
 
 
 State 163
 
-   42 Stmt: FOR LP Def Exp SEMI Exp RP Stmt .
+   45 Stmt: FOR LP Def Exp error Exp RP Stmt .
 
-    $default  reduce using rule 42 (Stmt)
+    $default  reduce using rule 45 (Stmt)
+
+
+State 164
+
+   47 Stmt: FOR LP Def Exp SEMI Exp error Stmt .
+
+    $default  reduce using rule 47 (Stmt)
+
+
+State 165
+
+   44 Stmt: FOR LP Def Exp SEMI Exp RP Stmt .
+
+    $default  reduce using rule 44 (Stmt)
