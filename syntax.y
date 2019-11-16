@@ -204,6 +204,7 @@ StmtList: Stmt StmtList {
 Stmt: Exp SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 2, $1, $2);
+        check_exp($1);
     } 
     | Exp error {
         SEMIError(@$.first_line);
@@ -215,7 +216,7 @@ Stmt: Exp SEMI {
     | RETURN Exp SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
-        travel_exp($2);
+        check_exp($2);
     }
     | RETURN Exp error {
         SEMIError(@$.first_line);

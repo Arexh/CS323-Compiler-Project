@@ -6,7 +6,7 @@ struct FunctionAttribute *currentFunction;
 int currentScopeNumber;
 char *_type;
 char *_structID;
-int _firstNum;
+int _firstR;
 
 typedef struct Parameter {
     char *type;
@@ -254,6 +254,7 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
         type = specifier->value;
     } else {
         // StructSpecifier: STRUCT ID LC DefList RC | STRUCT ID
+        type = "structVariable";
         if (specifier->child_count == 2) {
             char *structID = specifier->child[1]->value;
             // STRUCT ID
@@ -264,17 +265,12 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             } else {
                 structAttribute = item->attribute;
             }
-            if (para) {
-                TableItem *item = find_struct(currentTable, structID);
-                structAttribute = item->attribute;
-            }
         } else {
             // STRUCT ID LC DefList RC
             if (para == 1) {
                 printf("Error at Line %d: define struct before parameter is not allowed\n", specifier->row);
                 return;
             } else {
-                type = "structVariable";
                 structAttribute = put_struct_specifier(specifier);
             }
         }
@@ -294,11 +290,12 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
         }
         if (strcmp(type, "structVariable") == 0) {
             // put struct here
-            StructVariableAttribute *structVariableAttribute = new_struct_variable_attribute();
-            structVariableAttribute->dimension = dimension;
-            structVariableAttribute->structAttribute = structAttribute;
-            hash_table_put(currentTable, ID, "structVariable", structVariableAttribute, currentScopeNumber);
-            parameter->attribute = structAttribute;
+            // StructVariableAttribute *structVariableAttribute = new_struct_variable_attribute();
+            // structVariableAttribute->dimension = dimension;
+            // structVariableAttribute->structAttribute = structAttribute;
+            hash_table_put(currentTable, ID, "structVariable", structAttribute, currentScopeNumber);
+            if (para)
+                parameter->attribute = structAttribute;
         } else {
             // put variable here
             if (dimension) {
@@ -405,7 +402,62 @@ TypeCheck* travel_exp(ASTNode *exp) {
             }
         } else {
             // Exp OPP Exp | Exp DOT ID
+            char *type = exp->child[1]->type;
+            if (strcmp(type, "DOT") == 0) {
+               
+            } else {
+                TypeCheck *left = travel_exp(exp->child[0]);
+                TypeCheck *right = travel_exp(exp->child[2]);
+                if (left == NULL || right == NULL)
+                    return NULL;
+                if (strcmp(type, "ASSIGN") == 0) {
+                    if (_firstR && left->attribute == NULL) {
+                        printf("Error type 6 at Line %d: rvalue on the left side of assignment operator\n", exp->row);
+                        return NULL;
+                    }
+                    if (_firstR == 0 && left->attribute == NULL) {
+                        _firstR = 1;
+                    }
+                    if (strcmp(left->type, right->type) == 0) {
+                        if (strcmp(left->type, "structVariable") == 0) {
+                            if (compare_if_equal(left->attribute, right->attribute) == 0) {
+                                // unmatch
+                                printf("Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
+                                return NULL;
+                            }
+                            // match
+                        } else {
+                            // match
+                        }
+                    } else {
+                        printf("Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
+                        return NULL;
+                    }
+                } else if (strcmp(type, "AND") == 0) {
 
+                } else if (strcmp(type, "OR") == 0) {
+
+                } else if (strcmp(type, "LT") == 0) {
+
+                } else if (strcmp(type, "LE") == 0) {
+
+                } else if (strcmp(type, "GT") == 0) {
+
+                } else if (strcmp(type, "GE") == 0) {
+
+                } else if (strcmp(type, "EQ") == 0) {
+
+                } else if (strcmp(type, "PLUS") == 0) {
+
+                } else if (strcmp(type, "MINUS") == 0) {
+
+                } else if (strcmp(type, "MUL") == 0) {
+
+                } else if (strcmp(type, "DIV") == 0) {
+                    
+                }
+            }
+            
         }
     } else {
         // ID LP Args RP | Exp LB Exp RB
@@ -479,12 +531,19 @@ void check_assign_exp(ASTNode *specifier, ASTNode *exp) {
     if (strcmp(specifier->type, "TYPE") == 0) {
         _type = specifier->value;
         _structID = NULL;
-        _firstNum = 0;
+        _firstR = 0;
         travel_exp(exp);
     } else {
         _type = "structVariable";
         _structID = specifier->child[1]->value;
-        _firstNum = 0;
+        _firstR = 0;
         travel_exp(exp);
     }
+}
+
+void check_exp(ASTNode *exp) {
+    _type = NULL;
+    _structID = NULL;
+    _firstR = 0;
+    travel_exp(exp);
 }
