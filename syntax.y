@@ -7,6 +7,7 @@
     int structFather;
     int functionStart;
     int firstAssign;
+    int functionCheck;
     void RPError(const int);
     void SEMIError(const int);
     void STRUCTError(const int, const char *);
@@ -69,10 +70,12 @@ ExtDef: SpecifierTrigger ExtDecList SEMI {
     | SpecifierTrigger FunDec CompSt {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
-        // global function end
-        function_stack_pop();
-        hash_table_stack_pop();
-        currentScopeNumber--;
+        if (functionCheck == 0) {
+            // global function end
+            function_stack_pop();
+            hash_table_stack_pop();
+        }
+        functionCheck = 0;
     };
 ExtDecList: VarDec {
         $$ = newNode("ExtDecList", @$.first_line); 
@@ -155,10 +158,12 @@ FunID: ID {
         $$ = newNode("FunID", @$.first_line);
         appendChild($$, 1, $1);
         // function start
-        function_stack_push(currentSpecifier, $1->value, @$.first_line);
-        currentScopeNumber++;
-        hash_table_stack_push(currentFunction->hashTable);
-        functionStart = 1;
+        functionCheck = function_stack_push(currentSpecifier, $1->value, @$.first_line);
+        if (functionCheck == 0) {
+            currentScopeNumber++;
+            hash_table_stack_push(currentFunction->hashTable);
+            functionStart = 1;
+        }
     };
 VarList: ParamDec COMMA VarList {
         $$ = newNode("VarList", @$.first_line); 
@@ -171,7 +176,9 @@ VarList: ParamDec COMMA VarList {
 ParamDec: Specifier VarDec {
         $$ = newNode("ParamDec", @$.first_line); 
         appendChild($$, 2, $1, $2);
-        put_para($1->child[0], $2);
+        if (functionCheck == 0) {
+            put_para($1->child[0], $2);
+        }
     };
 
 /* statement */
@@ -184,15 +191,19 @@ CompSt: LCTrigger DefList StmtList RCTrigger {
     };
 LCTrigger: LC {
         $$ = $1;
-        if (functionStart == 0) {
-            currentScopeNumber++;
-        } else {
-            functionStart = 0;
+        if (functionCheck == 0) {
+            if (functionStart == 0) {
+                currentScopeNumber++;
+            } else {
+                functionStart = 0;
+            }
         }
     }
 RCTrigger: RC {
         $$ = $1;
-        currentScopeNumber--;
+        if (functionCheck == 0) {
+            currentScopeNumber--;
+        }
     }
 StmtList: Stmt StmtList {
         $$ = newNode("StmtList", @$.first_line); 
@@ -204,7 +215,9 @@ StmtList: Stmt StmtList {
 Stmt: Exp SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 2, $1, $2);
-        check_exp($1);
+        if (functionCheck == 0) {
+            check_exp($1);
+        }
     } 
     | Exp error {
         SEMIError(@$.first_line);
@@ -216,7 +229,9 @@ Stmt: Exp SEMI {
     | RETURN Exp SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
-        check_exp($2);
+        if (functionCheck == 0) {
+            check_return_exp($2);
+        }
     }
     | RETURN Exp error {
         SEMIError(@$.first_line);
@@ -259,19 +274,23 @@ Stmt: Exp SEMI {
     ;
 ConditionExp: Exp {
         $$ = $1;
-        check_condition($1);
+        if (functionCheck == 0) {
+            check_condition($1);
+        }
     };
 /* local definition */
 DefList: Def DefList {
         $$ = newNode("DefList", @$.first_line);
         appendChild($$, 2, $1, $2);
-        if (strcmp($2->type, "NONE") == 0) {
-            $$->value = malloc(sizeof(int));
-            *(int *)$$->value = *(int*)$1->value + 0;
-        } else {
-            $$->value = malloc(sizeof(int));
-            memcpy($$->value, $2->value, sizeof(int));
-            *(int*)$$->value = *(int *)$$->value + *(int *)$1->value;
+        if (functionCheck == 0) {
+            if (strcmp($2->type, "NONE") == 0) {
+                $$->value = malloc(sizeof(int));
+                *(int *)$$->value = *(int*)$1->value + 0;
+            } else {
+                $$->value = malloc(sizeof(int));
+                memcpy($$->value, $2->value, sizeof(int));
+                *(int*)$$->value = *(int *)$$->value + *(int *)$1->value;
+            }
         }
     }
     | {
@@ -280,19 +299,12 @@ DefList: Def DefList {
 Def: SpecifierTrigger DecList SEMI {
         $$ = newNode("Def", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
-        $$->value = $2->value;
+        if (functionCheck == 0) {
+            $$->value = $2->value;
+        }
     }
     | SpecifierTrigger DecList error {
         SEMIError(@$.first_line);
-    } 
-    | SpecifierTrigger FunDec CompSt {
-        $$ = newNode("ExtDef", @$.first_line); 
-        appendChild($$, 3, $1, $2, $3);
-        // internal function end
-        function_stack_pop();
-        hash_table_stack_pop();
-        $$->value = malloc(sizeof(int));
-        *((int *)$$->value) = 1;
     };  
 DecList: Dec {
         $$ = newNode("DecList", @$.first_line); 
@@ -486,6 +498,7 @@ void initial(){
     structFather = 0;
     firstAssign = 0;
     functionStart = 0;
+    functionCheck = 0;
 }
 #ifndef CALC_MAIN
 #else
