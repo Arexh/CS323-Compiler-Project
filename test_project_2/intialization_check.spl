@@ -1,0 +1,25 @@
+/*
+    1. declare a struct in another struct is not allowed
+    2. undifined struct
+    3. assignment in struct is not allowed
+    4. define struct before parameter is not allowed
+    5. check redefined parameter
+*/
+
+struct student {
+    int age;
+    struct teacher {         // declare a struct in another struct, invalid
+        int age;
+    } t;
+    struct parents p;        // undifined, invalid
+    float height = 1.75;     // assignment, invalid
+};
+
+int main(struct teacher { int age; } t) { // define struct before parameter, invalid
+    return 0;
+}
+
+float func(float a, int a) {
+    return a;
+}
+

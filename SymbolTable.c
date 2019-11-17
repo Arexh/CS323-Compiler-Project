@@ -1,6 +1,7 @@
 #include "HashTable.c"
 
 struct SymbolTable *currentSymbolTable;
+struct LoopStack *currentLoop;
 
 typedef struct SymbolTable {
     struct VariableNode *first;
@@ -24,6 +25,15 @@ VariableNode *new_variable_node() {
     VariableNode *node = (VariableNode *)malloc(sizeof(VariableNode));
     node->item = NULL;
     node->next = NULL;
+}
+
+typedef struct LoopStack {
+    struct LoopStack *next;
+} LoopStack;
+
+LoopStack *new_loop_stack() {
+    LoopStack *newLoop = (LoopStack *)malloc(sizeof(LoopStack));
+    newLoop->next = NULL;
 }
 
 void free_symbol_table(SymbolTable *table) {

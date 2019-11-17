@@ -4,6 +4,7 @@
 
 struct FunctionAttribute *currentFunction;
 int currentScopeNumber;
+int _assign;
 
 typedef struct Parameter {
     char *type;
@@ -34,6 +35,7 @@ void append_new_parameter(Parameter *head, Parameter *new) {
 typedef struct FunctionAttribute {
     char *returnType;
     char *ID;
+    int re;
     struct StructAttribute *attribute;
     HashTable *hashTable;
     Parameter *parameter;
@@ -48,6 +50,7 @@ FunctionAttribute *new_function_attribute(char *returnType, char *ID) {
     attribute->next = NULL;
     attribute->parameter = NULL;
     attribute->attribute = NULL;
+    attribute->re = 0;
     return attribute;
 }
 
@@ -182,6 +185,8 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
                 ASTNode *structSpecifier = def->child[0]->child[0];
                 if (structSpecifier->child_count == 5) {
                     printf("Error at Line %d: declare a struct inside another struct is not allowed\n", structSpecifier->row);
+                    defList = defList->child[1];
+                    continue;
                 } else {
                     insideStructID = structSpecifier->child[1]->value;
                     if (strcmp(insideStructID, structID)) {
@@ -476,10 +481,11 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 if (right == NULL)
                     return NULL;
                 if (strcmp(type, "ASSIGN") == 0) {
+                    _assign = 1;
                     if (left->r) {
                         printf("Error type 6 at Line %d: rvalue on the left side of assignment operator\n", exp->row);
                     }
-                    if (strcmp(left->type, right->type) == 0) {
+                    if (strcmp(left->type, right->type) == 0 && left->dimension == right->dimension) {
                         if (strcmp(left->type, "structVariable") == 0) {
                             if (compare_if_equal(left->attribute, right->attribute) == 0) {
                                 // unmatch
@@ -669,8 +675,24 @@ TypeCheck* travel_exp(ASTNode *exp) {
     }
 }
 
-void check_assign_exp(ASTNode *specifier, ASTNode *exp) {
-    travel_exp(exp);
+void check_assign_exp(ASTNode *varDec, ASTNode *exp) {
+    TypeCheck *typeCheck = travel_exp(exp);
+    if (typeCheck != NULL) {
+        while(varDec->child_count == 4) {
+            varDec = varDec->child[0];
+        }
+        char *ID = varDec->child[0]->value;
+        TableItem *item = find_variable(currentTable, ID);
+        if (strcmp(item->type, typeCheck->type) == 0 && item->dimension == typeCheck->dimension) {
+            if (strcmp(item->type, "structVariable") == 0 && compare_if_equal(item->attribute, typeCheck->attribute) == 0) {
+                printf("Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
+                return;
+            }
+        } else {
+            printf("Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
+            return;
+        }
+    }
 }
 
 void check_exp(ASTNode *exp) {
@@ -678,10 +700,13 @@ void check_exp(ASTNode *exp) {
 }
 
 void check_condition(ASTNode *exp) {
+    _assign = 0;
     TypeCheck *type = travel_exp(exp);
     if (type != NULL) {
-         if (!(strcmp(type->type, "int") == 0 && type->dimension == 0)) {
+        if (!(strcmp(type->type, "int") == 0 && type->dimension == 0)) {
             printf("Error at Line %d: the result of condition must be int\n", exp->row);
+        } else if (_assign) {
+            printf("Error at Line %d: assignment in condition is not allowed\n", exp->row);
         }
     }
 }

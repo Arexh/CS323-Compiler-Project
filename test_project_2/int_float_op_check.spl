@@ -1,0 +1,15 @@
+/* 
+    1. no assignment between int and float (Assumption 1)
+    2. the result of int and float operations will be considered as float value
+*/
+
+int main() {
+    int a = 3.5123;          // int = float, invalid
+    int b = 1;
+    float c = b;             // float = int, invalid
+    float d = 3.414;
+    float e = b + d;         // int value + float value will be seen as float value
+    b = 3.5;                 // int = float, invalid
+    d = 1;                   // float = int, invalid
+    return 0;
+}

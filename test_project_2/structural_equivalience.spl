@@ -1,0 +1,31 @@
+/*
+    1. structs are equivalent only when two struct has same number, type and name of variables
+    2. the sequence of variable can be different
+*/
+
+struct student {
+    int age;
+    float weight;
+    float height;
+};
+
+struct teacher {
+    float weight;
+    int age;
+    float height;
+};
+
+struct child {
+    int year;
+    float weight;
+    float height;
+};
+
+int main() {
+    struct teacher t;
+    struct student s;
+    struct child c;
+    s = t;  // equal (The number, type, and variable name of the members are the same, no mater in what other)
+    s = c;  // not equal (The variable name is different)
+    return 0;
+}

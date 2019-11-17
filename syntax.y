@@ -21,12 +21,13 @@
 }
 %token <node> INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN DOT SEMI COMMA FOR 
 %token <node> ASSIGN LT LE GT GE NE EQ PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC INCLUDE UNKNOW
+%token <node> BREAK CONTINUE
 %type  <node> Program ExtDefList ExtDef ExtDecList
 %type  <node> Specifier StructSpecifier 
 %type  <node> VarDec FunDec VarList ParamDec
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
-%type  <node> Exp Args
-%type  <node> FunID SpecifierTrigger STRUCTTrigger LCTrigger RCTrigger ConditionExp
+%type  <node> Exp Args ConditionEndTrigger
+%type  <node> FunID SpecifierTrigger STRUCTTrigger LCTrigger RCTrigger ConditionExp WHILETrigger FORTrigger
 %right ASSIGN
 %left OR
 %left AND
@@ -71,7 +72,10 @@ ExtDef: SpecifierTrigger ExtDecList SEMI {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
         if (functionCheck == 0) {
-            // global function end
+            // function end
+            if (currentFunction->re == 0) {
+                printf("Error at Line %d: function has no return value", @$.first_line);
+            }
             function_stack_pop();
             hash_table_stack_pop();
         }
@@ -230,7 +234,7 @@ Stmt: Exp SEMI {
         if (functionCheck == 0) {
             check_exp($1);
         }
-    } 
+    }
     | Exp error {
         SEMIError(@$.first_line);
     }
@@ -243,6 +247,7 @@ Stmt: Exp SEMI {
         appendChild($$, 3, $1, $2, $3);
         if (functionCheck == 0) {
             check_return_exp($2);
+            currentFunction->re = 1;
         }
     }
     | RETURN Exp error {
@@ -262,28 +267,71 @@ Stmt: Exp SEMI {
     | IF LP ConditionExp error Stmt ELSE Stmt {
         RPError(@$.first_line);
     }
-    | WHILE LP ConditionExp RP Stmt {
+    | WHILETrigger LP ConditionExp RP ConditionEndTrigger {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 5, $1, $2, $3, $4, $5);
     }
-    | WHILE LP ConditionExp error Stmt {
+    | WHILETrigger LP ConditionExp error ConditionEndTrigger {
         RPError(@$.first_line);
     }
-    | FOR LP Def ConditionExp SEMI Exp RP Stmt {
+    | FORTrigger LP Def ConditionExp SEMI Exp RP ConditionEndTrigger {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 8, $1, $2, $3, $4, $5, $6, $7, $8);
     }
-    | FOR LP Def ConditionExp error Exp RP Stmt {
+    | FORTrigger LP Def ConditionExp error Exp RP ConditionEndTrigger {
         SEMIError(@$.first_line);
     }
-    | FOR LP Def ConditionExp error Exp error Stmt {
+    | FORTrigger LP Def ConditionExp error Exp error ConditionEndTrigger {
         SEMIError(@$.first_line);
         RPError(@$.first_line);
     }
-    | FOR LP Def ConditionExp SEMI Exp error Stmt {
+    | FORTrigger LP Def ConditionExp SEMI Exp error ConditionEndTrigger {
         RPError(@$.first_line);
+    }
+    | BREAK SEMI {
+        $$ = newNode("Stmt", @$.first_line); 
+        appendChild($$, 2, $1, $2);
+        if (currentLoop == NULL) {
+            printf("Error at Line %d: break is used outside loop\n", @$.first_line);
+        }
+    }
+    | CONTINUE SEMI {
+        $$ = newNode("Stmt", @$.first_line); 
+        appendChild($$, 2, $1, $2);
+        if (currentLoop == NULL) {
+            printf("Error at Line %d: continue is used outside loop\n", @$.first_line);
+        }
     }
     ;
+WHILETrigger: WHILE {
+        $$ = $1;
+        if (currentLoop == NULL) {
+            currentLoop = new_loop_stack();
+        } else {
+            LoopStack *newLoop = new_loop_stack();
+            newLoop->next = currentLoop;
+            currentLoop = newLoop;
+        }
+    };
+FORTrigger: FOR {
+        $$ = $1;
+        if (currentLoop == NULL) {
+            currentLoop = new_loop_stack();
+        } else {
+            LoopStack *newLoop = new_loop_stack();
+            newLoop->next = currentLoop;
+            currentLoop = newLoop;
+        }
+    };
+ConditionEndTrigger: Stmt {
+        $$ = $1;
+        if (currentLoop) {
+            LoopStack *temp = currentLoop;
+            currentLoop = currentLoop->next;
+            temp->next = NULL;
+            free(temp);
+        }
+    };
 ConditionExp: Exp {
         $$ = $1;
         if (functionCheck == 0) {
@@ -343,10 +391,10 @@ Dec: VarDec {
         $$ = newNode("Dec", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
         if (structCheck == 0) {
-            // assign check here
-            check_assign_exp(currentSpecifier, $3);
             // put varDec
             put_var(currentSpecifier, $1);
+            // assign check here
+            check_assign_exp($1, $3);
         }
     };
     /* Expression */

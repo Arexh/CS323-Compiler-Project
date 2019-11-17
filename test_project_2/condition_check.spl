@@ -1,0 +1,28 @@
+/*
+    1. only int variables can do boolean operations, and branching/looping conditions (Assumption 3)
+    2. comparation between different is not allowed, expect equal operation on two same type variables
+*/
+
+int zero() {
+    return 0;
+}
+
+int main() {
+    int a;
+    float b;
+    int c[10];
+    struct s {} st1;
+    struct s {} st2;
+    int arr[10];
+    if (a) { }         // int value, valid
+    if (a > b) { }     // int value, valid
+    if (b) { }         // float value, invalid
+    if (c) { }         // one dimensional array, invalid
+    while (c[1]) { }   // int value, valid
+    while (a = 1) { }  // assignment in condition is not allowed
+    while (zero()) { } // int value, valid
+    st1 > st2;         // comparation on struct, invalid
+    c == arr;          // two variables has same type, valid
+    c == a;            // two variables has different type, invalid
+    return 0;
+}

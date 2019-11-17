@@ -284,6 +284,14 @@ struct_define [.;,=<>!=+\-*/&|)\[\]{}]
         yylval.node = newNotation("FOR");
         return FOR;
     }
+"break" {
+        yylval.node = newNotation("BREAK");
+        return BREAK;
+    }
+"continue" {
+        yylval.node = newNotation("CONTINUE");
+        return CONTINUE;
+    }
 {id_char_first} {
         rec = "";
         int judge = 1;

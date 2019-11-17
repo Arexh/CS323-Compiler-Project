@@ -1,0 +1,22 @@
+/*
+    check whether continue and break statement is valid
+*/
+
+char main() {
+    while (1) {
+        break;          // inside of loop, valid
+    }
+    for (int index = 0; index < 100; index = index + 1) {
+        if (index * index > 10) {
+            break;      // inside of loop, valid
+        } else {
+            continue;   // inside of loop, valid
+        }
+        while(1) {
+            break;      // inside of loop, valid
+        }
+        continue;       // inside of loop, valid
+    }
+    continue;   // used outside of loop, invalid
+    return 'a';
+}

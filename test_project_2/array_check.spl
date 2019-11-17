@@ -1,0 +1,15 @@
+/*
+    check whether the usage of array is valid
+*/
+
+int main() {
+    int arr1[10][10];
+    int arr2[10];
+    float arr3[10];
+    arr1 = arr2;             // int[][] = int[], invalid
+    arr1[1] = arr2;          // int[] = int[], valid
+    arr2[1][1];              // arr2's dimension is 1, invalid
+    arr1[1] = arr3;          // int[] = float[], invalid
+    arr2 = arr3;             // int[] = float[], invalid
+    return 0;
+}
