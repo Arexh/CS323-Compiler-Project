@@ -1,5 +1,7 @@
 #include "HashTable.c"
 
+struct SymbolTable *currentSymbolTable;
+
 typedef struct SymbolTable {
     struct VariableNode *first;
     struct VariableNode *last;

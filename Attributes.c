@@ -51,6 +51,14 @@ FunctionAttribute *new_function_attribute(char *returnType, char *ID) {
     return attribute;
 }
 
+void put_node(char* ID, char* type, void *attribute, int scopeNum, int dimension) {
+    if (currentSymbolTable) {
+        symbol_table_add_node(currentTable, currentSymbolTable, ID, type, attribute, scopeNum, dimension);
+    } else {
+        hash_table_put(currentTable, ID, type, attribute, scopeNum, dimension);
+    }
+}
+
 // 0: not initialized, 1: initialize, -1: ID already used
 int scope_check(HashTable *hashTable, char *ID, char *type) {
     TableItem *item = hash_table_get(hashTable, ID);
@@ -100,7 +108,7 @@ int function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
         char *returnType = specifier->value;
         attribute = new_function_attribute(returnType, ID);
         // put function into symbol table
-        hash_table_put(currentTable, ID, "function", attribute, currentScopeNumber, 0);
+        put_node(ID, "function", attribute, currentScopeNumber, 0);
     } else if (specifier->child_count == 2) {
         // STRUCT ID, scope check
         char *structID = specifier->child[1]->value;
@@ -113,7 +121,7 @@ int function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
             // returnType = struct ID
             attribute = new_function_attribute("structVariable", ID);
             attribute->attribute = find_struct(currentTable, structID)->attribute;
-            hash_table_put(currentTable, ID, "function", attribute, currentScopeNumber, 0);
+            put_node(ID, "function", attribute, currentScopeNumber, 0);
         } else if (check == -1) {
             printf("Error type 19 at Line %d: use variable as struct ID\n", specifier->child[1]->row);
             return 1;
@@ -228,7 +236,7 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
         printf("Error type 15 at Line %d: redeﬁne the same structure type\n", specifier->row);
     } else {
         sort_struct_attribute_varDec(structAttribute);
-        hash_table_put(currentTable, structID, "struct", structAttribute, currentScopeNumber, 0);
+        put_node(structID, "struct", structAttribute, currentScopeNumber, 0);
     }
     return structAttribute;
 }
@@ -293,12 +301,12 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
         }
         if (strcmp(type, "structVariable") == 0) {
             // put struct here
-            hash_table_put(currentTable, ID, "structVariable", structAttribute, currentScopeNumber, dimension);
+            put_node(ID, "structVariable", structAttribute, currentScopeNumber, dimension);
             if (para)
                 parameter->attribute = structAttribute;
         } else {
             // put variable here
-            hash_table_put(currentTable, ID, type, NULL, currentScopeNumber, dimension);
+            put_node(ID, type, NULL, currentScopeNumber, dimension);
         }
         if (para) {
             if (currentFunction->parameter == NULL) {

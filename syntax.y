@@ -106,7 +106,7 @@ StructSpecifier: STRUCTTrigger ID LC DefList RC {
             structCheck = 1;
             structFather = 0;
         } else {
-            structCheck = 0;
+            structCheck = 0; 
         }
     }
     | STRUCTTrigger ID {
@@ -193,6 +193,13 @@ LCTrigger: LC {
         $$ = $1;
         if (functionCheck == 0) {
             if (functionStart == 0) {
+                if (currentSymbolTable == NULL) {
+                    currentSymbolTable = new_symbol_table();
+                } else {
+                    SymbolTable *symbolTable = new_symbol_table();
+                    symbolTable->next = currentSymbolTable;
+                    currentSymbolTable = symbolTable;
+                }
                 currentScopeNumber++;
             } else {
                 functionStart = 0;
@@ -202,6 +209,11 @@ LCTrigger: LC {
 RCTrigger: RC {
         $$ = $1;
         if (functionCheck == 0) {
+            SymbolTable *remove = currentSymbolTable;
+            if (remove) {
+                currentSymbolTable = currentSymbolTable->next;
+                symbol_table_remove(currentTable, remove);
+            }
             currentScopeNumber--;
         }
     }
