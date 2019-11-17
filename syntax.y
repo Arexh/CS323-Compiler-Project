@@ -25,7 +25,7 @@
 %type  <node> VarDec FunDec VarList ParamDec
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
 %type  <node> Exp Args
-%type  <node> FunID SpecifierTrigger STRUCTTrigger LCTrigger RCTrigger
+%type  <node> FunID SpecifierTrigger STRUCTTrigger LCTrigger RCTrigger ConditionExp
 %right ASSIGN
 %left OR
 %left AND
@@ -221,43 +221,46 @@ Stmt: Exp SEMI {
     | RETURN Exp error {
         SEMIError(@$.first_line);
     }
-    | IF LP Exp RP Stmt %prec LOWER_ELSE {
+    | IF LP ConditionExp RP Stmt %prec LOWER_ELSE {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 5, $1, $2, $3, $4, $5);
     }
-    | IF LP Exp error Stmt %prec LOWER_ELSE {
+    | IF LP ConditionExp error Stmt %prec LOWER_ELSE {
         RPError(@$.first_line);
     }
-    | IF LP Exp RP Stmt ELSE Stmt {
+    | IF LP ConditionExp RP Stmt ELSE Stmt {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 7, $1, $2, $3, $4, $5, $6, $7);
     }
-    | IF LP Exp error Stmt ELSE Stmt {
+    | IF LP ConditionExp error Stmt ELSE Stmt {
         RPError(@$.first_line);
     }
-    | WHILE LP Exp RP Stmt {
+    | WHILE LP ConditionExp RP Stmt {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 5, $1, $2, $3, $4, $5);
     }
-    | WHILE LP Exp error Stmt {
+    | WHILE LP ConditionExp error Stmt {
         RPError(@$.first_line);
     }
-    | FOR LP Def Exp SEMI Exp RP Stmt {
+    | FOR LP Def ConditionExp SEMI Exp RP Stmt {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 8, $1, $2, $3, $4, $5, $6, $7, $8);
     }
-    | FOR LP Def Exp error Exp RP Stmt {
+    | FOR LP Def ConditionExp error Exp RP Stmt {
         SEMIError(@$.first_line);
     }
-    | FOR LP Def Exp error Exp error Stmt {
+    | FOR LP Def ConditionExp error Exp error Stmt {
         SEMIError(@$.first_line);
         RPError(@$.first_line);
     }
-    | FOR LP Def Exp SEMI Exp error Stmt {
+    | FOR LP Def ConditionExp SEMI Exp error Stmt {
         RPError(@$.first_line);
     }
     ;
-
+ConditionExp: Exp {
+        $$ = $1;
+        check_condition($1);
+    };
 /* local definition */
 DefList: Def DefList {
         $$ = newNode("DefList", @$.first_line);

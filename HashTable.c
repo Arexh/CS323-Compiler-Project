@@ -6,7 +6,7 @@
 
 struct HashTable *currentTable;
 
-/* retrieve from https://blog.csdn.net/smstong/article/details/51145786 */
+/* https://blog.csdn.net/smstong/article/details/51145786 */
 typedef struct TableItem {
     char *ID;
     char *type;

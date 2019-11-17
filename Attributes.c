@@ -203,6 +203,7 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
                     var->dimension = dimension;
                     if (strcmp(specifier, "struct") == 0) {
                         var->structID = insideStructID;
+                        var->type = "structVariable";
                         if (strcmp(insideStructID, structID) == 0) {
                             var->attribute = structAttribute;
                         } else {
@@ -324,15 +325,36 @@ void put_para(ASTNode *specifier, ASTNode *varDec) {
 }
 
 typedef struct TypeCheck {
+    int dimension;
     char *type;
     StructAttribute *attribute;
 } TypeCheck;
 
 TypeCheck *new_type_check() {
     TypeCheck *typeCheck = (TypeCheck *)malloc(sizeof(typeCheck));
+    typeCheck->dimension = 0;
     typeCheck->type = NULL;
     typeCheck->attribute = NULL;
     return typeCheck;
+}
+
+TypeCheck *check_member(StructAttribute *attribute, char *ID) {
+    if (attribute == NULL)
+        return NULL;
+    int index = 0;
+    for (index = 0; index < attribute->varNum; index++) {
+        StructVariable *variable = attribute->varDec[index];
+        if (variable != NULL) {
+            if (strcmp(variable->ID, ID) == 0) {
+                TypeCheck *newType = new_type_check();
+                newType->type = variable->type;
+                newType->dimension = variable->dimension;
+                newType->attribute = variable->attribute;
+                return newType;
+            }
+        }
+    }
+    return NULL;
 }
 
 TypeCheck* travel_exp(ASTNode *exp) {
@@ -366,9 +388,27 @@ TypeCheck* travel_exp(ASTNode *exp) {
     } else if (exp->child_count == 2) {
         // MINUS Exp | NOT Exp
         if (strcmp(exp->child[0]->type, "MINUS") == 0) {
-
+            TypeCheck *right = travel_exp(exp->child[1]);
+            if (right == NULL) {
+                return NULL;
+            }
+            if (strcmp(right->type, "int") == 0 || strcmp(right->type, "float") == 0) {
+                if (right->dimension == 0) {
+                    return right;
+                }
+            }
+            printf("Error type 7 at Line %d: unmatching operands\n", exp->row);
+            return NULL;
         } else {
-
+            TypeCheck *right = travel_exp(exp->child[1]);
+            if (right == NULL) {
+                return NULL;
+            }
+            if (strcmp(right->type, "int") == 0 && right->dimension == 0) {
+                return right;
+            }
+            printf("Error at Line %d: only int variables can do boolean operation\n", exp->row);
+            return NULL;
         }
     } else if (exp->child_count == 3) {
         if (exp->child[0]->child_count == 0) {
@@ -404,7 +444,21 @@ TypeCheck* travel_exp(ASTNode *exp) {
             // Exp OPP Exp | Exp DOT ID
             char *type = exp->child[1]->type;
             if (strcmp(type, "DOT") == 0) {
-               
+                TypeCheck *left = travel_exp(exp->child[0]);
+                char *ID = exp->child[2]->value;
+                if (left == NULL)
+                    return NULL;
+                if (strcmp(left->type, "structVariable")) {
+                    printf("Error type 13 at Line %d: accessing member of non-structure variable\n", exp->row);
+                    return NULL;
+                }
+                TypeCheck *checkMenber = check_member(left->attribute, ID);
+                if (checkMenber == NULL) {
+                    printf("Error type 14 at Line %d: accessing an undeﬁned structure member\n", exp->row);
+                    return NULL;
+                } else {
+                    return checkMenber;
+                }
             } else {
                 TypeCheck *left = travel_exp(exp->child[0]);
                 TypeCheck *right = travel_exp(exp->child[2]);
@@ -426,42 +480,89 @@ TypeCheck* travel_exp(ASTNode *exp) {
                                 return NULL;
                             }
                             // match
+                            return left;
                         } else {
                             // match
+                            return left;
                         }
                     } else {
                         printf("Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
                         return NULL;
                     }
-                } else if (strcmp(type, "AND") == 0) {
-
-                } else if (strcmp(type, "OR") == 0) {
-
-                } else if (strcmp(type, "LT") == 0) {
-
-                } else if (strcmp(type, "LE") == 0) {
-
-                } else if (strcmp(type, "GT") == 0) {
-
-                } else if (strcmp(type, "GE") == 0) {
-
+                } else if (strcmp(type, "AND") == 0 || strcmp(type, "OR") == 0) {
+                    // boolean opearation
+                    TypeCheck *left = travel_exp(exp->child[0]);
+                    TypeCheck *right = travel_exp(exp->child[2]);
+                    if (left == NULL || right == NULL)
+                        return NULL;
+                    if (strcmp(left->type, "int") == 0 && left->dimension == 0 && strcmp(right->type, "int") == 0 && right->dimension == 0) {
+                        // valid
+                        return left;
+                    } else {
+                        // invalid
+                        printf("Error at Line %d: only int variables can do boolean operation\n", exp->row);
+                        return NULL;
+                    }
+                } else if (strcmp(type, "LT") == 0 || strcmp(type, "LE") == 0 || strcmp(type, "GT") == 0 || strcmp(type, "GE") == 0) {
+                    // comparatioon
+                    TypeCheck *left = travel_exp(exp->child[0]);
+                    TypeCheck *right = travel_exp(exp->child[2]);
+                    if (left == NULL || right == NULL)
+                        return NULL;
+                    if (left->dimension != 0 || right->dimension != 0) {
+                        printf("Error at Line %d: comparation on array is not allowed\n", exp->row);
+                        return NULL;
+                    } else if (strcmp(left->type, "structVariable") == 0 || strcmp(right->type, "structVariable") == 0) {
+                        printf("Error at Line %d: comparation on struct is not allowed\n", exp->row);
+                        return NULL;
+                    } else {
+                        TypeCheck *newType = new_type_check();
+                        newType->type = "int";
+                        return newType;
+                    }
                 } else if (strcmp(type, "EQ") == 0) {
-
-                } else if (strcmp(type, "PLUS") == 0) {
-
-                } else if (strcmp(type, "MINUS") == 0) {
-
-                } else if (strcmp(type, "MUL") == 0) {
-
-                } else if (strcmp(type, "DIV") == 0) {
-                    
+                    // equal
+                    TypeCheck *left = travel_exp(exp->child[0]);
+                    TypeCheck *right = travel_exp(exp->child[2]);
+                    if (left == NULL || right == NULL)
+                        return NULL;
+                    if (strcmp(left->type, right->type) == 0 && left->dimension == right->dimension) {
+                        if (strcmp(left->type, "structVariable") == 0 && compare_if_equal(left->attribute, right->attribute) == 0) {
+                            printf("Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
+                            return NULL;
+                        }
+                        TypeCheck *newType = new_type_check();
+                        newType->type = "int";
+                        return newType;
+                    }
+                    printf("Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
+                    return NULL;
+                } else if (strcmp(type, "PLUS") == 0 || strcmp(type, "MINUS") == 0 || strcmp(type, "MUL") == 0 ||
+                strcmp(type, "DIV") == 0) {
+                    // int & float
+                    TypeCheck *left = travel_exp(exp->child[0]);
+                    TypeCheck *right = travel_exp(exp->child[2]);
+                    if (left == NULL || right == NULL)
+                        return NULL;
+                    if (left->dimension == 0 && right->dimension == 0 && strcmp(left->type, "structVariable") && strcmp(right->type, "structVariable") &&
+                    strcmp(left->type, "char") && strcmp(right->type, "char")) {
+                        TypeCheck *newType = new_type_check();
+                        if (strcmp(left->type, "int") == 0 && strcmp(right->type, "int") == 0) {
+                            newType->type = "int";
+                        } else {
+                            newType->type = "float";
+                        }
+                        return newType;
+                    } else {
+                        printf("Error type 7 at Line %d: unmatching operands\n", exp->row);
+                        return NULL;
+                    }
                 }
             }
-            
         }
     } else {
-        // ID LP Args RP | Exp LB Exp RB
         if (strcmp(exp->child[0]->type, "ID") == 0) {
+            // ID LP Args RP
             char *ID = exp->child[0]->value;
             TableItem *item = find_variable(currentTable, ID);
             if (item == NULL) {
@@ -522,7 +623,22 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 }
             }
         } else {
-
+            // Exp LB Exp RB
+            TypeCheck *left = travel_exp(exp->child[0]);
+            TypeCheck *right = travel_exp(exp->child[2]);
+            if (left == NULL || right == NULL)
+                return NULL;
+            // check right Exp
+            if (strcmp(right->type, "int") || right->dimension) {
+                printf("Error type 12 at Line %d: array indexing with non-integer type expression\n", exp->row);
+                return NULL;
+            }
+            if (left->dimension == 0) {
+                printf("Error type 10 at Line %d: applying indexing operator ([...]) on non-array type variables\n", exp->row);
+                return NULL;
+            }
+            left->dimension--;
+            return left;
         }
     }
 }
@@ -546,4 +662,16 @@ void check_exp(ASTNode *exp) {
     _structID = NULL;
     _firstR = 0;
     travel_exp(exp);
+}
+
+void check_condition(ASTNode *exp) {
+    _type = NULL;
+    _structID = NULL;
+    _firstR = 0;
+    TypeCheck *type = travel_exp(exp);
+    if (type != NULL) {
+         if (!(strcmp(type->type, "int") == 0 && type->dimension == 0)) {
+            printf("Error at Line %d: the result of condition must be int\n", exp->row);
+        }
+    }
 }
