@@ -74,7 +74,7 @@ ExtDef: SpecifierTrigger ExtDecList SEMI {
         if (functionCheck == 0) {
             // function end
             if (currentFunction->re == 0) {
-                printf("Error at Line %d: function has no return value", @$.first_line);
+                fprintf(out, "Error at Line %d: function has no return value", @$.first_line);
             }
             function_stack_pop();
             hash_table_stack_pop();
@@ -292,14 +292,14 @@ Stmt: Exp SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 2, $1, $2);
         if (currentLoop == NULL) {
-            printf("Error at Line %d: break is used outside loop\n", @$.first_line);
+            fprintf(out, "Error at Line %d: break is used outside loop\n", @$.first_line);
         }
     }
     | CONTINUE SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 2, $1, $2);
         if (currentLoop == NULL) {
-            printf("Error at Line %d: continue is used outside loop\n", @$.first_line);
+            fprintf(out, "Error at Line %d: continue is used outside loop\n", @$.first_line);
         }
     }
     ;
@@ -392,9 +392,11 @@ Dec: VarDec {
         appendChild($$, 3, $1, $2, $3);
         if (structCheck == 0) {
             // put varDec
-            put_var(currentSpecifier, $1);
-            // assign check here
-            check_assign_exp($1, $3);
+            int re = put_var(currentSpecifier, $1);
+            if (re == 0) {
+                // assign check here
+                check_assign_exp($1, $3);
+            }
         }
     };
     /* Expression */
@@ -567,9 +569,9 @@ int main(int count, char **args){
         initial();
         out = stdout;
         yyparse();
-        if (error == 0) {
-            dfsPrintf(root, 0);
-        }
+        // if (error == 0) {
+        //     dfsPrintf(root, 0);
+        // }
     } else {
         for(int x = 1; x < count; x++){
             initial();
@@ -590,8 +592,8 @@ int main(int count, char **args){
             out = fopen(output, "w");
             yyrestart(fp);
             yyparse();
-            if (error == 0)
-                dfsPrintf(root, 0);
+            // if (error == 0)
+            //     dfsPrintf(root, 0);
             fclose(fp);
             fclose(out);
         }        

@@ -12,7 +12,7 @@ int main() {
     float b;
     int c[10];
     struct s {} st1;
-    struct s {} st2;
+    struct s st2;
     int arr[10];
     if (a) { }         // int value, valid
     if (a > b) { }     // int value, valid

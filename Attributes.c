@@ -99,10 +99,10 @@ int variable_scope_check(HashTable *hashTable, char *ID, char *type) {
 int function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
     int check = function_scope_check(currentTable, ID);
     if (check == 1) {
-        printf("Error type 4 at Line %d: function is redeﬁned\n", IDLineNo);
+        fprintf(out, "Error type 4 at Line %d: function is redeﬁned\n", IDLineNo);
         return 1;
     } else if (check == -1) {
-        printf("Error type 21 at Line %d: function ID is already used by a variable.\n", IDLineNo);
+        fprintf(out, "Error type 21 at Line %d: function ID is already used by a variable.\n", IDLineNo);
         return 1;
     }
     FunctionAttribute *attribute;
@@ -118,7 +118,7 @@ int function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
         int check = struct_scope_check(currentTable, structID);
         if (check == 0) {
             // struct is not defined, print error
-            printf("Error type 15 at Line %d: struct is used without deﬁnition\n", specifier->child[1]->row);
+            fprintf(out, "Error type 15 at Line %d: struct is used without deﬁnition\n", specifier->child[1]->row);
             return 1;
         } else if (check == 1) {
             // returnType = struct ID
@@ -126,12 +126,12 @@ int function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
             attribute->attribute = find_struct(currentTable, structID)->attribute;
             put_node(ID, "function", attribute, currentScopeNumber, 0);
         } else if (check == -1) {
-            printf("Error type 19 at Line %d: use variable as struct ID\n", specifier->child[1]->row);
+            fprintf(out, "Error type 19 at Line %d: use variable as struct ID\n", specifier->child[1]->row);
             return 1;
         }
     } else {
         // declare strunct is not allowed, print error
-        printf("Error type 17 at Line %d: declare struct in function specifier is not allowed\n", specifier->child[0]->row);
+        fprintf(out, "Error type 17 at Line %d: declare struct in function specifier is not allowed\n", specifier->child[0]->row);
         return 1;
     }
     if (attribute) {
@@ -184,7 +184,7 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
                 specifier = "struct";
                 ASTNode *structSpecifier = def->child[0]->child[0];
                 if (structSpecifier->child_count == 5) {
-                    printf("Error at Line %d: declare a struct inside another struct is not allowed\n", structSpecifier->row);
+                    fprintf(out, "Error at Line %d: declare a struct inside another struct is not allowed\n", structSpecifier->row);
                     defList = defList->child[1];
                     continue;
                 } else {
@@ -192,7 +192,7 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
                     if (strcmp(insideStructID, structID)) {
                         structItem = find_struct(currentTable, insideStructID);
                         if (structItem == NULL) {
-                            printf("Error at Line %d: undifined struct \"%s\"\n", structSpecifier->row, insideStructID);
+                            fprintf(out, "Error at Line %d: undifined struct \"%s\"\n", structSpecifier->row, insideStructID);
                             defList = defList->child[1];
                             continue;
                         }
@@ -203,7 +203,7 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
             while(1) {
                 ASTNode *dec = decList->child[0];
                 if (dec->child_count == 3) {
-                    printf("Error at Line %d: assignment in struct is not allowed\n", dec->row);
+                    fprintf(out, "Error at Line %d: assignment in struct is not allowed\n", dec->row);
                 } else {
                     ASTNode *varDec = dec->child[0];
                     int dimension = 0;
@@ -238,7 +238,7 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
     }
     int result = variable_scope_check(currentTable, structID, "struct");
     if (result == 1) {
-        printf("Error type 15 at Line %d: redeﬁne the same structure type\n", specifier->row);
+        fprintf(out, "Error type 15 at Line %d: redeﬁne the same structure type\n", specifier->row);
     } else {
         sort_struct_attribute_varDec(structAttribute);
         put_node(structID, "struct", structAttribute, currentScopeNumber, 0);
@@ -246,7 +246,7 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
     return structAttribute;
 }
 
-void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
+int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
     char *ID;
     int dimension = 0;
     Parameter *parameter = new_parameter();
@@ -276,16 +276,16 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             // STRUCT ID
             TableItem *item = find_struct(currentTable, structID);
             if (item == NULL) {
-                printf("Error at Line %d: undifined struct \"%s\"\n", specifier->row, structID);
-                return;
+                fprintf(out, "Error at Line %d: undifined struct \"%s\"\n", specifier->row, structID);
+                return 1;
             } else {
                 structAttribute = item->attribute;
             }
         } else {
             // STRUCT ID LC DefList RC
             if (para == 1) {
-                printf("Error at Line %d: define struct before parameter is not allowed\n", specifier->row);
-                return;
+                fprintf(out, "Error at Line %d: define struct before parameter is not allowed\n", specifier->row);
+                return 1;
             } else {
                 structAttribute = put_struct_specifier(specifier);
             }
@@ -295,9 +295,11 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
     if (result == -1 || result == 1) {
         // already been used
         if (para) {
-            printf("Error at Line %d: parameter is redifined in the same function\n", varDec->row);
+            fprintf(out, "Error at Line %d: parameter is redifined in the same function\n", varDec->row);
+            return 1;
         } else {
-            printf("Error type 3 at Line %d: variable is redeﬁned in the same scope\n", varDec->row);
+            fprintf(out, "Error type 3 at Line %d: variable is redeﬁned in the same scope\n", varDec->row);
+            return 1;
         }
     } else if (result == 0) {
         if (para) {
@@ -321,10 +323,11 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             }
         }
     }
+    return 0;
 }
 
-void put_var(ASTNode *currentSpecifier, ASTNode *varDec) {
-    put_para_or_var(currentSpecifier, varDec, 0);
+int put_var(ASTNode *currentSpecifier, ASTNode *varDec) {
+    return put_para_or_var(currentSpecifier, varDec, 0);
 }
 
 void put_para(ASTNode *specifier, ASTNode *varDec) {
@@ -384,7 +387,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
             char *ID = exp->child[0]->value;
             TableItem *item = find_variable(currentTable, ID);
             if (item == NULL) {
-                printf("Error type 1 at Line %d: variable is used without deﬁnition\n", exp->row);
+                fprintf(out, "Error type 1 at Line %d: variable is used without deﬁnition\n", exp->row);
                 return NULL;
             } else {
                 if (strcmp(item->type, "structVariable") == 0) {
@@ -411,7 +414,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     return right;
                 }
             }
-            printf("Error type 7 at Line %d: unmatching operands\n", exp->row);
+            fprintf(out, "Error type 7 at Line %d: unmatching operands\n", exp->row);
             return NULL;
         } else {
             TypeCheck *right = travel_exp(exp->child[1]);
@@ -421,7 +424,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
             if (strcmp(right->type, "int") == 0 && right->dimension == 0) {
                 return right;
             }
-            printf("Error at Line %d: only int variables can do boolean operation\n", exp->row);
+            fprintf(out, "Error at Line %d: only int variables can do boolean operation\n", exp->row);
             return NULL;
         }
     } else if (exp->child_count == 3) {
@@ -433,7 +436,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 char *ID = exp->child[0]->value;
                 TableItem *item = find_variable(currentTable, ID);
                 if (item == NULL) {
-                    printf("Error type 2 at Line %d: function is invoked without deﬁnition\n", exp->row);
+                    fprintf(out, "Error type 2 at Line %d: function is invoked without deﬁnition\n", exp->row);
                     return NULL;
                 } else {
                     if (strcmp(item->type, "function") == 0) {
@@ -445,11 +448,11 @@ TypeCheck* travel_exp(ASTNode *exp) {
                             }
                             return typeCheck;
                         } else {
-                            printf("Error type 9 at Line %d: the function’s arguments mismatch the declared parameters\n", exp->row);
+                            fprintf(out, "Error type 9 at Line %d: the function’s arguments mismatch the declared parameters\n", exp->row);
                             return NULL;
                         }
                     } else {
-                        printf("Error type 11 at Line %d: applying function invocation operator on non-function names\n", exp->row);
+                        fprintf(out, "Error type 11 at Line %d: applying function invocation operator on non-function names\n", exp->row);
                         return NULL;
                     }
                 }
@@ -463,12 +466,12 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     return NULL;
                 char *ID = exp->child[2]->value;
                 if (strcmp(left->type, "structVariable")) {
-                    printf("Error type 13 at Line %d: accessing member of non-structure variable\n", exp->row);
+                    fprintf(out, "Error type 13 at Line %d: accessing member of non-structure variable\n", exp->row);
                     return NULL;
                 }
                 TypeCheck *checkMenber = check_member(left->attribute, ID);
                 if (checkMenber == NULL) {
-                    printf("Error type 14 at Line %d: accessing an undeﬁned structure member\n", exp->row);
+                    fprintf(out, "Error type 14 at Line %d: accessing an undeﬁned structure member\n", exp->row);
                     return NULL;
                 } else {
                     return checkMenber;
@@ -483,13 +486,13 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 if (strcmp(type, "ASSIGN") == 0) {
                     _assign = 1;
                     if (left->r) {
-                        printf("Error type 6 at Line %d: rvalue on the left side of assignment operator\n", exp->row);
+                        fprintf(out, "Error type 6 at Line %d: rvalue on the left side of assignment operator\n", exp->row);
                     }
                     if (strcmp(left->type, right->type) == 0 && left->dimension == right->dimension) {
                         if (strcmp(left->type, "structVariable") == 0) {
                             if (compare_if_equal(left->attribute, right->attribute) == 0) {
                                 // unmatch
-                                printf("Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
+                                fprintf(out, "Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
                                 return NULL;
                             }
                             // match
@@ -499,7 +502,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                             return left;
                         }
                     } else {
-                        printf("Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
+                        fprintf(out, "Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
                         return NULL;
                     }
                 } else if (strcmp(type, "AND") == 0 || strcmp(type, "OR") == 0) {
@@ -520,7 +523,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         return newType;
                     } else {
                         // invalid
-                        printf("Error at Line %d: only int variables can do boolean operation\n", exp->row);
+                        fprintf(out, "Error at Line %d: only int variables can do boolean operation\n", exp->row);
                         return NULL;
                     }
                 } else if (strcmp(type, "LT") == 0 || strcmp(type, "LE") == 0 || strcmp(type, "GT") == 0 || strcmp(type, "GE") == 0) {
@@ -532,10 +535,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     if (right == NULL)
                         return NULL;
                     if (left->dimension != 0 || right->dimension != 0) {
-                        printf("Error at Line %d: comparation on array is not allowed\n", exp->row);
+                        fprintf(out, "Error at Line %d: comparation on array is not allowed\n", exp->row);        
                         return NULL;
                     } else if (strcmp(left->type, "structVariable") == 0 || strcmp(right->type, "structVariable") == 0) {
-                        printf("Error at Line %d: comparation on struct is not allowed\n", exp->row);
+                        fprintf(out, "Error at Line %d: comparation on struct is not allowed\n", exp->row);
                         return NULL;
                     } else {
                         TypeCheck *newType = new_type_check();
@@ -554,7 +557,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         return NULL;
                     if (strcmp(left->type, right->type) == 0 && left->dimension == right->dimension) {
                         if (strcmp(left->type, "structVariable") == 0 && compare_if_equal(left->attribute, right->attribute) == 0) {
-                            printf("Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
+                            fprintf(out, "Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
                             return NULL;
                         }
                         TypeCheck *newType = new_type_check();
@@ -563,7 +566,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                             newType->r = 1;
                         return newType;
                     }
-                    printf("Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
+                    fprintf(out, "Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
                     return NULL;
                 } else if (strcmp(type, "PLUS") == 0 || strcmp(type, "MINUS") == 0 || strcmp(type, "MUL") == 0 ||
                 strcmp(type, "DIV") == 0) {
@@ -586,7 +589,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                             newType->r = 1;
                         return newType;
                     } else {
-                        printf("Error type 7 at Line %d: unmatching operands\n", exp->row);
+                        fprintf(out, "Error type 7 at Line %d: unmatching operands\n", exp->row);
                         return NULL;
                     }
                 }
@@ -598,14 +601,14 @@ TypeCheck* travel_exp(ASTNode *exp) {
             char *ID = exp->child[0]->value;
             TableItem *item = find_variable(currentTable, ID);
             if (item == NULL) {
-                printf("Error type 2 at Line %d: function is invoked without deﬁnition\n", exp->row);
+                fprintf(out, "Error type 2 at Line %d: function is invoked without deﬁnition\n", exp->row);
                 return NULL;
             } else {
                 if (strcmp(item->type, "function") == 0) {
                     FunctionAttribute *attribute = item->attribute;
                     Parameter *parameter = attribute->parameter;
                     if (parameter == NULL) {
-                        printf("Error type 9 at Line %d: the function’s arguments mismatch the declared parameters\n", exp->row);
+                        fprintf(out, "Error type 9 at Line %d: the function’s arguments mismatch the declared parameters\n", exp->row);
                         return NULL;
                     } else {
                         ASTNode *args = exp->child[2];
@@ -639,7 +642,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                             }
                         }
                         if (judge) {
-                            printf("Error type 9 at Line %d: the function’s arguments mismatch the declared parameters\n", exp->row);
+                            fprintf(out, "Error type 9 at Line %d: the function’s arguments mismatch the declared parameters\n", exp->row);
                             return NULL;
                         } else {
                             typeCheck->type = attribute->returnType;
@@ -650,7 +653,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         }
                     }
                 } else {
-                    printf("Error type 11 at Line %d: applying function invocation operator on non-function names\n", exp->row);
+                    fprintf(out, "Error type 11 at Line %d: applying function invocation operator on non-function names\n", exp->row);
                     return NULL;
                 }
             }
@@ -662,11 +665,11 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 return NULL;
             // check right Exp
             if (strcmp(right->type, "int") || right->dimension) {
-                printf("Error type 12 at Line %d: array indexing with non-integer type expression\n", exp->row);
+                fprintf(out, "Error type 12 at Line %d: array indexing with non-integer type expression\n", exp->row);
                 return NULL;
             }
             if (left->dimension == 0) {
-                printf("Error type 10 at Line %d: applying indexing operator ([...]) on non-array type variables\n", exp->row);
+                fprintf(out, "Error type 10 at Line %d: applying indexing operator ([...]) on non-array type variables\n", exp->row);
                 return NULL;
             }
             left->dimension--;
@@ -685,11 +688,11 @@ void check_assign_exp(ASTNode *varDec, ASTNode *exp) {
         TableItem *item = find_variable(currentTable, ID);
         if (strcmp(item->type, typeCheck->type) == 0 && item->dimension == typeCheck->dimension) {
             if (strcmp(item->type, "structVariable") == 0 && compare_if_equal(item->attribute, typeCheck->attribute) == 0) {
-                printf("Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
+                fprintf(out, "Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
                 return;
             }
         } else {
-            printf("Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
+            fprintf(out, "Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
             return;
         }
     }
@@ -704,9 +707,9 @@ void check_condition(ASTNode *exp) {
     TypeCheck *type = travel_exp(exp);
     if (type != NULL) {
         if (!(strcmp(type->type, "int") == 0 && type->dimension == 0)) {
-            printf("Error at Line %d: the result of condition must be int\n", exp->row);
+            fprintf(out, "Error at Line %d: the result of condition must be int\n", exp->row);
         } else if (_assign) {
-            printf("Error at Line %d: assignment in condition is not allowed\n", exp->row);
+            fprintf(out, "Error at Line %d: assignment in condition is not allowed\n", exp->row);
         }
     }
 }
@@ -720,12 +723,12 @@ void check_return_exp(ASTNode *exp) {
         return;
     }
     if (strcmp(check->type, returnType)) {
-        printf("Error type 8 at Line %d: the function’s return value type mismatches the declared type\n", exp->row);
+        fprintf(out, "Error type 8 at Line %d: the function’s return value type mismatches the declared type\n", exp->row);
     // } else if (type->dimension != dimension) {
-    //     printf("Error at Line %d: return value type dimension mismatches\n", exp->row);
+    //     fprintf(out, "Error at Line %d: return value type dimension mismatches\n", exp->row);
     } else {
         if (strcmp(check->type, "structVariable") == 0 && compare_if_equal(check->attribute, attribute) == 0) {
-            printf("Error type 8 at Line %d: the function’s return value type mismatches the declared type\n", exp->row);
+            fprintf(out, "Error type 8 at Line %d: the function’s return value type mismatches the declared type\n", exp->row);
         }
     }
 }

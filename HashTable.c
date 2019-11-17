@@ -201,17 +201,17 @@ TableItem *find_variable(HashTable *hashTable, char *ID) {
 //     // void *pointer = malloc(sizeof(char *) + sizeof(ListNode *));
 //     // memset(pointer, 0, sizeof(char *) + sizeof(ListNode *));
 //     // char *type = "INT";
-//     // printf("type_ind: %lld\n", type);
+//     // fprintf(out, "type_ind: %lld\n", type);
 //     // ListNode *node = new_list_node("ID", "attribute");
-//     // printf("node_ind: %lld\n", node);
+//     // fprintf(out, "node_ind: %lld\n", node);
 //     // memcpy(pointer, &type, sizeof(char *));
 //     // memcpy(pointer + sizeof(char *), &node, sizeof(ListNode *));
 //     // char *getType;
 //     // memcpy(&getType, pointer, sizeof(char *));
-//     // printf("getType: %lld\n", getType);
+//     // fprintf(out, "getType: %lld\n", getType);
 //     // ListNode *getNode;
 //     // memcpy(&getNode, pointer + sizeof(char *), sizeof(ListNode *));
-//     // printf("getNode: %lld\n", getNode);
-//     // printf("%s\n", getNode->ID);
+//     // fprintf(out, "getNode: %lld\n", getNode);
+//     // fprintf(out, "%s\n", getNode->ID);
 //     puts("HERE");
 // }

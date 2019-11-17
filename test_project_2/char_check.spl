@@ -2,11 +2,12 @@
     no unary/binary operation with char variables (Assumption 2)
 */
 
-int function(char a) {}
+int function(char a) { return 0; }
 
 int main() {
     char a = 'a';
     function(a);     // used as parameter, valid
     1 + a;           // used as operator, invalid
     !a;              // used as operator, invalid
+    return 0;
 }
