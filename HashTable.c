@@ -12,6 +12,7 @@ typedef struct TableItem {
     char *type;
     void *attribute;
     int scopeNum;
+    int dimension;
     struct TableItem *next;
     struct TableItem *previous;
 } TableItem;
@@ -29,7 +30,7 @@ HashTable *new_hash_table() {
     return hashTable;
 }
 
-TableItem *new_table_item(char *ID, char *type, void *attribute, int scopeNum) {
+TableItem *new_table_item(char *ID, char *type, void *attribute, int scopeNum, int dimension) {
     TableItem *item = (TableItem *)malloc(sizeof(TableItem));
     item->ID = ID;
     item->type = type;
@@ -37,6 +38,7 @@ TableItem *new_table_item(char *ID, char *type, void *attribute, int scopeNum) {
     item->next = NULL;
     item->previous = NULL;
     item->scopeNum = scopeNum;
+    item->dimension = dimension;
     return item;
 }
 
@@ -86,10 +88,10 @@ unsigned int hash_function_pjw(char* key) {
     return val;
 }
 
-TableItem *hash_table_put(HashTable *hashTable, char *ID, char *type, void *attribute, int scopeNum) {
+TableItem *hash_table_put(HashTable *hashTable, char *ID, char *type, void *attribute, int scopeNum, int dimension) {
     int index = hash_function_pjw(ID) % TABLE_SIZE;
     TableItem *item = hashTable->table[index];
-    TableItem *newItem = new_table_item(ID, type, attribute, scopeNum);
+    TableItem *newItem = new_table_item(ID, type, attribute, scopeNum, dimension);
     if (item) {
         if (strcmp(item->ID, ID) == 0) {
             hashTable->table[index] = newItem;

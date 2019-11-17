@@ -100,7 +100,7 @@ int function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
         char *returnType = specifier->value;
         attribute = new_function_attribute(returnType, ID);
         // put function into symbol table
-        hash_table_put(currentTable, ID, "function", attribute, currentScopeNumber);
+        hash_table_put(currentTable, ID, "function", attribute, currentScopeNumber, 0);
     } else if (specifier->child_count == 2) {
         // STRUCT ID, scope check
         char *structID = specifier->child[1]->value;
@@ -113,7 +113,7 @@ int function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
             // returnType = struct ID
             attribute = new_function_attribute("structVariable", ID);
             attribute->attribute = find_struct(currentTable, structID)->attribute;
-            hash_table_put(currentTable, ID, "function", attribute, currentScopeNumber);
+            hash_table_put(currentTable, ID, "function", attribute, currentScopeNumber, 0);
         } else if (check == -1) {
             printf("Error type 19 at Line %d: use variable as struct ID\n", specifier->child[1]->row);
             return 1;
@@ -228,7 +228,7 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
         printf("Error type 15 at Line %d: redeﬁne the same structure type\n", specifier->row);
     } else {
         sort_struct_attribute_varDec(structAttribute);
-        hash_table_put(currentTable, structID, "struct", structAttribute, currentScopeNumber);
+        hash_table_put(currentTable, structID, "struct", structAttribute, currentScopeNumber, 0);
     }
     return structAttribute;
 }
@@ -237,12 +237,13 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
     char *ID;
     int dimension = 0;
     Parameter *parameter = new_parameter();
+    // get ID and dimension
     if (varDec->child_count == 1) {
         // ID
         ID = varDec->child[0]->value;
     } else {
         // VarDec LB INT RB
-        ASTNode *node = varDec->child[0];
+        ASTNode *node = varDec;
         while(node->child_count == 4) {
             dimension++;
             node = node->child[0];
@@ -292,20 +293,12 @@ void put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
         }
         if (strcmp(type, "structVariable") == 0) {
             // put struct here
-            // StructVariableAttribute *structVariableAttribute = new_struct_variable_attribute();
-            // structVariableAttribute->dimension = dimension;
-            // structVariableAttribute->structAttribute = structAttribute;
-            hash_table_put(currentTable, ID, "structVariable", structAttribute, currentScopeNumber);
+            hash_table_put(currentTable, ID, "structVariable", structAttribute, currentScopeNumber, dimension);
             if (para)
                 parameter->attribute = structAttribute;
         } else {
             // put variable here
-            if (dimension) {
-                TypeArrayAttribute *attribute = new_type_array_attribute(type, dimension);
-                hash_table_put(currentTable, ID, "array", attribute, currentScopeNumber);
-            } else {
-                hash_table_put(currentTable, ID, type, NULL, currentScopeNumber);
-            }
+            hash_table_put(currentTable, ID, type, NULL, currentScopeNumber, dimension);
         }
         if (para) {
             if (currentFunction->parameter == NULL) {
@@ -384,8 +377,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 if (strcmp(item->type, "structVariable") == 0) {
                     typeCheck->type = item->type;
                     typeCheck->attribute = item->attribute;
+                    typeCheck->dimension = item->dimension;
                 } else {
                     typeCheck->type = item->type;
+                    typeCheck->dimension = item->dimension;
                     typeCheck->attribute = NULL;
                 }
             }

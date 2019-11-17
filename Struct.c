@@ -28,17 +28,6 @@ StructAttribute *new_struct_attribute(int varNum) {
     return attribute;
 }
 
-typedef struct StructVariableAttribute {
-    int dimension;
-    StructAttribute *structAttribute;
-} StructVariableAttribute;
-
-StructVariableAttribute *new_struct_variable_attribute() {
-    StructVariableAttribute *attribute = (StructVariableAttribute *)malloc(sizeof(StructVariableAttribute));
-    attribute->dimension = 0;
-    attribute->structAttribute = NULL;
-    return attribute;
-}
 /*-----------------------------------------------------*/
 
 // left > right: 1, left < right: 0, left = right: -1
