@@ -262,6 +262,13 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             node = node->child[0];
         }
         ID = node->child[0]->value;
+        int dimensions[dimension];
+        int index;
+        node = varDec;
+        for (index = 0; index < dimension; index ++) {
+            dimensions[index] = node->child[2]->value;
+            node = node->child[0];
+        }
     }
     char *type;
     StructAttribute *structAttribute;
