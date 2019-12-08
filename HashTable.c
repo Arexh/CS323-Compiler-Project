@@ -13,6 +13,7 @@ typedef struct TableItem {
     void *attribute;
     int scopeNum;
     int dimension;
+    int *dimensions;
     struct TableItem *next;
     struct TableItem *previous;
 } TableItem;
@@ -30,7 +31,7 @@ HashTable *new_hash_table() {
     return hashTable;
 }
 
-TableItem *new_table_item(char *ID, char *type, void *attribute, int scopeNum, int dimension) {
+TableItem *new_table_item(char *ID, char *type, void *attribute, int scopeNum, int dimension, int *dimensions) {
     TableItem *item = (TableItem *)malloc(sizeof(TableItem));
     item->ID = ID;
     item->type = type;
@@ -39,6 +40,7 @@ TableItem *new_table_item(char *ID, char *type, void *attribute, int scopeNum, i
     item->previous = NULL;
     item->scopeNum = scopeNum;
     item->dimension = dimension;
+    item->dimensions = dimensions;
     return item;
 }
 
@@ -88,10 +90,10 @@ unsigned int hash_function_pjw(char* key) {
     return val;
 }
 
-TableItem *hash_table_put(HashTable *hashTable, char *ID, char *type, void *attribute, int scopeNum, int dimension) {
+TableItem *hash_table_put(HashTable *hashTable, char *ID, char *type, void *attribute, int scopeNum, int dimension, int *dimensions) {
     int index = hash_function_pjw(ID) % TABLE_SIZE;
     TableItem *item = hashTable->table[index];
-    TableItem *newItem = new_table_item(ID, type, attribute, scopeNum, dimension);
+    TableItem *newItem = new_table_item(ID, type, attribute, scopeNum, dimension, dimensions);
     if (item) {
         if (strcmp(item->ID, ID) == 0) {
             hashTable->table[index] = newItem;
@@ -188,30 +190,3 @@ TableItem *find_variable(HashTable *hashTable, char *ID) {
     }
     return NULL;
 }
-
-// int main() {
-//     HashTable *hashTable = new_hash_table();
-//     hashTable->table[9001] = new_table_item("test", "21312", NULL);
-//     TableItem *node1 = hash_table_put(hashTable, "variable", "aaa", NULL);
-//     TableItem *node2 = hash_table_put(hashTable, "variable", "bbb", NULL);
-//     TableItem *node3 = hash_table_put(hashTable, "variable", "bbc", NULL);
-//     TableItem *node = hash_table_get(hashTable, "variable");
-//     hash_table_remove(hashTable, node3);
-//     TableItem *get = hash_table_get(hashTable, "variable");
-//     // void *pointer = malloc(sizeof(char *) + sizeof(ListNode *));
-//     // memset(pointer, 0, sizeof(char *) + sizeof(ListNode *));
-//     // char *type = "INT";
-//     // fprintf(out, "type_ind: %lld\n", type);
-//     // ListNode *node = new_list_node("ID", "attribute");
-//     // fprintf(out, "node_ind: %lld\n", node);
-//     // memcpy(pointer, &type, sizeof(char *));
-//     // memcpy(pointer + sizeof(char *), &node, sizeof(ListNode *));
-//     // char *getType;
-//     // memcpy(&getType, pointer, sizeof(char *));
-//     // fprintf(out, "getType: %lld\n", getType);
-//     // ListNode *getNode;
-//     // memcpy(&getNode, pointer + sizeof(char *), sizeof(ListNode *));
-//     // fprintf(out, "getNode: %lld\n", getNode);
-//     // fprintf(out, "%s\n", getNode->ID);
-//     puts("HERE");
-// }

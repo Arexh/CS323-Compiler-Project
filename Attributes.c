@@ -1,6 +1,7 @@
 #include "ASTNode.c"
 #include "SymbolTable.c"
 #include "Struct.c"
+#include "IR.c"
 
 struct FunctionAttribute *currentFunction;
 int currentScopeNumber;
@@ -9,6 +10,7 @@ int _assign;
 typedef struct Parameter {
     char *type;
     int dimension;
+    int *dimensions;
     struct StructAttribute *attribute;
     struct Parameter *next;
 } Parameter;
@@ -19,6 +21,7 @@ Parameter *new_parameter() {
     para->dimension = 0;
     para->attribute = NULL;
     para->next = NULL;
+    para->dimensions = NULL;
     return para;
 }
 
@@ -54,11 +57,11 @@ FunctionAttribute *new_function_attribute(char *returnType, char *ID) {
     return attribute;
 }
 
-void put_node(char* ID, char* type, void *attribute, int scopeNum, int dimension) {
+void put_node(char* ID, char* type, void *attribute, int scopeNum, int dimension, int *dimensions) {
     if (currentSymbolTable) {
-        symbol_table_add_node(currentTable, currentSymbolTable, ID, type, attribute, scopeNum, dimension);
+        symbol_table_add_node(currentTable, currentSymbolTable, ID, type, attribute, scopeNum, dimension, dimensions);
     } else {
-        hash_table_put(currentTable, ID, type, attribute, scopeNum, dimension);
+        hash_table_put(currentTable, ID, type, attribute, scopeNum, dimension, dimensions);
     }
 }
 
@@ -111,7 +114,7 @@ int function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
         char *returnType = specifier->value;
         attribute = new_function_attribute(returnType, ID);
         // put function into symbol table
-        put_node(ID, "function", attribute, currentScopeNumber, 0);
+        put_node(ID, "function", attribute, currentScopeNumber, 0, NULL);
     } else if (specifier->child_count == 2) {
         // STRUCT ID, scope check
         char *structID = specifier->child[1]->value;
@@ -124,7 +127,7 @@ int function_stack_push(ASTNode *specifier, char *ID, int IDLineNo) {
             // returnType = struct ID
             attribute = new_function_attribute("structVariable", ID);
             attribute->attribute = find_struct(currentTable, structID)->attribute;
-            put_node(ID, "function", attribute, currentScopeNumber, 0);
+            put_node(ID, "function", attribute, currentScopeNumber, 0, NULL);
         } else if (check == -1) {
             fprintf(out, "Error type 19 at Line %d: use variable as struct ID\n", specifier->child[1]->row);
             return 1;
@@ -241,7 +244,7 @@ StructAttribute *put_struct_specifier(ASTNode *specifier) {
         fprintf(out, "Error type 15 at Line %d: redeﬁne the same structure type\n", specifier->row);
     } else {
         sort_struct_attribute_varDec(structAttribute);
-        put_node(structID, "struct", structAttribute, currentScopeNumber, 0);
+        put_node(structID, "struct", structAttribute, currentScopeNumber, 0, NULL);
     }
     return structAttribute;
 }
@@ -250,6 +253,7 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
     char *ID;
     int dimension = 0;
     Parameter *parameter = new_parameter();
+    int *dimensions;
     // get ID and dimension
     if (varDec->child_count == 1) {
         // ID
@@ -262,13 +266,14 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             node = node->child[0];
         }
         ID = node->child[0]->value;
-        int dimensions[dimension];
         int index;
         node = varDec;
-        for (index = 0; index < dimension; index ++) {
-            dimensions[index] = node->child[2]->value;
+        int *arr = (int *)malloc(sizeof(int) * dimension);
+        for (index = dimension - 1; index >= 0; index --) {
+            *(arr + index) = atoi(node->child[2]->value);
             node = node->child[0];
         }
+        dimensions = arr;
     }
     char *type;
     StructAttribute *structAttribute;
@@ -311,16 +316,18 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
     } else if (result == 0) {
         if (para) {
             parameter->dimension = dimension;
+            parameter->dimensions = dimensions;
             parameter->type = type;
         }
         if (strcmp(type, "structVariable") == 0) {
             // put struct here
-            put_node(ID, "structVariable", structAttribute, currentScopeNumber, dimension);
+            put_node(ID, "structVariable", structAttribute, currentScopeNumber, dimension, dimensions);
             if (para)
                 parameter->attribute = structAttribute;
         } else {
             // put variable here
-            put_node(ID, type, NULL, currentScopeNumber, dimension);
+
+            put_node(ID, type, NULL, currentScopeNumber, dimension, dimensions);
         }
         if (para) {
             if (currentFunction->parameter == NULL) {

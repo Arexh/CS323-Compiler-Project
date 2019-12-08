@@ -76,9 +76,9 @@ void printf_table_list(SymbolTable *table) {
     }
 }
 
-void symbol_table_add_node(HashTable *hashTable, SymbolTable *symbolTable, char* ID, char* type, void *attribute, int scopeNum, int dimension) {
+void symbol_table_add_node(HashTable *hashTable, SymbolTable *symbolTable, char* ID, char* type, void *attribute, int scopeNum, int dimension, int *dimensions) {
     int index = hash_function_pjw(ID);
-    TableItem *item = hash_table_put(hashTable, ID, type, attribute, scopeNum, dimension);
+    TableItem *item = hash_table_put(hashTable, ID, type, attribute, scopeNum, dimension, dimensions);
     VariableNode *variableNode = new_variable_node();
     variableNode->item = item;
     add_table_list(symbolTable, variableNode);
@@ -95,18 +95,3 @@ void symbol_table_remove(HashTable *hashTable, SymbolTable *symbolTable) {
     }
     free_symbol_table(symbolTable);
 }
-
-// int main() {
-//     SymbolTable *symbolTable = new_symbol_table();
-//     SymbolTable *symbolTable1 = new_symbol_table();
-//     HashTable *hashTable = new_hash_table();
-//     symbol_table_add_node(hashTable, symbolTable, "111", "101", NULL);
-//     symbol_table_add_node(hashTable, symbolTable, "222", "202", NULL);
-//     symbol_table_add_node(hashTable, symbolTable, "333", "303", NULL);
-//     symbol_table_add_node(hashTable, symbolTable1, "333", "1213", NULL);
-//     symbol_table_add_node(hashTable, symbolTable1, "333", "321321", NULL);
-//     symbol_table_remove(hashTable, symbolTable1);
-//     TableItem *node = hashTable->table[hash_function_pjw("333")];
-//     printf("%s\n", node->next->type);
-//     puts("HERE");
-// }

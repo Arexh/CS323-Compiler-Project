@@ -2749,6 +2749,7 @@ void initial(){
     firstAssign = 0;
     functionStart = 0;
     functionCheck = 0;
+    ini_IR();
 }
 #ifndef CALC_MAIN
 #else
