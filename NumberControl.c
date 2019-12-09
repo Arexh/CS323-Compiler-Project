@@ -13,14 +13,14 @@ struct NumberNode *label_num_tail;
 
 typedef struct NumberNode {
     struct NumberNode *next;
-    struct NumberNode *previsous;
+    struct NumberNode *previous;
     int *number;
 } NumberNode;
 
 NumberNode *new_number_node(int num) {
     NumberNode *number_node = (NumberNode *)malloc(sizeof(NumberNode));
     number_node->next = NULL;
-    number_node->previsous = NULL;
+    number_node->previous = NULL;
     number_node->number = (int *)malloc(sizeof(int));
     *number_node->number = num;
     return number_node;
@@ -41,6 +41,13 @@ void ini_IR() {
     label_num_tail = NULL;
 }
 
+void free_number_node(NumberNode *node) {
+    node->next = NULL;
+    node->previous = NULL;
+    free(node->number);
+    free(node);
+}
+
 int *new_num(int *num, NumberNode **head, NumberNode **tail) {
     NumberNode *node;
     node = new_number_node(*num);
@@ -49,7 +56,7 @@ int *new_num(int *num, NumberNode **head, NumberNode **tail) {
         *tail = node;
     } else {
         (*tail)->next = node;
-        node->previsous = *tail;
+        node->previous = *tail;
         *tail = node;
     }
     *num += 1;
@@ -99,19 +106,20 @@ void delete_num(NumberNode **head, NumberNode **tail, int number) {
         printf("Can not find number: %d\n", number);
     } else {
         if (*tail == node) {
-            *tail = node->previsous;
+            *tail = node->previous;
         }
         if (*head == node) {
             *head = node->next;
         }
-        if (node->previsous) {
-            node->previsous->next = node->next;
+        if (node->previous) {
+            node->previous->next = node->next;
             if (node->next)
-                node->next->previsous = node->previsous;
+                node->next->previous = node->previous;
         } else {
             if (node->next)
-                node->next->previsous = NULL;
+                node->next->previous = NULL;
         }
+        free_number_node(node);
     }
 }
 
@@ -126,6 +134,7 @@ void delete_temp_num(int number) {
 void delete_label_num(int number) {
     delete_num(&label_num_head, &label_num_tail, number);
 }
+
 
 // int main() {
 //     ini_IR();
