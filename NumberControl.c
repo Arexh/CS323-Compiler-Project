@@ -68,7 +68,9 @@ int *new_var_num() {
 }
 
 int *new_temp_num() {
-    return new_num(tempNum, &tempNumHead, &tempNumTail);
+    int *num = new_num(tempNum, &tempNumHead, &tempNumTail);
+    *num = -*num;
+    return num;
 }
 
 int *new_label_num() {

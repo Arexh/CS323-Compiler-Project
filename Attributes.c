@@ -41,6 +41,7 @@ typedef struct FunctionAttribute {
     char *returnType;
     char *ID;
     int re;
+    int paraNum;
     struct StructAttribute *attribute;
     HashTable *hashTable;
     Parameter *parameter;
@@ -53,6 +54,7 @@ FunctionAttribute *new_function_attribute(char *returnType, char *ID) {
     attribute->ID = ID;
     attribute->hashTable = new_hash_table();
     attribute->next = NULL;
+    attribute->paraNum = 0;
     attribute->parameter = NULL;
     attribute->attribute = NULL;
     attribute->re = 0;
@@ -363,6 +365,7 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
                 currentFunction->parameter = parameter;
             } else {
                 append_new_parameter(currentFunction->parameter, parameter);
+                currentFunction->paraNum++;
             }
         }
     }
@@ -382,6 +385,8 @@ typedef struct TypeCheck {
     char *type;
     int r;
     StructAttribute *attribute;
+    int *argNum;
+    enum ArgType argType;
 } TypeCheck;
 
 TypeCheck *new_type_check() {
@@ -419,12 +424,21 @@ TypeCheck* travel_exp(ASTNode *exp) {
         if (strcmp(type, "INT") == 0) {
             typeCheck->type = "int";
             typeCheck->r = 1;
+            // int IR start
+            typeCheck->argNum = (int *)malloc(sizeof(int));
+            *typeCheck->argNum = atoi(exp->child[0]->value);
+            typeCheck->argType = _CONSTANT;
+            // IR end
         } else if (strcmp(type, "FLOAT") == 0) {
             typeCheck->type = "float";
             typeCheck->r = 1;
+            // float IR start
+            // IR end
         } else if (strcmp(type, "CHAR") == 0) {
             typeCheck->type = "char";
             typeCheck->r = 1;
+            // char IR start
+            // IR end
         } else {
             // ID
             char *ID = exp->child[0]->value;
@@ -442,6 +456,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     typeCheck->dimension = item->dimension;
                     typeCheck->attribute = NULL;
                 }
+                // struct or ID IR start
+                typeCheck->argNum = item->varNum;
+                typeCheck->argType = _VAR_OR_TEMP;
+                // IR end
             }
         }
         return typeCheck;
@@ -454,17 +472,29 @@ TypeCheck* travel_exp(ASTNode *exp) {
             }
             if (strcmp(right->type, "int") == 0 || strcmp(right->type, "float") == 0) {
                 if (right->dimension == 0) {
+                    // MINUS IR start
+                    IRInstruct *minus_instruct = append_new_instruct(blockEnd);
+                    minus_instruct->type = _MINUS;
+                    minus_instruct->result = new_temp_num();
+                    minus_instruct->argOne = right->argNum;
+                    minus_instruct->argOneType = right->argType;
+                    right->argNum = minus_instruct->result;
+                    right->argType = _VAR_OR_TEMP;
+                    // IR end
                     return right;
                 }
             }
             fprintf(out, "Error type 7 at Line %d: unmatching operands\n", exp->row);
             return NULL;
         } else {
+            // NOT Exp
             TypeCheck *right = travel_exp(exp->child[1]);
             if (right == NULL) {
                 return NULL;
             }
             if (strcmp(right->type, "int") == 0 && right->dimension == 0) {
+                // NOT IR start
+                // IR end
                 return right;
             }
             fprintf(out, "Error at Line %d: only int variables can do boolean operation\n", exp->row);
@@ -472,11 +502,17 @@ TypeCheck* travel_exp(ASTNode *exp) {
         }
     } else if (exp->child_count == 3) {
         if (exp->child[0]->child_count == 0) {
-            // LP Exp RP | ID LP RP
+            // LP Exp RP | ID LP RP 
             if (strcmp(exp->child[0]->type, "LP") == 0) {
                 return travel_exp(exp->child[1]);
+            } else if (strcmp(exp->child[0]->type, "READ") == 0) {
+                // READ LP RP
+                // read IR start
+                // IR end
+                return NULL;
             } else {
                 char *ID = exp->child[0]->value;
+                //ID LP RP
                 TableItem *item = find_variable(currentTable, ID);
                 if (item == NULL) {
                     fprintf(out, "Error type 2 at Line %d: function is invoked without deﬁnition\n", exp->row);
@@ -550,12 +586,6 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     }
                 } else if (strcmp(type, "AND") == 0 || strcmp(type, "OR") == 0) {
                     // boolean opearation
-                    TypeCheck *left = travel_exp(exp->child[0]);
-                    if (left == NULL)
-                        return NULL;
-                    TypeCheck *right = travel_exp(exp->child[2]);
-                    if (right == NULL)
-                        return NULL;
                     if (strcmp(left->type, "int") == 0 && left->dimension == 0 && strcmp(right->type, "int") == 0 && right->dimension == 0) {
                         // valid
                         TypeCheck *newType = new_type_check();
@@ -571,12 +601,6 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     }
                 } else if (strcmp(type, "LT") == 0 || strcmp(type, "LE") == 0 || strcmp(type, "GT") == 0 || strcmp(type, "GE") == 0) {
                     // comparatioon
-                    TypeCheck *left = travel_exp(exp->child[0]);
-                    if (left == NULL)
-                        return NULL;
-                    TypeCheck *right = travel_exp(exp->child[2]);
-                    if (right == NULL)
-                        return NULL;
                     if (left->dimension != 0 || right->dimension != 0) {
                         fprintf(out, "Error at Line %d: comparation on array is not allowed\n", exp->row);        
                         return NULL;
@@ -592,12 +616,6 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     }
                 } else if (strcmp(type, "EQ") == 0) {
                     // equal
-                    TypeCheck *left = travel_exp(exp->child[0]);
-                    if (left == NULL)
-                        return NULL;
-                    TypeCheck *right = travel_exp(exp->child[2]);
-                    if (right == NULL)
-                        return NULL;
                     if (strcmp(left->type, right->type) == 0 && left->dimension == right->dimension) {
                         if (strcmp(left->type, "structVariable") == 0 && compare_if_equal(left->attribute, right->attribute) == 0) {
                             fprintf(out, "Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
@@ -614,12 +632,6 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 } else if (strcmp(type, "PLUS") == 0 || strcmp(type, "MINUS") == 0 || strcmp(type, "MUL") == 0 ||
                 strcmp(type, "DIV") == 0) {
                     // int & float
-                    TypeCheck *left = travel_exp(exp->child[0]);
-                    if (left == NULL)
-                        return NULL;
-                    TypeCheck *right = travel_exp(exp->child[2]);
-                    if (right == NULL)
-                        return NULL;
                     if (left->dimension == 0 && right->dimension == 0 && strcmp(left->type, "structVariable") && strcmp(right->type, "structVariable") &&
                     strcmp(left->type, "char") && strcmp(right->type, "char")) {
                         TypeCheck *newType = new_type_check();
@@ -630,6 +642,24 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         }
                         if (left->r || right->r)
                             newType->r = 1;
+                        // Arithmetic opeartion IR start
+                        IRInstruct *arithmetic_instruct = append_new_instruct(blockEnd);
+                        if (strcmp(type, "PLUS") == 0)
+                            arithmetic_instruct->type = _PLUS;
+                        else if (strcmp(type, "MINUS") == 0)
+                            arithmetic_instruct->type = _SUBSTRACT;
+                        else if (strcmp(type, "MUL") == 0)
+                            arithmetic_instruct->type = _MULTIPLY;
+                        else
+                            arithmetic_instruct->type = _DIVIDE;
+                        arithmetic_instruct->result = new_temp_num();
+                        arithmetic_instruct->argOne = left->argNum;
+                        arithmetic_instruct->argOneType = left->argType;
+                        arithmetic_instruct->argTwo = right->argNum;
+                        arithmetic_instruct->argTwoType = right->argType;
+                        newType->argNum = arithmetic_instruct->result;
+                        newType->argType = _VAR_OR_TEMP;
+                        // IR end
                         return newType;
                     } else {
                         fprintf(out, "Error type 7 at Line %d: unmatching operands\n", exp->row);
@@ -641,6 +671,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
     } else {
         if (strcmp(exp->child[0]->type, "ID") == 0) {
             // ID LP Args RP
+            // call function
             char *ID = exp->child[0]->value;
             TableItem *item = find_variable(currentTable, ID);
             if (item == NULL) {
@@ -700,7 +731,8 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     return NULL;
                 }
             }
-        } else {
+        } else if (strcmp(exp->child[0]->type, "Exp") == 0) {
+            // array
             // Exp LB Exp RB
             TypeCheck *left = travel_exp(exp->child[0]);
             TypeCheck *right = travel_exp(exp->child[2]);
@@ -717,6 +749,11 @@ TypeCheck* travel_exp(ASTNode *exp) {
             }
             left->dimension--;
             return left;
+        } else {
+            // WRITE LP Exp RP
+            // IR start
+            // IR end
+            return NULL;
         }
     }
 }

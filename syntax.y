@@ -21,7 +21,7 @@
 }
 %token <node> INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN DOT SEMI COMMA FOR 
 %token <node> ASSIGN LT LE GT GE NE EQ PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC INCLUDE UNKNOW
-%token <node> BREAK CONTINUE
+%token <node> BREAK CONTINUE WRITE READ
 %type  <node> Program ExtDefList ExtDef ExtDecList
 %type  <node> Specifier StructSpecifier 
 %type  <node> VarDec FunDec VarList ParamDec
@@ -521,6 +521,16 @@ Exp:  Exp ASSIGN Exp {
     }
     | UNKNOW {
 
+    }
+    | READ LP RP {
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 3, $1, $2, $3); 
+        puts("READ");
+    }
+    | WRITE LP Exp RP {
+        $$ = newNode("Exp", @$.first_line); 
+        appendChild($$, 4, $1, $2, $3, $4); 
+        puts("WRITE");
     }
     ;
 Args: Exp COMMA Args  { 

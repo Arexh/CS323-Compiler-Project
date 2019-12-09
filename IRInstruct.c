@@ -40,7 +40,7 @@ void get_result_string(char str[32], int *num) {
     if (*num > 0)
         sprintf(str, "v%d", *num);
     else
-        sprintf(str, "t%d", *num);
+        sprintf(str, "t%d", -*num);
 }
 
 void get_arg_string(char str[32], int *num, enum ArgType type) {
@@ -65,7 +65,7 @@ void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
             sprintf(str, "%s := %s + %s", result, argOne, argTwo);
             break;
         case _MINUS:
-            sprintf(str, "%s := %s - %s", result, argOne, argTwo);
+            sprintf(str, "%s := #0 - %s", result, argOne);
             break;
         case _MULTIPLY:
             sprintf(str, "%s := %s * %s", result, argOne, argTwo);

@@ -83,8 +83,10 @@ extern int yydebug;
     UNKNOW = 293,
     BREAK = 294,
     CONTINUE = 295,
-    HIGH_MINUS = 296,
-    LOWER_ELSE = 297
+    WRITE = 296,
+    READ = 297,
+    HIGH_MINUS = 298,
+    LOWER_ELSE = 299
   };
 #endif
 
@@ -97,7 +99,7 @@ union YYSTYPE
 
     struct ASTNode *node;
 
-#line 101 "syntax.tab.h" /* yacc.c:1909  */
+#line 103 "syntax.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
