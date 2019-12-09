@@ -1,15 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int *var_num;
-int *temp_num;
-int *label_num;
-struct NumberNode *var_num_head;
-struct NumberNode *var_num_tail;
-struct NumberNode *temp_num_head;
-struct NumberNode *temp_num_tail;
-struct NumberNode *label_num_head;
-struct NumberNode *label_num_tail;
+int *varNum;
+int *tempNum;
+int *labelNum;
+struct NumberNode *varNumHead;
+struct NumberNode *varNumTail;
+struct NumberNode *tempNumHead;
+struct NumberNode *tempNumTail;
+struct NumberNode *labelNumHead;
+struct NumberNode *labelNumTail;
 
 typedef struct NumberNode {
     struct NumberNode *next;
@@ -26,19 +26,19 @@ NumberNode *new_number_node(int num) {
     return number_node;
 }
 
-void ini_IR() {
-    var_num = (int *)malloc(sizeof(int));
-    temp_num = (int *)malloc(sizeof(int));
-    label_num = (int *)malloc(sizeof(int));
-    *var_num = 1;
-    *temp_num = 1;
-    *label_num = 1;
-    var_num_head = NULL;
-    var_num_tail = NULL;
-    temp_num_head = NULL;
-    temp_num_tail = NULL;
-    label_num_head = NULL;
-    label_num_tail = NULL;
+void init_number_control() {
+    varNum = (int *)malloc(sizeof(int));
+    tempNum = (int *)malloc(sizeof(int));
+    labelNum = (int *)malloc(sizeof(int));
+    *varNum = 1;
+    *tempNum = 1;
+    *labelNum = 1;
+    varNumHead = NULL;
+    varNumTail = NULL;
+    tempNumHead = NULL;
+    tempNumTail = NULL;
+    labelNumHead = NULL;
+    labelNumTail = NULL;
 }
 
 void free_number_node(NumberNode *node) {
@@ -64,15 +64,15 @@ int *new_num(int *num, NumberNode **head, NumberNode **tail) {
 }
 
 int *new_var_num() {
-    return new_num(var_num, &var_num_head, &var_num_tail);
+    return new_num(varNum, &varNumHead, &varNumTail);
 }
 
 int *new_temp_num() {
-    return new_num(temp_num, &temp_num_head, &temp_num_tail);
+    return new_num(tempNum, &tempNumHead, &tempNumTail);
 }
 
 int *new_label_num() {
-    return new_num(label_num, &label_num_head, &label_num_tail);
+    return new_num(labelNum, &labelNumHead, &labelNumTail);
 }
 
 void rearrange_num(NumberNode *head, int *num) {
@@ -85,16 +85,16 @@ void rearrange_num(NumberNode *head, int *num) {
     *num = index;
 }
 
-void rearrange_var_num() {
-    rearrange_num(var_num_head, var_num);
+void rearrange_varNum() {
+    rearrange_num(varNumHead, varNum);
 }
 
-void rearrange_temp_num() {
-    rearrange_num(temp_num_head, temp_num);
+void rearrange_tempNum() {
+    rearrange_num(tempNumHead, tempNum);
 }
 
-void rearrange_label_num() {
-    rearrange_num(label_num_head, label_num);
+void rearrange_labelNum() {
+    rearrange_num(labelNumHead, labelNum);
 }
 
 void delete_num(NumberNode **head, NumberNode **tail, int number) {
@@ -123,29 +123,29 @@ void delete_num(NumberNode **head, NumberNode **tail, int number) {
     }
 }
 
-void delete_var_num(int number) {
-    delete_num(&var_num_head, &var_num_tail, number);
+void delete_varNum(int number) {
+    delete_num(&varNumHead, &varNumTail, number);
 }
 
-void delete_temp_num(int number) {
-    delete_num(&temp_num_head, &temp_num_tail, number);
+void delete_tempNum(int number) {
+    delete_num(&tempNumHead, &tempNumTail, number);
 }
 
-void delete_label_num(int number) {
-    delete_num(&label_num_head, &label_num_tail, number);
+void delete_labelNum(int number) {
+    delete_num(&labelNumHead, &labelNumTail, number);
 }
 
 
 // int main() {
 //     ini_IR();
-//     int *one = new_label_num();
-//     int *two = new_label_num();
-//     int *three = new_label_num();
-//     int *four = new_label_num();
-//     delete_label_num(2);
-//     printf("%d, %d, %d \n", *label_num_head->number, *label_num_head->next->number, *label_num_head->next->next->number);
-//     rearrange_label_num();
-//     printf("%d, %d, %d \n", *label_num_head->number, *label_num_head->next->number, *label_num_head->next->next->number);
+//     int *one = new_labelNum();
+//     int *two = new_labelNum();
+//     int *three = new_labelNum();
+//     int *four = new_labelNum();
+//     delete_labelNum(2);
+//     printf("%d, %d, %d \n", *labelNum_head->number, *labelNum_head->next->number, *labelNum_head->next->next->number);
+//     rearrange_labelNum();
+//     printf("%d, %d, %d \n", *labelNum_head->number, *labelNum_head->next->number, *labelNum_head->next->next->number);
 //     puts("END");
 //     return 0;
 // }

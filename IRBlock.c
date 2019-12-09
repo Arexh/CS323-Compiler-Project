@@ -1,64 +1,96 @@
 #include "IRInstruct.c"
 
+struct IRBlock *blockStart;
+struct IRBlock *blockEnd;
+
 typedef struct IRBlock {
-    int label_num;
-    int instruct_num;
-    struct IRInstruct *instruct_head;
-    struct IRInstruct *instruct_tail;
+    int *labelNum;
+    int instructNum;
+    struct IRInstruct *instructHead;
+    struct IRInstruct *instructTail;
     struct IRBlock *next;
     struct IRBlock *previous;
-    struct IRBlock *jump_next;
-    struct IRBlock *jump_previous;
+    struct IRBlock *jumpNext;
+    struct IRBlock *jumpPrevious;
 } IRBlock;
 
 IRBlock *new_IR_block() {
     IRBlock *block = (IRBlock *)malloc(sizeof(IRBlock));
-    block->label_num = 0;
-    block->instruct_num = 0;
-    block->instruct_head = NULL;
-    block->instruct_tail = NULL;
+    block->labelNum = NULL;
+    block->instructNum = 0;
+    block->instructHead = NULL;
+    block->instructTail = NULL;
     block->next = NULL;
     block->previous = NULL;
-    block->jump_next = NULL;
-    block->jump_previous = NULL;
+    block->jumpNext = NULL;
+    block->jumpPrevious = NULL;
 }
 
-void add_instruct(IRBlock *block, IRInstruct *instruct) {
-    if (block->instruct_num == 0) {
-        block->instruct_head = instruct;
-        block->instruct_tail = instruct;
-        block->instruct_num = 1;
+void init_IR_block() {
+    IRBlock *block = new_IR_block();
+    block->labelNum = new_label_num();
+    blockStart = block;
+    blockEnd = block;
+}
+
+IRBlock *append_new_block() {
+    IRBlock *block = new_IR_block();
+    block->labelNum = new_label_num();
+    blockEnd->next = block;
+    block->previous = blockEnd;
+    blockEnd = block;
+}
+
+IRInstruct *append_new_instruct(IRBlock *block) {
+    IRInstruct *instruct = new_IR_instruct();
+    if (block->instructNum == 0) {
+        block->instructHead = instruct;
+        block->instructTail = instruct;
+        block->instructNum = 1;
     } else {
-        block->instruct_tail->next = instruct;
-        instruct->previous = block->instruct_tail;
-        block->instruct_tail = instruct;
-        block->instruct_num ++;
+        block->instructTail->next = instruct;
+        instruct->previous = block->instructTail;
+        block->instructTail = instruct;
+        block->instructNum ++;
     }
+    return instruct;
 }
 
 char **get_block_string(IRBlock *block) {
-    char **instructs = (char **)malloc(sizeof(char *) * block->instruct_num);
-    IRInstruct *first = block->instruct_head;
+    char **instructs = (char **)malloc(sizeof(char *) * block->instructNum);
+    IRInstruct *first = block->instructHead;
     switch(first->type) {
-        case LESSTHAN:
-        case LESSEQUAL:
-        case GREATERTHAN:
-        case GREATEREQUAL:
-        case NOTEQUAL:
-        case EQUAL:
+        case _LESSTHAN:
+        case _LESSEQUAL:
+        case _GREATERTHAN:
+        case _GREATEREQUAL:
+        case _NOTEQUAL:
+        case _EQUAL:
             instructs[0] = (char *)malloc(sizeof(char) * 128);
             char temp[128];
             get_IR_instruct_string(temp, first);
-            sprintf(instructs[0], "%s %d", temp, block->jump_next->label_num);
+            sprintf(instructs[0], "%s %d", temp, *block->jumpNext->labelNum);
             return instructs;
     }
     int index;
-    for (index = 0; index < block->instruct_num; index ++) {
+    for (index = 0; index < block->instructNum; index ++) {
         instructs[index] = (char *)malloc(sizeof(char) * 128);
         get_IR_instruct_string(instructs[index], first);
         first = first->next;
     }
     return instructs;
+}
+
+void printf_all_blocks() {
+    IRBlock *block = blockStart;
+    while (block && block->instructNum) {
+        char **arr = get_block_string(block);
+        int i;
+        for (i = 0; i < block->instructNum; i++) {
+            printf("%s\n", arr[i]);
+        }
+        block = block->next;
+    }
 }
 
 // int main() {

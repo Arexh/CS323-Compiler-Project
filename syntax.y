@@ -27,7 +27,7 @@
 %type  <node> VarDec FunDec VarList ParamDec
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
 %type  <node> Exp Args ConditionEndTrigger
-%type  <node> FunID SpecifierTrigger STRUCTTrigger LCTrigger RCTrigger ConditionExp WHILETrigger FORTrigger
+%type  <node> FunID STRUCTTrigger LCTrigger RCTrigger ConditionExp WHILETrigger FORTrigger
 %right ASSIGN
 %left OR
 %left AND
@@ -47,28 +47,28 @@ Program: ExtDefList {
         appendChild($$, 1, $1); 
      };
 ExtDefList: ExtDef ExtDefList {
-    $$ = newNode("ExtDefList", @1.first_line); 
-     appendChild($$, 2, $1, $2); 
+        $$ = newNode("ExtDefList", @1.first_line); 
+        appendChild($$, 2, $1, $2); 
     }
     | {
         $$ = newNode("NONE", @$.first_line);
     };
-ExtDef: SpecifierTrigger ExtDecList SEMI {
+ExtDef: Specifier ExtDecList SEMI {
         $$ = newNode("ExtDef", @$.first_line);
         appendChild($$, 3, $1, $2, $3);
     }
-    | SpecifierTrigger ExtDecList error {
+    | Specifier ExtDecList error {
         SEMIError(@$.first_line);
     }
-    | SpecifierTrigger SEMI {
+    | Specifier SEMI {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 2, $1, $2);
         put_struct_specifier(currentSpecifier);
     }
-    | SpecifierTrigger error {
+    | Specifier error {
         SEMIError(@$.first_line);
     }
-    | SpecifierTrigger FunDec CompSt {
+    | Specifier FunDec CompSt {
         $$ = newNode("ExtDef", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
         if (functionCheck == 0) {
@@ -86,22 +86,26 @@ ExtDecList: VarDec {
         appendChild($$, 1, $1);
         // put varDec
         put_var(currentSpecifier, $1);
+        // IR var num allocation finish
     }
     | VarDec COMMA ExtDecList {
         $$ = newNode("ExtDecList", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
         // put varDec
         put_var(currentSpecifier, $1);
+        // IR var num allocation finish
     };
 
 /* specifier */
 Specifier: TYPE {
         $$ = newNode("Specifier", @$.first_line); 
         appendChild($$, 1, $1);
+        currentSpecifier = $1;
     }
     | StructSpecifier {
         $$ = newNode("Specifier", @$.first_line); 
         appendChild($$, 1, $1);
+        currentSpecifier = $1;
     };
 StructSpecifier: STRUCTTrigger ID LC DefList RC {
         $$ = newNode("StructSpecifier", @$.first_line); 
@@ -129,10 +133,6 @@ STRUCTTrigger: STRUCT {
         } else {
             structCheck = 1;
         }
-        $$ = $1;
-    };
-SpecifierTrigger: Specifier {
-        currentSpecifier = $1->child[0];
         $$ = $1;
     };
 /* declarator */
@@ -167,6 +167,12 @@ FunID: ID {
             currentScopeNumber++;
             hash_table_stack_push(currentFunction->hashTable);
             functionStart = 1;
+            // function IR start
+            IRInstruct *func_instruct = append_new_instruct(blockEnd);
+            func_instruct->funcName = (char *)$1->value;
+            func_instruct->type = _FUNCTION;
+            append_new_block();
+            // IR end
         }
     };
 VarList: ParamDec COMMA VarList {
@@ -181,7 +187,9 @@ ParamDec: Specifier VarDec {
         $$ = newNode("ParamDec", @$.first_line); 
         appendChild($$, 2, $1, $2);
         if (functionCheck == 0) {
+            // parameter IR start
             put_para($1->child[0], $2);
+            // IR end
         }
     };
 
@@ -356,14 +364,14 @@ DefList: Def DefList {
     | {
         $$ = newNode("NONE", @$.first_line);
     };
-Def: SpecifierTrigger DecList SEMI {
+Def: Specifier DecList SEMI {
         $$ = newNode("Def", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
         if (functionCheck == 0) {
             $$->value = $2->value;
         }
     }
-    | SpecifierTrigger DecList error {
+    | Specifier DecList error {
         SEMIError(@$.first_line);
     };  
 DecList: Dec {
@@ -385,6 +393,7 @@ Dec: VarDec {
         if (structCheck == 0) {
             // put varDec
             put_var(currentSpecifier, $1);
+            // IR var num allocation
         }
     }
     | VarDec ASSIGN Exp {
@@ -393,6 +402,7 @@ Dec: VarDec {
         if (structCheck == 0) {
             // put varDec
             int re = put_var(currentSpecifier, $1);
+            // IR var num allocation
             if (re == 0) {
                 // assign check here
                 check_assign_exp($1, $3);
@@ -561,7 +571,8 @@ void initial(){
     firstAssign = 0;
     functionStart = 0;
     functionCheck = 0;
-    ini_IR();
+    init_number_control();
+    init_IR_block();
 }
 #ifndef CALC_MAIN
 #else
@@ -573,6 +584,7 @@ int main(int count, char **args){
         // if (error == 0) {
         //     dfsPrintf(root, 0);
         // }
+        printf_all_blocks();
     } else {
         for(int x = 1; x < count; x++){
             initial();

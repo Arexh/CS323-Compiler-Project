@@ -1,7 +1,9 @@
 #include "ASTNode.c"
+#include "NumberControl.c"
+#include "HashTable.c"
 #include "SymbolTable.c"
 #include "Struct.c"
-#include "IR.c"
+#include "IRBlock.c"
 
 struct FunctionAttribute *currentFunction;
 int currentScopeNumber;
@@ -57,11 +59,11 @@ FunctionAttribute *new_function_attribute(char *returnType, char *ID) {
     return attribute;
 }
 
-void put_node(char* ID, char* type, void *attribute, int scopeNum, int dimension, int *dimensions) {
+TableItem *put_node(char* ID, char* type, void *attribute, int scopeNum, int dimension, int *dimensions) {
     if (currentSymbolTable) {
-        symbol_table_add_node(currentTable, currentSymbolTable, ID, type, attribute, scopeNum, dimension, dimensions);
+        return symbol_table_add_node(currentTable, currentSymbolTable, ID, type, attribute, scopeNum, dimension, dimensions);
     } else {
-        hash_table_put(currentTable, ID, type, attribute, scopeNum, dimension, dimensions);
+        return hash_table_put(currentTable, ID, type, attribute, scopeNum, dimension, dimensions);
     }
 }
 
@@ -319,17 +321,44 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             parameter->dimensions = dimensions;
             parameter->type = type;
         }
+        TableItem *item;
         if (strcmp(type, "structVariable") == 0) {
             // put struct here
-            put_node(ID, "structVariable", structAttribute, currentScopeNumber, dimension, dimensions);
-            if (para)
+            item = put_node(ID, "structVariable", structAttribute, currentScopeNumber, dimension, dimensions);
+            // IR end
+            if (para) {
                 parameter->attribute = structAttribute;
+            } else {
+                // struct variable declare space IR start
+                int *dec_num = (int *)malloc(sizeof(int));
+                *dec_num = structAttribute->varNum * 4;
+                IRInstruct *dec_instruct = append_new_instruct(blockEnd);
+                dec_instruct->type = _DECLARE;
+                dec_instruct->result = item->varNum;
+                dec_instruct->argOne = dec_num;
+                // IR end
+                // array of struct?
+            } 
         } else {
             // put variable here
-
-            put_node(ID, type, NULL, currentScopeNumber, dimension, dimensions);
+            item = put_node(ID, type, NULL, currentScopeNumber, dimension, dimensions);
+            if (dimension > 0) {
+                // array variable declarae space IR start
+                int *dec_num = (int *)malloc(sizeof(int));
+                *dec_num = dimension * 4;
+                IRInstruct *dec_instruct = append_new_instruct(blockEnd);
+                dec_instruct->type = _DECLARE;
+                dec_instruct->result = item->varNum;
+                dec_instruct->argOne = dec_num;
+                // IR end
+            }
         }
         if (para) {
+            // parameter IR start
+            IRInstruct *para_instruct = append_new_instruct(blockEnd);
+            para_instruct->type = _PARAMETER;
+            para_instruct->result = item->varNum;
+            // IR end
             if (currentFunction->parameter == NULL) {
                 currentFunction->parameter = parameter;
             } else {

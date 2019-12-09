@@ -3,131 +3,135 @@
 
 enum ArgType
 {
-    CONSTANT = 1, VAR_OR_TEMP
+    _CONSTANT = 1, _VAR_OR_TEMP
 };
 
 enum InstructType
 {
-    ASSIGN = 1, PLUS, MINUS, MULTIPLY, SUBSTRACT, DIVIDE, ADDRESS, COPY, RETURN, DECLARE, PARAMETER, ARGUMENT, CALL, READ, WRITE, FUNCTION,
-    LESSTHAN, LESSEQUAL, GREATERTHAN, GREATEREQUAL, NOTEQUAL, EQUAL
+    _ASSIGN = 1, _PLUS, _MINUS, _MULTIPLY, _SUBSTRACT, _DIVIDE, _ADDRESS, _COPY, _RETURN, _DECLARE, _PARAMETER, _ARGUMENT, _CALL, _READ, _WRITE, _FUNCTION,
+    _LESSTHAN, _LESSEQUAL, _GREATERTHAN, _GREATEREQUAL, _NOTEQUAL, _EQUAL
 };
 
 typedef struct IRInstruct {
-    int arg_one;
-    int arg_two;
-    int result;
-    char *func_name;
+    int *argOne;
+    int *argTwo;
+    int *result;
+    char *funcName;
     enum InstructType type;
-    enum ArgType arg_one_type;
-    enum ArgType arg_two_type;
+    enum ArgType argOneType;
+    enum ArgType argTwoType;
     struct IRInstruct *next;
     struct IRInstruct *previous;
 } IRInstruct;
 
 IRInstruct *new_IR_instruct() {
     IRInstruct *instruct = (IRInstruct *)malloc(sizeof(IRInstruct));
-    instruct->arg_one = 0;
-    instruct->arg_two = 0;
-    instruct->result = 0;
+    instruct->argOne = NULL;
+    instruct->argTwo = NULL;
+    instruct->result = NULL;
     instruct->next = NULL;
     instruct->previous = NULL;
-    instruct->func_name = NULL;
+    instruct->funcName = NULL;
 }
 
-void get_result_string(char str[32], int num) {
-    if (num > 0)
-        sprintf(str, "v%d", num);
+void get_result_string(char str[32], int *num) {
+    if (num == NULL)
+        return;
+    if (*num > 0)
+        sprintf(str, "v%d", *num);
     else
-        sprintf(str, "t%d", num);
+        sprintf(str, "t%d", *num);
 }
 
-void get_arg_string(char str[32], int num, enum ArgType type) {
-    if (type == CONSTANT)
-        sprintf(str, "#%d", num);
+void get_arg_string(char str[32], int *num, enum ArgType type) {
+    if (num == NULL)
+        return;
+    if (type == _CONSTANT)
+        sprintf(str, "#%d", *num);
     else
         get_result_string(str, num);
 }
 
 void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
-    char result[32], arg_one[32], arg_two[32];
+    char result[32], argOne[32], argTwo[32];
     get_result_string(result, instruct->result);
-    get_arg_string(arg_one, instruct->arg_one, instruct->arg_one_type);
-    get_arg_string(arg_two, instruct->arg_two, instruct->arg_two_type);
+    get_arg_string(argOne, instruct->argOne, instruct->argOneType);
+    get_arg_string(argTwo, instruct->argTwo, instruct->argTwoType);
     switch(instruct->type) {
-        case ASSIGN:
-            sprintf(str, "%s := %s", result, arg_one);
+        case _ASSIGN:
+            sprintf(str, "%s := %s", result, argOne);
             break;
-        case PLUS:
-            sprintf(str, "%s := %s + %s", result, arg_one, arg_two);
+        case _PLUS:
+            sprintf(str, "%s := %s + %s", result, argOne, argTwo);
             break;
-        case MINUS:
-            sprintf(str, "%s := %s - %s", result, arg_one, arg_two);
+        case _MINUS:
+            sprintf(str, "%s := %s - %s", result, argOne, argTwo);
             break;
-        case MULTIPLY:
-            sprintf(str, "%s := %s * %s", result, arg_one, arg_two);
+        case _MULTIPLY:
+            sprintf(str, "%s := %s * %s", result, argOne, argTwo);
             break;
-        case SUBSTRACT:
-            sprintf(str, "%s := %s - %s", result, arg_one, arg_two);
+        case _SUBSTRACT:
+            sprintf(str, "%s := %s - %s", result, argOne, argTwo);
             break;
-        case DIVIDE:
-            sprintf(str, "%s := %s / %s", result, arg_one, arg_two);
+        case _DIVIDE:
+            sprintf(str, "%s := %s / %s", result, argOne, argTwo);
             break;
-        case ADDRESS:
-            sprintf(str, "%s := &%s", result, arg_one);
+        case _ADDRESS:
+            sprintf(str, "%s := &%s", result, argOne);
             break;
-        case COPY:
-            sprintf(str, "*%s := %s", result, arg_one);
+        case _COPY:
+            sprintf(str, "*%s := %s", result, argOne);
             break;
-        case RETURN:
+        case _RETURN:
             sprintf(str, "RETURN %s", result);
             break;
-        case DECLARE:
-            sprintf(str, "DEC %s %d", result, instruct->arg_one);
+        case _DECLARE:
+            sprintf(str, "DEC %s %d", result, *instruct->argOne);
             break;
-        case PARAMETER:
+        case _PARAMETER:
             sprintf(str, "PARAM %s", result);
             break;
-        case ARGUMENT:
+        case _ARGUMENT:
             sprintf(str, "ARG %s", result);
             break;
-        case CALL:
-            sprintf(str, "%s := CALL %s", result, instruct->func_name);
+        case _CALL:
+            sprintf(str, "%s := CALL %s", result, instruct->funcName);
             break;
-        case READ:
+        case _READ:
             sprintf(str, "READ %s", result);
             break;
-        case WRITE:
+        case _WRITE:
             sprintf(str, "WRITE %s", result);
             break;
-        case FUNCTION:
-            sprintf(str, "FUNCTION %s :", instruct->func_name);
+        case _FUNCTION:
+            sprintf(str, "FUNCTION %s :", instruct->funcName);
             break;
         // reversed logic
-        case LESSTHAN:
-            sprintf(str, "IF %s >= %s GOTO", arg_one, arg_two);
+        case _LESSTHAN:
+            sprintf(str, "IF %s >= %s GOTO", argOne, argTwo);
             break;
-        case LESSEQUAL:
-            sprintf(str, "IF %s > %s GOTO", arg_one, arg_two);
+        case _LESSEQUAL:
+            sprintf(str, "IF %s > %s GOTO", argOne, argTwo);
             break;
-        case GREATERTHAN:
-            sprintf(str, "IF %s <= %s GOTO", arg_one, arg_two);
+        case _GREATERTHAN:
+            sprintf(str, "IF %s <= %s GOTO", argOne, argTwo);
             break;
-        case GREATEREQUAL:
-            sprintf(str, "IF %s < %s GOTO", arg_one, arg_two);
+        case _GREATEREQUAL:
+            sprintf(str, "IF %s < %s GOTO", argOne, argTwo);
             break;
-        case EQUAL:
-            sprintf(str, "IF %s != %s GOTO", arg_one, arg_two);
+        case _EQUAL:
+            sprintf(str, "IF %s != %s GOTO", argOne, argTwo);
             break;
-        case NOTEQUAL:
-            sprintf(str, "IF %s == %s GOTO", arg_one, arg_two);
+        case _NOTEQUAL:
+            sprintf(str, "IF %s == %s GOTO", argOne, argTwo);
             break;
     }
 }
 
 // int main() {
 //     IRInstruct *instruct = new_IR_instruct();
-//     instruct->type = FUNCTION;
-//     instruct->arg_one_type = CONSTANT;
+//     instruct->type = _FUNCTION;
+//     instruct->arg_one_type = _CONSTANT;
 //     char str[128];
 //     get_IR_instruct_string(str, instruct);
 //     printf("%s\n", str);
