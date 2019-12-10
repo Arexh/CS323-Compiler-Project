@@ -2,6 +2,7 @@
 
 struct IRBlock *blockStart;
 struct IRBlock *blockEnd;
+int totalBlockNum;
 
 typedef struct IRBlock {
     int *labelNum;
@@ -50,6 +51,7 @@ void init_IR_block() {
     block->labelNum = new_label_num();
     blockStart = block;
     blockEnd = block;
+    totalBlockNum = 1;
 }
 
 IRBlock *append_new_block() {
@@ -58,6 +60,7 @@ IRBlock *append_new_block() {
     blockEnd->next = block;
     block->previous = blockEnd;
     blockEnd = block;
+    totalBlockNum++;
     return block;
 }
 
@@ -102,8 +105,15 @@ char **get_block_string(IRBlock *block) {
 }
 
 void printf_all_blocks() {
-    IRBlock *block = blockStart;
-    while (block && block->instructNum) {
+    // int check[totalBlockNum] = {0};
+    // IRBlock *block = blockStart;
+    // while(block) {
+
+    // }
+}
+
+void printf_block(IRBlock *block) {
+    if (block->instructNum) {
         char **arr = get_block_string(block);
         int i;
         printf("LABLE label%d :\n", *block->labelNum);
@@ -112,9 +122,9 @@ void printf_all_blocks() {
         }
         if (block->next)
             printf("GOTO label%d\n", *block->next->labelNum);
-        block = block->next;
     }
 }
+
 
 void append_jump_previous(IRBlock *block, IRBlock *previous) {
     if (block->jumpPrevious) {
@@ -132,6 +142,8 @@ void append_jump_previous(IRBlock *block, IRBlock *previous) {
 
 
 void back_patching(IRBlockNode *list, IRBlock *block) {
+    if (list == NULL)
+        return;
     IRBlockNode *temp = list;
     while(temp) {
         *temp->block = block;
@@ -143,6 +155,8 @@ void back_patching(IRBlockNode *list, IRBlock *block) {
 }
 
 IRBlockNode *merge_list(IRBlockNode *listOne, IRBlockNode *listTwo) {
+    if (listOne == NULL)
+        return listTwo;
     IRBlockNode *temp = listOne;
     while(temp->next) {
         temp = temp->next;

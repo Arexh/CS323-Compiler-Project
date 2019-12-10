@@ -1,3 +1,4 @@
+#include "ArrayList.c"
 #include "ASTNode.c"
 #include "NumberControl.c"
 #include "HashTable.c"
@@ -566,7 +567,8 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 TypeCheck *left = travel_exp(exp->child[0]);
                 if (left == NULL)
                     return NULL;
-                IRBlock nextBlock;
+                // backpatching block IR start
+                IRBlock *nextBlock;
                 if (strcmp(type, "AND") == 0 || strcmp(type, "OR") == 0)
                     nextBlock = append_new_block();
                 TypeCheck *right = travel_exp(exp->child[2]);
@@ -615,12 +617,12 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         // boolean expression IR start
                         if (strcmp(type, "AND") == 0) {
                             back_patching(left->trueList, nextBlock);
-                            newType->trueList = right->tureList;
+                            newType->trueList = right->trueList;
                             newType->falseList = merge_list(left->falseList, right->falseList);
                         } else {
                             back_patching(left->falseList, nextBlock);
                             newType->falseList = right->falseList;
-                            newType->trueList = merge_list(left->trueList, right->tureList);
+                            newType->trueList = merge_list(left->trueList, right->trueList);
                         }
                         // IR end
                         return newType;
@@ -631,7 +633,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     }
                 } else if (strcmp(type, "LT") == 0 || strcmp(type, "LE") == 0 || strcmp(type, "GT") == 0 || strcmp(type, "GE") == 0
                     || strcmp(type, "EQ") == 0 || strcmp(type, "NE") == 0) {
-                    // comparatioon
+                    // comparation
                     if (strcmp(type, "EQ") == 0 || strcmp(type, "NE") == 0) {
                          if (!strcmp(left->type, right->type) == 0 || !left->dimension == right->dimension) {
                             fprintf(out, "Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
@@ -657,6 +659,8 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     // comparation IR start
                     if (blockEnd->instructNum)
                         append_new_block();
+                    else
+                        printf("ALREADY HAVE : %s\n", type);
                     IRInstruct *comparation_instruct = append_new_instruct(blockEnd);
                     if (strcmp(type, "LT") == 0)
                         comparation_instruct->type = _LESSTHAN;
@@ -678,6 +682,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     newType->trueList->block = &(blockEnd->next);
                     newType->falseList = new_IR_block_node();
                     newType->falseList->block = &(blockEnd->jumpNext);
+                    printf("BLOCK NUM %d, OP: %s, insNum: %d\n", *blockEnd->labelNum, type, blockEnd->instructNum);
                     // IR end
                     return newType;
                 } else if (strcmp(type, "PLUS") == 0 || strcmp(type, "MINUS") == 0 || strcmp(type, "MUL") == 0 ||

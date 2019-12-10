@@ -108,22 +108,22 @@ void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
             break;
         // reversed logic
         case _LESSTHAN:
-            sprintf(str, "IF %s >= %s GOTO", argOne, argTwo);
+            sprintf(str, "IF %s >= %s GOTO label", argOne, argTwo);
             break;
         case _LESSEQUAL:
-            sprintf(str, "IF %s > %s GOTO", argOne, argTwo);
+            sprintf(str, "IF %s > %s GOTO label", argOne, argTwo);
             break;
         case _GREATERTHAN:
-            sprintf(str, "IF %s <= %s GOTO", argOne, argTwo);
+            sprintf(str, "IF %s <= %s GOTO label", argOne, argTwo);
             break;
         case _GREATEREQUAL:
-            sprintf(str, "IF %s < %s GOTO", argOne, argTwo);
+            sprintf(str, "IF %s < %s GOTO label", argOne, argTwo);
             break;
         case _EQUAL:
-            sprintf(str, "IF %s != %s GOTO", argOne, argTwo);
+            sprintf(str, "IF %s != %s GOTO label", argOne, argTwo);
             break;
         case _NOTEQUAL:
-            sprintf(str, "IF %s == %s GOTO", argOne, argTwo);
+            sprintf(str, "IF %s == %s GOTO label", argOne, argTwo);
             break;
     }
 }
