@@ -1,0 +1,15 @@
+[DEBUG] 2019-12-10 11:15:57,571 (irsim.py 577): Parsed arguments: {'irpath': 'test.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[DEBUG] 2019-12-10 11:15:57,571 (irsim.py 538): unsupported input: 
+[ERROR] 2019-12-10 11:15:57,574 (irsim.py 547): Line 1 does not belong to any function:
+t0 := 1
+[ERROR] 2019-12-10 11:15:57,574 (irsim.py 547): Cannot find program entrance. Please make sure the 'main' function does exist
+[DEBUG] 2019-12-10 11:16:16,859 (irsim.py 577): Parsed arguments: {'irpath': 'test.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[DEBUG] 2019-12-10 11:16:16,860 (irsim.py 538): unsupported input: 
+[ERROR] 2019-12-10 11:16:16,861 (irsim.py 547): Line 1 does not belong to any function:
+t0 := #1
+[ERROR] 2019-12-10 11:16:16,861 (irsim.py 547): Cannot find program entrance. Please make sure the 'main' function does exist
+[DEBUG] 2019-12-10 11:16:26,412 (irsim.py 577): Parsed arguments: {'irpath': 'test.ir', 'inputs': '', 'logpath': 'irsim.log'}
+[DEBUG] 2019-12-10 11:16:26,412 (irsim.py 538): unsupported input: 
+[ERROR] 2019-12-10 11:16:26,412 (irsim.py 547): Line 1 does not belong to any function:
+t0 := #1
+[ERROR] 2019-12-10 11:16:26,412 (irsim.py 547): Cannot find program entrance. Please make sure the 'main' function does exist

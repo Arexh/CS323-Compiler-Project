@@ -566,6 +566,9 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 TypeCheck *left = travel_exp(exp->child[0]);
                 if (left == NULL)
                     return NULL;
+                IRBlock nextBlock;
+                if (strcmp(type, "AND") == 0 || strcmp(type, "OR") == 0)
+                    nextBlock = append_new_block();
                 TypeCheck *right = travel_exp(exp->child[2]);
                 if (right == NULL)
                     return NULL;
@@ -601,7 +604,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         return NULL;
                     }
                 } else if (strcmp(type, "AND") == 0 || strcmp(type, "OR") == 0) {
-                    // boolean opearation
+                    // boolean expression
                     if (strcmp(left->type, "int") == 0 && left->dimension == 0 && strcmp(right->type, "int") == 0 && right->dimension == 0) {
                         // valid
                         TypeCheck *newType = new_type_check();
@@ -609,59 +612,74 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         newType->dimension = left->dimension;
                         if (left->r || right->r)
                             newType->r = 1;
+                        // boolean expression IR start
+                        if (strcmp(type, "AND") == 0) {
+                            back_patching(left->trueList, nextBlock);
+                            newType->trueList = right->tureList;
+                            newType->falseList = merge_list(left->falseList, right->falseList);
+                        } else {
+                            back_patching(left->falseList, nextBlock);
+                            newType->falseList = right->falseList;
+                            newType->trueList = merge_list(left->trueList, right->tureList);
+                        }
+                        // IR end
                         return newType;
                     } else {
                         // invalid
                         fprintf(out, "Error at Line %d: only int variables can do boolean operation\n", exp->row);
                         return NULL;
                     }
-                } else if (strcmp(type, "LT") == 0 || strcmp(type, "LE") == 0 || strcmp(type, "GT") == 0 || strcmp(type, "GE") == 0) {
+                } else if (strcmp(type, "LT") == 0 || strcmp(type, "LE") == 0 || strcmp(type, "GT") == 0 || strcmp(type, "GE") == 0
+                    || strcmp(type, "EQ") == 0 || strcmp(type, "NE") == 0) {
                     // comparatioon
-                    if (left->dimension != 0 || right->dimension != 0) {
-                        fprintf(out, "Error at Line %d: comparation on array is not allowed\n", exp->row);        
-                        return NULL;
-                    } else if (strcmp(left->type, "structVariable") == 0 || strcmp(right->type, "structVariable") == 0) {
-                        fprintf(out, "Error at Line %d: comparation on struct is not allowed\n", exp->row);
-                        return NULL;
-                    } else {
-                        TypeCheck *newType = new_type_check();
-                        newType->type = "int";
-                        if (left->r || right->r)
-                            newType->r = 1;
-                        // comparation IR start
-                        append_new_block();
-                        IRInstruct *comparation_instruct = append_new_instruct(blockEnd);
-                        if (strcmp(type, "LT") == 0)
-                            comparation_instruct->type = _LESSTHAN;
-                        else if (strcmp(type, "LE") == 0)
-                            comparation_instruct->type = _LESSEQUAL;
-                        else if (strcmp(type, "GT") == 0)
-                            comparation_instruct->type = _GREATERTHAN;
-                        else
-                            comparation_instruct->type = _GREATEREQUAL;
-                        comparation_instruct->argOne = left->argNum;
-                        comparation_instruct->argOneType = left->argType;
-                        comparation_instruct->argTwo = right->argNum;
-                        comparation_instruct->argTwoType = right->argType;
-
-                        // IR end
-                        return newType;
-                    }
-                } else if (strcmp(type, "EQ") == 0) {
-                    // equal
-                    if (strcmp(left->type, right->type) == 0 && left->dimension == right->dimension) {
+                    if (strcmp(type, "EQ") == 0 || strcmp(type, "NE") == 0) {
+                         if (!strcmp(left->type, right->type) == 0 || !left->dimension == right->dimension) {
+                            fprintf(out, "Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
+                            return NULL;
+                        }
                         if (strcmp(left->type, "structVariable") == 0 && compare_if_equal(left->attribute, right->attribute) == 0) {
                             fprintf(out, "Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
                             return NULL;
                         }
-                        TypeCheck *newType = new_type_check();
-                        newType->type = "int";
-                        if (left->r || right->r)
-                            newType->r = 1;
-                        return newType;
+                    } else {
+                        if (left->dimension != 0 || right->dimension != 0) {
+                            fprintf(out, "Error at Line %d: comparation on array is not allowed\n", exp->row);        
+                            return NULL;
+                        } else if (strcmp(left->type, "structVariable") == 0 || strcmp(right->type, "structVariable") == 0) {
+                            fprintf(out, "Error at Line %d: comparation on struct is not allowed\n", exp->row);
+                            return NULL;
+                        }
                     }
-                    fprintf(out, "Error at Line %d: comparation on differnt type is not allowed\n", exp->row);
-                    return NULL;
+                    TypeCheck *newType = new_type_check();
+                    newType->type = "int";
+                    if (left->r || right->r)
+                        newType->r = 1;
+                    // comparation IR start
+                    if (blockEnd->instructNum)
+                        append_new_block();
+                    IRInstruct *comparation_instruct = append_new_instruct(blockEnd);
+                    if (strcmp(type, "LT") == 0)
+                        comparation_instruct->type = _LESSTHAN;
+                    else if (strcmp(type, "LE") == 0)
+                        comparation_instruct->type = _LESSEQUAL;
+                    else if (strcmp(type, "GT") == 0)
+                        comparation_instruct->type = _GREATERTHAN;
+                    else if (strcmp(type, "GE") == 0)
+                        comparation_instruct->type = _GREATEREQUAL;
+                    else if (strcmp(type, "EQ") == 0)
+                        comparation_instruct->type = _EQUAL;
+                    else
+                        comparation_instruct->type = _NOTEQUAL;
+                    comparation_instruct->argOne = left->argNum;
+                    comparation_instruct->argOneType = left->argType;
+                    comparation_instruct->argTwo = right->argNum;
+                    comparation_instruct->argTwoType = right->argType;
+                    newType->trueList = new_IR_block_node();
+                    newType->trueList->block = &(blockEnd->next);
+                    newType->falseList = new_IR_block_node();
+                    newType->falseList->block = &(blockEnd->jumpNext);
+                    // IR end
+                    return newType;
                 } else if (strcmp(type, "PLUS") == 0 || strcmp(type, "MINUS") == 0 || strcmp(type, "MUL") == 0 ||
                 strcmp(type, "DIV") == 0) {
                     // int & float
@@ -815,7 +833,7 @@ void check_exp(ASTNode *exp) {
     travel_exp(exp);
 }
 
-void check_condition(ASTNode *exp) {
+TypeCheck *check_condition(ASTNode *exp) {
     _assign = 0;
     TypeCheck *type = travel_exp(exp);
     if (type != NULL) {
@@ -825,6 +843,7 @@ void check_condition(ASTNode *exp) {
             fprintf(out, "Error at Line %d: assignment in condition is not allowed\n", exp->row);
         }
     }
+    return type;
 }
 
 void check_return_exp(ASTNode *exp) {

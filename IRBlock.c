@@ -15,19 +15,20 @@ typedef struct IRBlock {
 } IRBlock;
 
 typedef struct IRBlockNode {
-    struct IRBlock *block;
+    struct IRBlock **block;
     struct IRBlockNode *next;
 } IRBlockNode;
 
 IRBlockNode *new_IR_block_node() {
     IRBlockNode *node = (IRBlockNode *)malloc(sizeof(IRBlockNode));
-    node->block = NULL;
+    node->block = (IRBlock **)malloc(sizeof(IRBlock *));
     node->next = NULL;
     return node;
 }
 
 void free_block_node(IRBlockNode *node) {
     node->block = NULL;
+    free(node->block);
     node->next = NULL;
     free(node);
 }
@@ -105,9 +106,12 @@ void printf_all_blocks() {
     while (block && block->instructNum) {
         char **arr = get_block_string(block);
         int i;
+        printf("LABLE label%d :\n", *block->labelNum);
         for (i = 0; i < block->instructNum; i++) {
             printf("%s\n", arr[i]);
         }
+        if (block->next)
+            printf("GOTO label%d\n", *block->next->labelNum);
         block = block->next;
     }
 }
@@ -119,10 +123,10 @@ void append_jump_previous(IRBlock *block, IRBlock *previous) {
             temp = temp->next;
         }
         temp->next = new_IR_block_node();
-        temp->next->block = previous;
+        temp->next->block = &previous;
     } else {
         block->jumpPrevious = new_IR_block_node();
-        block->jumpPrevious->block = previous;
+        block->jumpPrevious->block = &previous;
     }
 }
 
@@ -130,20 +134,30 @@ void append_jump_previous(IRBlock *block, IRBlock *previous) {
 void back_patching(IRBlockNode *list, IRBlock *block) {
     IRBlockNode *temp = list;
     while(temp) {
-        temp->block->jumpNext = block;
-        append_jump_previous(block, temp->block);
+        *temp->block = block;
+        append_jump_previous(block, *temp->block);
         IRBlockNode *remove = temp;
         temp = temp->next;
         free_block_node(remove);
     }
 }
 
-void merge(IRBlockNode *listOne, IRBlockNode *listTwo) {
+IRBlockNode *merge_list(IRBlockNode *listOne, IRBlockNode *listTwo) {
     IRBlockNode *temp = listOne;
     while(temp->next) {
         temp = temp->next;
     }
     temp->next = listTwo;
+    return listOne;
+}
+
+void append_node_to_list(IRBlockNode *list, IRBlock *block) {
+    IRBlockNode *temp = list;
+    while(temp->next) {
+        temp = temp->next;
+    }
+    temp->next = new_IR_block_node();
+    temp->next->block = &block;
 }
 
 // int main() {

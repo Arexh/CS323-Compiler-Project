@@ -8,6 +8,7 @@
     int functionStart;
     int firstAssign;
     int functionCheck;
+    struct TypeCheck *conditionType;
     void RPError(const int);
     void SEMIError(const int);
     void STRUCTError(const int, const char *);
@@ -28,6 +29,7 @@
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
 %type  <node> Exp Args ConditionEndTrigger
 %type  <node> FunID STRUCTTrigger LCTrigger RCTrigger ConditionExp WHILETrigger FORTrigger
+%type  <node> M1 M2
 %right ASSIGN
 %left OR
 %left AND
@@ -261,14 +263,14 @@ Stmt: Exp SEMI {
     | RETURN Exp error {
         SEMIError(@$.first_line);
     }
-    | IF LP ConditionExp RP Stmt %prec LOWER_ELSE {
+    | IF LP ConditionExp RP M1 Stmt M2 %prec LOWER_ELSE {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 5, $1, $2, $3, $4, $5);
     }
     | IF LP ConditionExp error Stmt %prec LOWER_ELSE {
         RPError(@$.first_line);
     }
-    | IF LP ConditionExp RP Stmt ELSE Stmt {
+    | IF LP ConditionExp RP M1 Stmt ELSE M2 Stmt {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 7, $1, $2, $3, $4, $5, $6, $7);
     }
@@ -311,6 +313,28 @@ Stmt: Exp SEMI {
         }
     }
     ;
+M1: {
+        $$ = newNode("NONE", @$.first_line);
+        // true jump IR start
+        append_new_block();
+        IRBlockNode *trueList = conditionType->trueList;
+        if (trueList)
+            back_patching(trueList, blockEnd);
+        conditionType->trueList = NULL;
+        // IR end
+    }
+    ;
+M2: {
+        $$ = newNode("NONE", @$.first_line);
+        // false jump IR start
+        append_new_block();
+        IRBlockNode *falseList = conditionType->falseList;
+        if (falseList)
+            back_patching(falseList, blockEnd);
+        conditionType->falseList = NULL;
+        // IR end
+    }
+    ;
 WHILETrigger: WHILE {
         $$ = $1;
         if (currentLoop == NULL) {
@@ -342,8 +366,9 @@ ConditionEndTrigger: Stmt {
     };
 ConditionExp: Exp {
         $$ = $1;
+        conditionType = NULL;
         if (functionCheck == 0) {
-            check_condition($1);
+            conditionType = check_condition($1);
         }
     };
 /* local definition */
