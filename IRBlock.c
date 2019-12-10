@@ -2,7 +2,7 @@
 
 struct IRBlock *blockStart;
 struct IRBlock *blockEnd;
-int totalBlockNum;
+struct ArrayList *blocksArrayList;
 
 typedef struct IRBlock {
     int *labelNum;
@@ -51,7 +51,8 @@ void init_IR_block() {
     block->labelNum = new_label_num();
     blockStart = block;
     blockEnd = block;
-    totalBlockNum = 1;
+    blocksArrayList = new_array_list();
+    append_to_array_list(blocksArrayList, block);
 }
 
 IRBlock *append_new_block() {
@@ -60,7 +61,7 @@ IRBlock *append_new_block() {
     blockEnd->next = block;
     block->previous = blockEnd;
     blockEnd = block;
-    totalBlockNum++;
+    append_to_array_list(blocksArrayList, block);
     return block;
 }
 
@@ -104,14 +105,6 @@ char **get_block_string(IRBlock *block) {
     return instructs;
 }
 
-void printf_all_blocks() {
-    // int check[totalBlockNum] = {0};
-    // IRBlock *block = blockStart;
-    // while(block) {
-
-    // }
-}
-
 void printf_block(IRBlock *block) {
     if (block->instructNum) {
         char **arr = get_block_string(block);
@@ -125,6 +118,12 @@ void printf_block(IRBlock *block) {
     }
 }
 
+void printf_all_blocks() {
+    int i;
+    for (i = 0; i < blocksArrayList->memberNum; i++) {
+        printf_block((IRBlock *)blocksArrayList->arr[i]);
+    }
+}
 
 void append_jump_previous(IRBlock *block, IRBlock *previous) {
     if (block->jumpPrevious) {

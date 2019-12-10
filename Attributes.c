@@ -516,8 +516,15 @@ TypeCheck* travel_exp(ASTNode *exp) {
             } else if (strcmp(exp->child[0]->type, "READ") == 0) {
                 // READ LP RP
                 // read IR start
+                IRInstruct *read_instruct = append_new_instruct(blockEnd);
+                read_instruct->type = _READ;
+                read_instruct->result = new_temp_num();
+                TypeCheck *newType = new_type_check();
+                newType->type = "int";
+                newType->argNum = read_instruct->result;
+                newType->argType = _VAR_OR_TEMP;
                 // IR end
-                return NULL;
+                return newType;
             } else {
                 char *ID = exp->child[0]->value;
                 //ID LP RP
@@ -659,8 +666,6 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     // comparation IR start
                     if (blockEnd->instructNum)
                         append_new_block();
-                    else
-                        printf("ALREADY HAVE : %s\n", type);
                     IRInstruct *comparation_instruct = append_new_instruct(blockEnd);
                     if (strcmp(type, "LT") == 0)
                         comparation_instruct->type = _LESSTHAN;
@@ -682,7 +687,6 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     newType->trueList->block = &(blockEnd->next);
                     newType->falseList = new_IR_block_node();
                     newType->falseList->block = &(blockEnd->jumpNext);
-                    printf("BLOCK NUM %d, OP: %s, insNum: %d\n", *blockEnd->labelNum, type, blockEnd->instructNum);
                     // IR end
                     return newType;
                 } else if (strcmp(type, "PLUS") == 0 || strcmp(type, "MINUS") == 0 || strcmp(type, "MUL") == 0 ||
@@ -808,6 +812,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
         } else {
             // WRITE LP Exp RP
             // IR start
+            TypeCheck *check = travel_exp(exp->child[2]);
+            IRInstruct *write_instruct = append_new_instruct(blockEnd);
+            write_instruct->type = _WRITE;
+            write_instruct->result = check->argNum;
             // IR end
             return NULL;
         }

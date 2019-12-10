@@ -550,12 +550,10 @@ Exp:  Exp ASSIGN Exp {
     | READ LP RP {
         $$ = newNode("Exp", @$.first_line); 
         appendChild($$, 3, $1, $2, $3); 
-        puts("READ");
     }
     | WRITE LP Exp RP {
         $$ = newNode("Exp", @$.first_line); 
         appendChild($$, 4, $1, $2, $3, $4); 
-        puts("WRITE");
     }
     ;
 Args: Exp COMMA Args  { 

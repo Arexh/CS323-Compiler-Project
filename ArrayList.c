@@ -12,7 +12,7 @@ ArrayList *new_array_list() {
     return arrayList;
 }
 
-void append_new_node(ArrayList *arrayList, void *item) {
+void append_to_array_list(ArrayList *arrayList, void *item) {
     if (arrayList->memberNum == arrayList->space) {
         arrayList->space = arrayList->space * 2;
         void ** arr = (void **)malloc(sizeof(void *) * arrayList->space);

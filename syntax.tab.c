@@ -513,7 +513,7 @@ static const yytype_uint16 yyrline[] =
      402,   408,   415,   424,   438,   442,   447,   451,   455,   459,
      463,   467,   471,   475,   479,   483,   487,   491,   494,   498,
      501,   505,   509,   513,   516,   520,   523,   527,   531,   535,
-     539,   543,   547,   550,   555,   561,   565
+     539,   543,   547,   550,   554,   559,   563
 };
 #endif
 
@@ -2508,41 +2508,39 @@ yyreduce:
     {
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
-        puts("READ");
     }
-#line 2514 "syntax.tab.c" /* yacc.c:1646  */
+#line 2513 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 94:
-#line 555 "syntax.y" /* yacc.c:1646  */
+#line 554 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.node) = newNode("Exp", (yyloc).first_line); 
         appendChild((yyval.node), 4, (yyvsp[-3].node), (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
-        puts("WRITE");
     }
-#line 2524 "syntax.tab.c" /* yacc.c:1646  */
+#line 2522 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 95:
-#line 561 "syntax.y" /* yacc.c:1646  */
+#line 559 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Args", (yyloc).first_line); 
         appendChild((yyval.node), 3, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node)); 
     }
-#line 2533 "syntax.tab.c" /* yacc.c:1646  */
+#line 2531 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 96:
-#line 565 "syntax.y" /* yacc.c:1646  */
+#line 563 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.node) = newNode("Args", (yyloc).first_line); 
         appendChild((yyval.node), 1, (yyvsp[0].node)); 
     }
-#line 2542 "syntax.tab.c" /* yacc.c:1646  */
+#line 2540 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2546 "syntax.tab.c" /* yacc.c:1646  */
+#line 2544 "syntax.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2777,7 +2775,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 570 "syntax.y" /* yacc.c:1906  */
+#line 568 "syntax.y" /* yacc.c:1906  */
 
 void RPError(const int lineno){
     fprintf(out, "Error type B at Line %d: Missing closing parenthesis ')'\n", lineno);
