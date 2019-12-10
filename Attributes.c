@@ -387,6 +387,8 @@ typedef struct TypeCheck {
     StructAttribute *attribute;
     int *argNum;
     enum ArgType argType;
+    IRBlockNode *trueList;
+    IRBlockNode *falseList;
 } TypeCheck;
 
 TypeCheck *new_type_check() {
@@ -395,6 +397,8 @@ TypeCheck *new_type_check() {
     typeCheck->type = NULL;
     typeCheck->attribute = NULL;
     typeCheck->r = 0;
+    typeCheck->trueList = NULL;
+    typeCheck->falseList = NULL;
     return typeCheck;
 }
 
@@ -494,6 +498,9 @@ TypeCheck* travel_exp(ASTNode *exp) {
             }
             if (strcmp(right->type, "int") == 0 && right->dimension == 0) {
                 // NOT IR start
+                IRBlockNode *temp = right->trueList;
+                right->trueList = right->falseList;
+                right->falseList = temp;
                 // IR end
                 return right;
             }
@@ -575,9 +582,18 @@ TypeCheck* travel_exp(ASTNode *exp) {
                                 return NULL;
                             }
                             // match
+                            // assign struct IR start
+                            // IR end
                             return left;
                         } else {
                             // match
+                            // assign IR start
+                            IRInstruct *assign_instruct = append_new_instruct(blockEnd);
+                            assign_instruct->type = _ASSIGN;
+                            assign_instruct->result = left->argNum;
+                            assign_instruct->argOne = right->argNum;
+                            assign_instruct->argOneType = right->argType;
+                            // IR end
                             return left;
                         }
                     } else {
@@ -612,6 +628,23 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         newType->type = "int";
                         if (left->r || right->r)
                             newType->r = 1;
+                        // comparation IR start
+                        append_new_block();
+                        IRInstruct *comparation_instruct = append_new_instruct(blockEnd);
+                        if (strcmp(type, "LT") == 0)
+                            comparation_instruct->type = _LESSTHAN;
+                        else if (strcmp(type, "LE") == 0)
+                            comparation_instruct->type = _LESSEQUAL;
+                        else if (strcmp(type, "GT") == 0)
+                            comparation_instruct->type = _GREATERTHAN;
+                        else
+                            comparation_instruct->type = _GREATEREQUAL;
+                        comparation_instruct->argOne = left->argNum;
+                        comparation_instruct->argOneType = left->argType;
+                        comparation_instruct->argTwo = right->argNum;
+                        comparation_instruct->argTwoType = right->argType;
+
+                        // IR end
                         return newType;
                     }
                 } else if (strcmp(type, "EQ") == 0) {

@@ -11,8 +11,26 @@ typedef struct IRBlock {
     struct IRBlock *next;
     struct IRBlock *previous;
     struct IRBlock *jumpNext;
-    struct IRBlock *jumpPrevious;
+    struct IRBlockNode *jumpPrevious;
 } IRBlock;
+
+typedef struct IRBlockNode {
+    struct IRBlock *block;
+    struct IRBlockNode *next;
+} IRBlockNode;
+
+IRBlockNode *new_IR_block_node() {
+    IRBlockNode *node = (IRBlockNode *)malloc(sizeof(IRBlockNode));
+    node->block = NULL;
+    node->next = NULL;
+    return node;
+}
+
+void free_block_node(IRBlockNode *node) {
+    node->block = NULL;
+    node->next = NULL;
+    free(node);
+}
 
 IRBlock *new_IR_block() {
     IRBlock *block = (IRBlock *)malloc(sizeof(IRBlock));
@@ -39,6 +57,7 @@ IRBlock *append_new_block() {
     blockEnd->next = block;
     block->previous = blockEnd;
     blockEnd = block;
+    return block;
 }
 
 IRInstruct *append_new_instruct(IRBlock *block) {
@@ -91,6 +110,40 @@ void printf_all_blocks() {
         }
         block = block->next;
     }
+}
+
+void append_jump_previous(IRBlock *block, IRBlock *previous) {
+    if (block->jumpPrevious) {
+        IRBlockNode *temp = block->jumpPrevious;
+        while (temp->next) {
+            temp = temp->next;
+        }
+        temp->next = new_IR_block_node();
+        temp->next->block = previous;
+    } else {
+        block->jumpPrevious = new_IR_block_node();
+        block->jumpPrevious->block = previous;
+    }
+}
+
+
+void back_patching(IRBlockNode *list, IRBlock *block) {
+    IRBlockNode *temp = list;
+    while(temp) {
+        temp->block->jumpNext = block;
+        append_jump_previous(block, temp->block);
+        IRBlockNode *remove = temp;
+        temp = temp->next;
+        free_block_node(remove);
+    }
+}
+
+void merge(IRBlockNode *listOne, IRBlockNode *listTwo) {
+    IRBlockNode *temp = listOne;
+    while(temp->next) {
+        temp = temp->next;
+    }
+    temp->next = listTwo;
 }
 
 // int main() {
