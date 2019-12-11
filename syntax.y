@@ -9,7 +9,7 @@
     int firstAssign;
     int functionCheck;
     struct ArrayList *conditionStack;
-    struct ArrayList *jumpBlocksStack;
+    struct ArrayList *jumpBlockStack;
     struct ArrayList *whileIRStartStack;
     void RPError(const int);
     void SEMIError(const int);
@@ -274,7 +274,6 @@ Stmt: Exp SEMI {
         appendChild($$, 5, $1, $2, $3, $4, $6);
         // end of condition
         append_new_block();
-        fillJumpBlock();
         fillFalseList();
         // IR end
     }
@@ -285,8 +284,10 @@ Stmt: Exp SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 7, $1, $2, $3, $4, $6, $7, $8);
         // end of if IR start
+        IRBlock *b1 = get_last_from_array_list(jumpBlockStack);
+        jumpBlockStack->memberNum--;
         append_new_block();
-        fillJumpBlock();
+        b1->next = blockEnd;
         // IR end
     }
     | IF LP ConditionExp error Stmt ELSE M2 Stmt {
@@ -332,9 +333,6 @@ M1: {
         $$ = newNode("NONE", @$.first_line);
         // true jump IR start
         append_new_block();
-        ArrayList *jumpBlocks = new_array_list();
-        append_to_array_list(jumpBlocksStack, jumpBlocks);
-        append_to_array_list(jumpBlocks, blockEnd);
         fillTrueList();
         // IR end
     }
@@ -342,9 +340,8 @@ M1: {
 M2: {
         $$ = newNode("NONE", @$.first_line);
         // false jump IR start
+        append_to_array_list(jumpBlockStack, blockEnd);
         append_new_block();
-        ArrayList *jumpBlocks = get_last_from_array_list(jumpBlocksStack);
-        append_to_array_list(jumpBlocks, blockEnd);
         fillFalseList();
         // IR end
     }
@@ -356,6 +353,7 @@ M3: {
         fillTrueList();
         // IR end
     }
+    ;
 WHILETrigger: WHILE {
         $$ = $1;
         if (currentLoop == NULL) {
@@ -590,12 +588,6 @@ void fillFalseList() {
     conditionType->falseList = NULL;
     conditionStack->memberNum--;
 }
-void fillJumpBlock() {
-    ArrayList *jumpBlocks = get_last_from_array_list(jumpBlocksStack);
-    back_patching_true_list(jumpBlocks, blockEnd);
-    free_array_list(jumpBlocks);
-    jumpBlocksStack->memberNum--;
-}
 void RPError(const int lineno){
     fprintf(out, "Error type B at Line %d: Missing closing parenthesis ')'\n", lineno);
     error = 1;
@@ -637,7 +629,6 @@ void initial(){
     init_number_control();
     init_IR_block();
     conditionStack = new_array_list();
-    jumpBlocksStack = new_array_list();
     whileIRStartStack = new_array_list();
 }
 #ifndef CALC_MAIN

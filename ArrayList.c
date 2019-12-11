@@ -34,6 +34,7 @@ void free_array_list(ArrayList *arrayList) {
 void *get_last_from_array_list(ArrayList *arrayList) {
     return arrayList->arr[arrayList->memberNum - 1];
 }
+
 // int main() {
 //     ArrayList *arrList = new_array_list();
 //     int one = 32131;

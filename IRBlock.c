@@ -7,6 +7,7 @@ struct ArrayList *blocksArrayList;
 typedef struct IRBlock {
     int *labelNum;
     int instructNum;
+    int disable;
     struct IRInstruct *instructHead;
     struct IRInstruct *instructTail;
     struct IRBlock *next;
@@ -44,6 +45,7 @@ IRBlock *new_IR_block() {
     block->previous = NULL;
     block->jumpNext = NULL;
     block->jumpPrevious = NULL;
+    block->disable = 0;
 }
 
 void init_IR_block() {
@@ -108,23 +110,72 @@ char **get_block_string(IRBlock *block) {
     return instructs;
 }
 
-void printf_block(IRBlock *block) {
-    if (block->instructNum) {
-        char **arr = get_block_string(block);
-        int i;
-        printf("LABEL label%d :\n", *block->labelNum);
-        for (i = 0; i < block->instructNum; i++) {
-            printf("%s\n", arr[i]);
+void remove_empty_blocks() {
+    int i;
+    ArrayList *emptyBlocks = new_array_list();
+    for (i = 0; i < blocksArrayList->memberNum; i++) {
+        IRBlock *block = blocksArrayList->arr[i];
+        if (block->disable)
+            continue;
+        if (block->instructNum == 0 && (block->next || *block->next->labelNum == *block->labelNum)) {
+            append_to_array_list(emptyBlocks, block);
+        } else {
+            if (emptyBlocks->memberNum) {
+                int j;
+                for (j = 0; j < emptyBlocks->memberNum; j++) {
+                    IRBlock *emptyBlock = emptyBlocks->arr[j];
+                    *emptyBlock->labelNum = -1; 
+                    emptyBlock->labelNum = block->labelNum;
+                    emptyBlock->disable = 1;
+                }
+            }
+            emptyBlocks->memberNum = 0;
         }
-        if (block->next)
-            if (*block->next->labelNum != *block->labelNum + 1)
-                printf("GOTO label%d\n", *block->next->labelNum);
-        // if (block->next)
-        //     printf("GOTO label%d\n", *block->next->labelNum);
     }
 }
 
+void check_label_reference() {
+    int i;
+    ArrayList *arrayList = blocksArrayList;
+    for (i = 0; i < arrayList->memberNum; i++) {
+        IRBlock *block = arrayList->arr[i];
+        if (block->next && *block->next->labelNum != *block->labelNum + 1) {
+            NumberNode *node = labelNumArrayList->arr[*block->next->labelNum - 1];
+            node->reference++;
+        }
+        if (block->jumpNext) {
+            NumberNode *node = labelNumArrayList->arr[*block->jumpNext->labelNum - 1];
+            node->reference++;
+        }
+    }
+    for (i = 0; i < labelNumArrayList->memberNum; i++) {
+        NumberNode *node = labelNumArrayList->arr[i];
+        if (node->reference == 0) {
+            *node->number = -1;
+        }
+    }
+}
+
+void printf_block(IRBlock *block) {
+    if (block->disable)
+        return;
+    if (*block->labelNum != -1)
+        printf("LABEL label%d :\n", *block->labelNum);
+    if (block->instructNum) {
+        char **arr = get_block_string(block);
+        int i;
+        for (i = 0; i < block->instructNum; i++) {
+            printf("%s\n", arr[i]);
+        }
+    }
+    if (block->next && *block->next->labelNum != -1 && *block->next->labelNum != *block->labelNum + 1 &&
+    *block->next->labelNum != *block->labelNum)
+        printf("GOTO label%d\n", *block->next->labelNum);
+}
+
 void printf_all_blocks() {
+    check_label_reference();
+    remove_empty_blocks();
     int i;
     for (i = 0; i < blocksArrayList->memberNum; i++) {
         printf_block((IRBlock *)blocksArrayList->arr[i]);
