@@ -83,7 +83,7 @@ void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
             sprintf(str, "*%s := %s", result, argOne);
             break;
         case _RETURN:
-            sprintf(str, "RETURN %s", result);
+            sprintf(str, "RETURN %s", argOne);
             break;
         case _DECLARE:
             sprintf(str, "DEC %s %d", result, *instruct->argOne);
@@ -101,7 +101,7 @@ void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
             sprintf(str, "READ %s", result);
             break;
         case _WRITE:
-            sprintf(str, "WRITE %s", result);
+            sprintf(str, "WRITE %s", argOne);
             break;
         case _FUNCTION:
             sprintf(str, "FUNCTION %s :", instruct->funcName);

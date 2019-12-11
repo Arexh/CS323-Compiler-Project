@@ -388,8 +388,8 @@ typedef struct TypeCheck {
     StructAttribute *attribute;
     int *argNum;
     enum ArgType argType;
-    IRBlockNode *trueList;
-    IRBlockNode *falseList;
+    ArrayList *trueList;
+    ArrayList *falseList;
 } TypeCheck;
 
 TypeCheck *new_type_check() {
@@ -499,7 +499,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
             }
             if (strcmp(right->type, "int") == 0 && right->dimension == 0) {
                 // NOT IR start
-                IRBlockNode *temp = right->trueList;
+                ArrayList *temp = right->trueList;
                 right->trueList = right->falseList;
                 right->falseList = temp;
                 // IR end
@@ -623,11 +623,11 @@ TypeCheck* travel_exp(ASTNode *exp) {
                             newType->r = 1;
                         // boolean expression IR start
                         if (strcmp(type, "AND") == 0) {
-                            back_patching(left->trueList, nextBlock);
+                            back_patching_true_list(left->trueList, nextBlock);
                             newType->trueList = right->trueList;
                             newType->falseList = merge_list(left->falseList, right->falseList);
                         } else {
-                            back_patching(left->falseList, nextBlock);
+                            back_patching_false_list(left->falseList, nextBlock);
                             newType->falseList = right->falseList;
                             newType->trueList = merge_list(left->trueList, right->trueList);
                         }
@@ -683,10 +683,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     comparation_instruct->argOneType = left->argType;
                     comparation_instruct->argTwo = right->argNum;
                     comparation_instruct->argTwoType = right->argType;
-                    newType->trueList = new_IR_block_node();
-                    newType->trueList->block = &(blockEnd->next);
-                    newType->falseList = new_IR_block_node();
-                    newType->falseList->block = &(blockEnd->jumpNext);
+                    newType->trueList = new_array_list();
+                    append_to_array_list(newType->trueList, blockEnd);
+                    newType->falseList = new_array_list();
+                    append_to_array_list(newType->falseList, blockEnd);
                     // IR end
                     return newType;
                 } else if (strcmp(type, "PLUS") == 0 || strcmp(type, "MINUS") == 0 || strcmp(type, "MUL") == 0 ||
@@ -815,7 +815,8 @@ TypeCheck* travel_exp(ASTNode *exp) {
             TypeCheck *check = travel_exp(exp->child[2]);
             IRInstruct *write_instruct = append_new_instruct(blockEnd);
             write_instruct->type = _WRITE;
-            write_instruct->result = check->argNum;
+            write_instruct->argOne = check->argNum;
+            write_instruct->argOneType = check->argType;
             // IR end
             return NULL;
         }
@@ -839,6 +840,13 @@ void check_assign_exp(ASTNode *varDec, ASTNode *exp) {
             fprintf(out, "Error type 5 at Line %d: unmatching types on both sides of assignment operator (=)\n", exp->row);
             return;
         }
+        // assign IR start
+        IRInstruct *assign_instruct = append_new_instruct(blockEnd);
+        assign_instruct->type = _ASSIGN;
+        assign_instruct->result = item->varNum;
+        assign_instruct->argOne = typeCheck->argNum;
+        assign_instruct->argOneType = typeCheck->argType;
+        // IR end
     }
 }
 
@@ -876,4 +884,10 @@ void check_return_exp(ASTNode *exp) {
             fprintf(out, "Error type 8 at Line %d: the function’s return value type mismatches the declared type\n", exp->row);
         }
     }
+    // return IR start
+    IRInstruct *return_instruct = append_new_instruct(blockEnd);
+    return_instruct->type = _RETURN;
+    return_instruct->argOne = check->argNum;
+    return_instruct->argOneType = check->argType;
+    // IR end
 }

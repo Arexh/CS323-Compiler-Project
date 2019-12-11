@@ -26,6 +26,11 @@ void append_to_array_list(ArrayList *arrayList, void *item) {
     arrayList->arr[arrayList->memberNum++] = item;
 }
 
+void free_array_list(ArrayList *arrayList) {
+    free(arrayList->arr);
+    free(arrayList);
+}
+
 // int main() {
 //     ArrayList *arrList = new_array_list();
 //     int one = 32131;

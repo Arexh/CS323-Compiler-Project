@@ -95,7 +95,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 20 "syntax.y" /* yacc.c:1909  */
+#line 24 "syntax.y" /* yacc.c:1909  */
 
     struct ASTNode *node;
 

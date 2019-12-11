@@ -3,9 +3,6 @@ Terminals unused in grammar
    INCLUDE
 
 
-State 165 conflicts: 1 shift/reduce
-
-
 Grammar
 
     0 $accept: Program $end
@@ -62,11 +59,11 @@ Grammar
    34     | CompSt
    35     | RETURN Exp SEMI
    36     | RETURN Exp error
-   37     | IF LP ConditionExp RP M1 Stmt M2
+   37     | IF LP ConditionExp RP M Stmt
    38     | IF LP ConditionExp error Stmt
-   39     | IF LP ConditionExp RP M1 Stmt ELSE M2 Stmt
-   40     | IF LP ConditionExp error Stmt ELSE Stmt
-   41     | WHILETrigger LP ConditionExp RP ConditionEndTrigger
+   39     | IF LP ConditionExp RP M Stmt ELSETrigger Stmt
+   40     | IF LP ConditionExp error Stmt ELSETrigger Stmt
+   41     | WHILETrigger LP ConditionExp RP M ConditionEndTrigger
    42     | WHILETrigger LP ConditionExp error ConditionEndTrigger
    43     | FORTrigger LP Def ConditionExp SEMI Exp RP ConditionEndTrigger
    44     | FORTrigger LP Def ConditionExp error Exp RP ConditionEndTrigger
@@ -75,9 +72,9 @@ Grammar
    47     | BREAK SEMI
    48     | CONTINUE SEMI
 
-   49 M1: %empty
+   49 M: %empty
 
-   50 M2: %empty
+   50 ELSETrigger: ELSE
 
    51 WHILETrigger: WHILE
 
@@ -146,7 +143,7 @@ ID (261) 13 14 16 22 81 82 83 84 86 87
 TYPE (262) 11
 STRUCT (263) 15
 IF (264) 37 38 39 40
-ELSE (265) 39 40
+ELSE (265) 50
 WHILE (266) 51
 RETURN (267) 35 36
 DOT (268) 86
@@ -223,10 +220,10 @@ StmtList (61)
 Stmt (62)
     on left: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48, on right:
     30 37 38 39 40 53
-M1 (63)
-    on left: 49, on right: 37 39
-M2 (64)
-    on left: 50, on right: 37 39
+M (63)
+    on left: 49, on right: 37 39 41
+ELSETrigger (64)
+    on left: 50, on right: 39 40
 WHILETrigger (65)
     on left: 51, on right: 41 42
 FORTrigger (66)
@@ -806,10 +803,10 @@ State 49
 
 State 50
 
-   37 Stmt: IF . LP ConditionExp RP M1 Stmt M2
+   37 Stmt: IF . LP ConditionExp RP M Stmt
    38     | IF . LP ConditionExp error Stmt
-   39     | IF . LP ConditionExp RP M1 Stmt ELSE M2 Stmt
-   40     | IF . LP ConditionExp error Stmt ELSE Stmt
+   39     | IF . LP ConditionExp RP M Stmt ELSETrigger Stmt
+   40     | IF . LP ConditionExp error Stmt ELSETrigger Stmt
 
     LP  shift, and go to state 80
 
@@ -988,7 +985,7 @@ State 64
 
 State 65
 
-   41 Stmt: WHILETrigger . LP ConditionExp RP ConditionEndTrigger
+   41 Stmt: WHILETrigger . LP ConditionExp RP M ConditionEndTrigger
    42     | WHILETrigger . LP ConditionExp error ConditionEndTrigger
 
     LP  shift, and go to state 92
@@ -1173,10 +1170,10 @@ State 79
 
 State 80
 
-   37 Stmt: IF LP . ConditionExp RP M1 Stmt M2
+   37 Stmt: IF LP . ConditionExp RP M Stmt
    38     | IF LP . ConditionExp error Stmt
-   39     | IF LP . ConditionExp RP M1 Stmt ELSE M2 Stmt
-   40     | IF LP . ConditionExp error Stmt ELSE Stmt
+   39     | IF LP . ConditionExp RP M Stmt ELSETrigger Stmt
+   40     | IF LP . ConditionExp error Stmt ELSETrigger Stmt
 
     INT     shift, and go to state 46
     FLOAT   shift, and go to state 47
@@ -1391,7 +1388,7 @@ State 91
 
 State 92
 
-   41 Stmt: WHILETrigger LP . ConditionExp RP ConditionEndTrigger
+   41 Stmt: WHILETrigger LP . ConditionExp RP M ConditionEndTrigger
    42     | WHILETrigger LP . ConditionExp error ConditionEndTrigger
 
     INT     shift, and go to state 46
@@ -1844,10 +1841,10 @@ State 119
 
 State 120
 
-   37 Stmt: IF LP ConditionExp . RP M1 Stmt M2
+   37 Stmt: IF LP ConditionExp . RP M Stmt
    38     | IF LP ConditionExp . error Stmt
-   39     | IF LP ConditionExp . RP M1 Stmt ELSE M2 Stmt
-   40     | IF LP ConditionExp . error Stmt ELSE Stmt
+   39     | IF LP ConditionExp . RP M Stmt ELSETrigger Stmt
+   40     | IF LP ConditionExp . error Stmt ELSETrigger Stmt
 
     error  shift, and go to state 149
     RP     shift, and go to state 150
@@ -1969,7 +1966,7 @@ State 127
 
 State 128
 
-   41 Stmt: WHILETrigger LP ConditionExp . RP ConditionEndTrigger
+   41 Stmt: WHILETrigger LP ConditionExp . RP M ConditionEndTrigger
    42     | WHILETrigger LP ConditionExp . error ConditionEndTrigger
 
     error  shift, and go to state 152
@@ -2518,7 +2515,7 @@ State 148
 State 149
 
    38 Stmt: IF LP ConditionExp error . Stmt
-   40     | IF LP ConditionExp error . Stmt ELSE Stmt
+   40     | IF LP ConditionExp error . Stmt ELSETrigger Stmt
 
     INT       shift, and go to state 46
     FLOAT     shift, and go to state 47
@@ -2548,12 +2545,12 @@ State 149
 
 State 150
 
-   37 Stmt: IF LP ConditionExp RP . M1 Stmt M2
-   39     | IF LP ConditionExp RP . M1 Stmt ELSE M2 Stmt
+   37 Stmt: IF LP ConditionExp RP . M Stmt
+   39     | IF LP ConditionExp RP . M Stmt ELSETrigger Stmt
 
-    $default  reduce using rule 49 (M1)
+    $default  reduce using rule 49 (M)
 
-    M1  go to state 158
+    M  go to state 158
 
 
 State 151
@@ -2596,33 +2593,11 @@ State 152
 
 State 153
 
-   41 Stmt: WHILETrigger LP ConditionExp RP . ConditionEndTrigger
+   41 Stmt: WHILETrigger LP ConditionExp RP . M ConditionEndTrigger
 
-    INT       shift, and go to state 46
-    FLOAT     shift, and go to state 47
-    CHAR      shift, and go to state 48
-    ID        shift, and go to state 49
-    IF        shift, and go to state 50
-    WHILE     shift, and go to state 51
-    RETURN    shift, and go to state 52
-    FOR       shift, and go to state 53
-    MINUS     shift, and go to state 54
-    NOT       shift, and go to state 55
-    LP        shift, and go to state 56
-    LC        shift, and go to state 23
-    UNKNOW    shift, and go to state 57
-    BREAK     shift, and go to state 58
-    CONTINUE  shift, and go to state 59
-    WRITE     shift, and go to state 60
-    READ      shift, and go to state 61
+    $default  reduce using rule 49 (M)
 
-    CompSt               go to state 62
-    LCTrigger            go to state 25
-    Stmt                 go to state 159
-    WHILETrigger         go to state 65
-    FORTrigger           go to state 66
-    ConditionEndTrigger  go to state 161
-    Exp                  go to state 67
+    M  go to state 161
 
 
 State 154
@@ -2653,17 +2628,19 @@ State 156
 State 157
 
    38 Stmt: IF LP ConditionExp error Stmt .
-   40     | IF LP ConditionExp error Stmt . ELSE Stmt
+   40     | IF LP ConditionExp error Stmt . ELSETrigger Stmt
 
     ELSE  shift, and go to state 164
 
     $default  reduce using rule 38 (Stmt)
 
+    ELSETrigger  go to state 165
+
 
 State 158
 
-   37 Stmt: IF LP ConditionExp RP M1 . Stmt M2
-   39     | IF LP ConditionExp RP M1 . Stmt ELSE M2 Stmt
+   37 Stmt: IF LP ConditionExp RP M . Stmt
+   39     | IF LP ConditionExp RP M . Stmt ELSETrigger Stmt
 
     INT       shift, and go to state 46
     FLOAT     shift, and go to state 47
@@ -2685,7 +2662,7 @@ State 158
 
     CompSt        go to state 62
     LCTrigger     go to state 25
-    Stmt          go to state 165
+    Stmt          go to state 166
     WHILETrigger  go to state 65
     FORTrigger    go to state 66
     Exp           go to state 67
@@ -2707,200 +2684,7 @@ State 160
 
 State 161
 
-   41 Stmt: WHILETrigger LP ConditionExp RP ConditionEndTrigger .
-
-    $default  reduce using rule 41 (Stmt)
-
-
-State 162
-
-   44 Stmt: FORTrigger LP Def ConditionExp error . Exp RP ConditionEndTrigger
-   45     | FORTrigger LP Def ConditionExp error . Exp error ConditionEndTrigger
-
-    INT     shift, and go to state 46
-    FLOAT   shift, and go to state 47
-    CHAR    shift, and go to state 48
-    ID      shift, and go to state 49
-    MINUS   shift, and go to state 54
-    NOT     shift, and go to state 55
-    LP      shift, and go to state 56
-    UNKNOW  shift, and go to state 57
-    WRITE   shift, and go to state 60
-    READ    shift, and go to state 61
-
-    Exp  go to state 166
-
-
-State 163
-
-   43 Stmt: FORTrigger LP Def ConditionExp SEMI . Exp RP ConditionEndTrigger
-   46     | FORTrigger LP Def ConditionExp SEMI . Exp error ConditionEndTrigger
-
-    INT     shift, and go to state 46
-    FLOAT   shift, and go to state 47
-    CHAR    shift, and go to state 48
-    ID      shift, and go to state 49
-    MINUS   shift, and go to state 54
-    NOT     shift, and go to state 55
-    LP      shift, and go to state 56
-    UNKNOW  shift, and go to state 57
-    WRITE   shift, and go to state 60
-    READ    shift, and go to state 61
-
-    Exp  go to state 167
-
-
-State 164
-
-   40 Stmt: IF LP ConditionExp error Stmt ELSE . Stmt
-
-    INT       shift, and go to state 46
-    FLOAT     shift, and go to state 47
-    CHAR      shift, and go to state 48
-    ID        shift, and go to state 49
-    IF        shift, and go to state 50
-    WHILE     shift, and go to state 51
-    RETURN    shift, and go to state 52
-    FOR       shift, and go to state 53
-    MINUS     shift, and go to state 54
-    NOT       shift, and go to state 55
-    LP        shift, and go to state 56
-    LC        shift, and go to state 23
-    UNKNOW    shift, and go to state 57
-    BREAK     shift, and go to state 58
-    CONTINUE  shift, and go to state 59
-    WRITE     shift, and go to state 60
-    READ      shift, and go to state 61
-
-    CompSt        go to state 62
-    LCTrigger     go to state 25
-    Stmt          go to state 168
-    WHILETrigger  go to state 65
-    FORTrigger    go to state 66
-    Exp           go to state 67
-
-
-State 165
-
-   37 Stmt: IF LP ConditionExp RP M1 Stmt . M2
-   39     | IF LP ConditionExp RP M1 Stmt . ELSE M2 Stmt
-
-    ELSE  shift, and go to state 169
-
-    ELSE      [reduce using rule 50 (M2)]
-    $default  reduce using rule 50 (M2)
-
-    M2  go to state 170
-
-
-State 166
-
-   44 Stmt: FORTrigger LP Def ConditionExp error Exp . RP ConditionEndTrigger
-   45     | FORTrigger LP Def ConditionExp error Exp . error ConditionEndTrigger
-   63 Exp: Exp . ASSIGN Exp
-   64    | Exp . AND Exp
-   65    | Exp . OR Exp
-   66    | Exp . LT Exp
-   67    | Exp . LE Exp
-   68    | Exp . GT Exp
-   69    | Exp . GE Exp
-   70    | Exp . NE Exp
-   71    | Exp . EQ Exp
-   72    | Exp . PLUS Exp
-   73    | Exp . MINUS Exp
-   74    | Exp . MUL Exp
-   75    | Exp . DIV Exp
-   76    | Exp . UNKNOW Exp
-   85    | Exp . LB Exp RB
-   86    | Exp . DOT ID
-
-    error   shift, and go to state 171
-    DOT     shift, and go to state 95
-    ASSIGN  shift, and go to state 97
-    LT      shift, and go to state 98
-    LE      shift, and go to state 99
-    GT      shift, and go to state 100
-    GE      shift, and go to state 101
-    NE      shift, and go to state 102
-    EQ      shift, and go to state 103
-    PLUS    shift, and go to state 104
-    MINUS   shift, and go to state 105
-    MUL     shift, and go to state 106
-    DIV     shift, and go to state 107
-    AND     shift, and go to state 108
-    OR      shift, and go to state 109
-    RP      shift, and go to state 172
-    LB      shift, and go to state 110
-    UNKNOW  shift, and go to state 111
-
-
-State 167
-
-   43 Stmt: FORTrigger LP Def ConditionExp SEMI Exp . RP ConditionEndTrigger
-   46     | FORTrigger LP Def ConditionExp SEMI Exp . error ConditionEndTrigger
-   63 Exp: Exp . ASSIGN Exp
-   64    | Exp . AND Exp
-   65    | Exp . OR Exp
-   66    | Exp . LT Exp
-   67    | Exp . LE Exp
-   68    | Exp . GT Exp
-   69    | Exp . GE Exp
-   70    | Exp . NE Exp
-   71    | Exp . EQ Exp
-   72    | Exp . PLUS Exp
-   73    | Exp . MINUS Exp
-   74    | Exp . MUL Exp
-   75    | Exp . DIV Exp
-   76    | Exp . UNKNOW Exp
-   85    | Exp . LB Exp RB
-   86    | Exp . DOT ID
-
-    error   shift, and go to state 173
-    DOT     shift, and go to state 95
-    ASSIGN  shift, and go to state 97
-    LT      shift, and go to state 98
-    LE      shift, and go to state 99
-    GT      shift, and go to state 100
-    GE      shift, and go to state 101
-    NE      shift, and go to state 102
-    EQ      shift, and go to state 103
-    PLUS    shift, and go to state 104
-    MINUS   shift, and go to state 105
-    MUL     shift, and go to state 106
-    DIV     shift, and go to state 107
-    AND     shift, and go to state 108
-    OR      shift, and go to state 109
-    RP      shift, and go to state 174
-    LB      shift, and go to state 110
-    UNKNOW  shift, and go to state 111
-
-
-State 168
-
-   40 Stmt: IF LP ConditionExp error Stmt ELSE Stmt .
-
-    $default  reduce using rule 40 (Stmt)
-
-
-State 169
-
-   39 Stmt: IF LP ConditionExp RP M1 Stmt ELSE . M2 Stmt
-
-    $default  reduce using rule 50 (M2)
-
-    M2  go to state 175
-
-
-State 170
-
-   37 Stmt: IF LP ConditionExp RP M1 Stmt M2 .
-
-    $default  reduce using rule 37 (Stmt)
-
-
-State 171
-
-   45 Stmt: FORTrigger LP Def ConditionExp error Exp error . ConditionEndTrigger
+   41 Stmt: WHILETrigger LP ConditionExp RP M . ConditionEndTrigger
 
     INT       shift, and go to state 46
     FLOAT     shift, and go to state 47
@@ -2925,13 +2709,226 @@ State 171
     Stmt                 go to state 159
     WHILETrigger         go to state 65
     FORTrigger           go to state 66
-    ConditionEndTrigger  go to state 176
+    ConditionEndTrigger  go to state 167
     Exp                  go to state 67
+
+
+State 162
+
+   44 Stmt: FORTrigger LP Def ConditionExp error . Exp RP ConditionEndTrigger
+   45     | FORTrigger LP Def ConditionExp error . Exp error ConditionEndTrigger
+
+    INT     shift, and go to state 46
+    FLOAT   shift, and go to state 47
+    CHAR    shift, and go to state 48
+    ID      shift, and go to state 49
+    MINUS   shift, and go to state 54
+    NOT     shift, and go to state 55
+    LP      shift, and go to state 56
+    UNKNOW  shift, and go to state 57
+    WRITE   shift, and go to state 60
+    READ    shift, and go to state 61
+
+    Exp  go to state 168
+
+
+State 163
+
+   43 Stmt: FORTrigger LP Def ConditionExp SEMI . Exp RP ConditionEndTrigger
+   46     | FORTrigger LP Def ConditionExp SEMI . Exp error ConditionEndTrigger
+
+    INT     shift, and go to state 46
+    FLOAT   shift, and go to state 47
+    CHAR    shift, and go to state 48
+    ID      shift, and go to state 49
+    MINUS   shift, and go to state 54
+    NOT     shift, and go to state 55
+    LP      shift, and go to state 56
+    UNKNOW  shift, and go to state 57
+    WRITE   shift, and go to state 60
+    READ    shift, and go to state 61
+
+    Exp  go to state 169
+
+
+State 164
+
+   50 ELSETrigger: ELSE .
+
+    $default  reduce using rule 50 (ELSETrigger)
+
+
+State 165
+
+   40 Stmt: IF LP ConditionExp error Stmt ELSETrigger . Stmt
+
+    INT       shift, and go to state 46
+    FLOAT     shift, and go to state 47
+    CHAR      shift, and go to state 48
+    ID        shift, and go to state 49
+    IF        shift, and go to state 50
+    WHILE     shift, and go to state 51
+    RETURN    shift, and go to state 52
+    FOR       shift, and go to state 53
+    MINUS     shift, and go to state 54
+    NOT       shift, and go to state 55
+    LP        shift, and go to state 56
+    LC        shift, and go to state 23
+    UNKNOW    shift, and go to state 57
+    BREAK     shift, and go to state 58
+    CONTINUE  shift, and go to state 59
+    WRITE     shift, and go to state 60
+    READ      shift, and go to state 61
+
+    CompSt        go to state 62
+    LCTrigger     go to state 25
+    Stmt          go to state 170
+    WHILETrigger  go to state 65
+    FORTrigger    go to state 66
+    Exp           go to state 67
+
+
+State 166
+
+   37 Stmt: IF LP ConditionExp RP M Stmt .
+   39     | IF LP ConditionExp RP M Stmt . ELSETrigger Stmt
+
+    ELSE  shift, and go to state 164
+
+    $default  reduce using rule 37 (Stmt)
+
+    ELSETrigger  go to state 171
+
+
+State 167
+
+   41 Stmt: WHILETrigger LP ConditionExp RP M ConditionEndTrigger .
+
+    $default  reduce using rule 41 (Stmt)
+
+
+State 168
+
+   44 Stmt: FORTrigger LP Def ConditionExp error Exp . RP ConditionEndTrigger
+   45     | FORTrigger LP Def ConditionExp error Exp . error ConditionEndTrigger
+   63 Exp: Exp . ASSIGN Exp
+   64    | Exp . AND Exp
+   65    | Exp . OR Exp
+   66    | Exp . LT Exp
+   67    | Exp . LE Exp
+   68    | Exp . GT Exp
+   69    | Exp . GE Exp
+   70    | Exp . NE Exp
+   71    | Exp . EQ Exp
+   72    | Exp . PLUS Exp
+   73    | Exp . MINUS Exp
+   74    | Exp . MUL Exp
+   75    | Exp . DIV Exp
+   76    | Exp . UNKNOW Exp
+   85    | Exp . LB Exp RB
+   86    | Exp . DOT ID
+
+    error   shift, and go to state 172
+    DOT     shift, and go to state 95
+    ASSIGN  shift, and go to state 97
+    LT      shift, and go to state 98
+    LE      shift, and go to state 99
+    GT      shift, and go to state 100
+    GE      shift, and go to state 101
+    NE      shift, and go to state 102
+    EQ      shift, and go to state 103
+    PLUS    shift, and go to state 104
+    MINUS   shift, and go to state 105
+    MUL     shift, and go to state 106
+    DIV     shift, and go to state 107
+    AND     shift, and go to state 108
+    OR      shift, and go to state 109
+    RP      shift, and go to state 173
+    LB      shift, and go to state 110
+    UNKNOW  shift, and go to state 111
+
+
+State 169
+
+   43 Stmt: FORTrigger LP Def ConditionExp SEMI Exp . RP ConditionEndTrigger
+   46     | FORTrigger LP Def ConditionExp SEMI Exp . error ConditionEndTrigger
+   63 Exp: Exp . ASSIGN Exp
+   64    | Exp . AND Exp
+   65    | Exp . OR Exp
+   66    | Exp . LT Exp
+   67    | Exp . LE Exp
+   68    | Exp . GT Exp
+   69    | Exp . GE Exp
+   70    | Exp . NE Exp
+   71    | Exp . EQ Exp
+   72    | Exp . PLUS Exp
+   73    | Exp . MINUS Exp
+   74    | Exp . MUL Exp
+   75    | Exp . DIV Exp
+   76    | Exp . UNKNOW Exp
+   85    | Exp . LB Exp RB
+   86    | Exp . DOT ID
+
+    error   shift, and go to state 174
+    DOT     shift, and go to state 95
+    ASSIGN  shift, and go to state 97
+    LT      shift, and go to state 98
+    LE      shift, and go to state 99
+    GT      shift, and go to state 100
+    GE      shift, and go to state 101
+    NE      shift, and go to state 102
+    EQ      shift, and go to state 103
+    PLUS    shift, and go to state 104
+    MINUS   shift, and go to state 105
+    MUL     shift, and go to state 106
+    DIV     shift, and go to state 107
+    AND     shift, and go to state 108
+    OR      shift, and go to state 109
+    RP      shift, and go to state 175
+    LB      shift, and go to state 110
+    UNKNOW  shift, and go to state 111
+
+
+State 170
+
+   40 Stmt: IF LP ConditionExp error Stmt ELSETrigger Stmt .
+
+    $default  reduce using rule 40 (Stmt)
+
+
+State 171
+
+   39 Stmt: IF LP ConditionExp RP M Stmt ELSETrigger . Stmt
+
+    INT       shift, and go to state 46
+    FLOAT     shift, and go to state 47
+    CHAR      shift, and go to state 48
+    ID        shift, and go to state 49
+    IF        shift, and go to state 50
+    WHILE     shift, and go to state 51
+    RETURN    shift, and go to state 52
+    FOR       shift, and go to state 53
+    MINUS     shift, and go to state 54
+    NOT       shift, and go to state 55
+    LP        shift, and go to state 56
+    LC        shift, and go to state 23
+    UNKNOW    shift, and go to state 57
+    BREAK     shift, and go to state 58
+    CONTINUE  shift, and go to state 59
+    WRITE     shift, and go to state 60
+    READ      shift, and go to state 61
+
+    CompSt        go to state 62
+    LCTrigger     go to state 25
+    Stmt          go to state 176
+    WHILETrigger  go to state 65
+    FORTrigger    go to state 66
+    Exp           go to state 67
 
 
 State 172
 
-   44 Stmt: FORTrigger LP Def ConditionExp error Exp RP . ConditionEndTrigger
+   45 Stmt: FORTrigger LP Def ConditionExp error Exp error . ConditionEndTrigger
 
     INT       shift, and go to state 46
     FLOAT     shift, and go to state 47
@@ -2962,7 +2959,7 @@ State 172
 
 State 173
 
-   46 Stmt: FORTrigger LP Def ConditionExp SEMI Exp error . ConditionEndTrigger
+   44 Stmt: FORTrigger LP Def ConditionExp error Exp RP . ConditionEndTrigger
 
     INT       shift, and go to state 46
     FLOAT     shift, and go to state 47
@@ -2993,7 +2990,7 @@ State 173
 
 State 174
 
-   43 Stmt: FORTrigger LP Def ConditionExp SEMI Exp RP . ConditionEndTrigger
+   46 Stmt: FORTrigger LP Def ConditionExp SEMI Exp error . ConditionEndTrigger
 
     INT       shift, and go to state 46
     FLOAT     shift, and go to state 47
@@ -3024,7 +3021,7 @@ State 174
 
 State 175
 
-   39 Stmt: IF LP ConditionExp RP M1 Stmt ELSE M2 . Stmt
+   43 Stmt: FORTrigger LP Def ConditionExp SEMI Exp RP . ConditionEndTrigger
 
     INT       shift, and go to state 46
     FLOAT     shift, and go to state 47
@@ -3044,44 +3041,45 @@ State 175
     WRITE     shift, and go to state 60
     READ      shift, and go to state 61
 
-    CompSt        go to state 62
-    LCTrigger     go to state 25
-    Stmt          go to state 180
-    WHILETrigger  go to state 65
-    FORTrigger    go to state 66
-    Exp           go to state 67
+    CompSt               go to state 62
+    LCTrigger            go to state 25
+    Stmt                 go to state 159
+    WHILETrigger         go to state 65
+    FORTrigger           go to state 66
+    ConditionEndTrigger  go to state 180
+    Exp                  go to state 67
 
 
 State 176
+
+   39 Stmt: IF LP ConditionExp RP M Stmt ELSETrigger Stmt .
+
+    $default  reduce using rule 39 (Stmt)
+
+
+State 177
 
    45 Stmt: FORTrigger LP Def ConditionExp error Exp error ConditionEndTrigger .
 
     $default  reduce using rule 45 (Stmt)
 
 
-State 177
+State 178
 
    44 Stmt: FORTrigger LP Def ConditionExp error Exp RP ConditionEndTrigger .
 
     $default  reduce using rule 44 (Stmt)
 
 
-State 178
+State 179
 
    46 Stmt: FORTrigger LP Def ConditionExp SEMI Exp error ConditionEndTrigger .
 
     $default  reduce using rule 46 (Stmt)
 
 
-State 179
+State 180
 
    43 Stmt: FORTrigger LP Def ConditionExp SEMI Exp RP ConditionEndTrigger .
 
     $default  reduce using rule 43 (Stmt)
-
-
-State 180
-
-   39 Stmt: IF LP ConditionExp RP M1 Stmt ELSE M2 Stmt .
-
-    $default  reduce using rule 39 (Stmt)

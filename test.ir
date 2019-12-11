@@ -1,1 +1,20 @@
-t0 := #1
+LABEL label1 :
+FUNCTION main :
+LABEL label2 :
+READ t1
+v1 := t1
+LABEL label3 :
+IF v1 <= #0 GOTO label5
+LABEL label4 :
+WRITE #1
+GOTO label8
+LABEL label5 :
+IF v1 >= #0 GOTO label7
+LABEL label6 :
+t2 := #0 - #1
+WRITE t2
+GOTO label8
+LABEL label7 :
+WRITE #0
+LABEL label8 :
+RETURN #0

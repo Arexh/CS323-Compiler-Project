@@ -93,7 +93,7 @@ char **get_block_string(IRBlock *block) {
             instructs[0] = (char *)malloc(sizeof(char) * 128);
             char temp[128];
             get_IR_instruct_string(temp, first);
-            sprintf(instructs[0], "%s %d", temp, *block->jumpNext->labelNum);
+            sprintf(instructs[0], "%s%d", temp, *block->jumpNext->labelNum);
             return instructs;
     }
     int index;
@@ -109,12 +109,15 @@ void printf_block(IRBlock *block) {
     if (block->instructNum) {
         char **arr = get_block_string(block);
         int i;
-        printf("LABLE label%d :\n", *block->labelNum);
+        printf("LABEL label%d :\n", *block->labelNum);
         for (i = 0; i < block->instructNum; i++) {
             printf("%s\n", arr[i]);
         }
         if (block->next)
-            printf("GOTO label%d\n", *block->next->labelNum);
+            if (*block->next->labelNum != *block->labelNum + 1)
+                printf("GOTO label%d\n", *block->next->labelNum);
+        // if (block->next)
+        //     printf("GOTO label%d\n", *block->next->labelNum);
     }
 }
 
@@ -140,27 +143,38 @@ void append_jump_previous(IRBlock *block, IRBlock *previous) {
 }
 
 
-void back_patching(IRBlockNode *list, IRBlock *block) {
-    if (list == NULL)
+void back_patching_true_list(ArrayList *arrayList, IRBlock *block) {
+    if (arrayList == NULL)
         return;
-    IRBlockNode *temp = list;
-    while(temp) {
-        *temp->block = block;
-        append_jump_previous(block, *temp->block);
-        IRBlockNode *remove = temp;
-        temp = temp->next;
-        free_block_node(remove);
+    int i;
+    for (i = 0; i < arrayList->memberNum; i++) {
+        IRBlock *item = arrayList->arr[i];
+        item->next = block;
+        append_jump_previous(block, item);
     }
 }
 
-IRBlockNode *merge_list(IRBlockNode *listOne, IRBlockNode *listTwo) {
+void back_patching_false_list(ArrayList *arrayList, IRBlock *block) {
+    if (arrayList == NULL)
+        return;
+    int i;
+    for (i = 0; i < arrayList->memberNum; i++) {
+        IRBlock *item = arrayList->arr[i];
+        item->jumpNext = block;
+        append_jump_previous(block, item);
+    }
+}
+
+ArrayList *merge_list(ArrayList *listOne, ArrayList *listTwo) {
     if (listOne == NULL)
         return listTwo;
-    IRBlockNode *temp = listOne;
-    while(temp->next) {
-        temp = temp->next;
+    if (listTwo == NULL)
+        return listOne;
+    int i;
+    for (i = 0; i < listTwo->memberNum; i++) {
+        append_to_array_list(listOne, listTwo->arr[i]);
     }
-    temp->next = listTwo;
+    free_array_list(listTwo);
     return listOne;
 }
 
