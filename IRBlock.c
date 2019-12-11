@@ -93,7 +93,10 @@ char **get_block_string(IRBlock *block) {
             instructs[0] = (char *)malloc(sizeof(char) * 128);
             char temp[128];
             get_IR_instruct_string(temp, first);
-            sprintf(instructs[0], "%s%d", temp, *block->jumpNext->labelNum);
+            if (block->jumpNext == NULL || block->jumpNext->labelNum == NULL)
+                sprintf(instructs[0], "%s(NULL)", temp);
+            else
+                sprintf(instructs[0], "%s%d", temp, *block->jumpNext->labelNum);
             return instructs;
     }
     int index;

@@ -86,7 +86,7 @@ extern int yydebug;
     WRITE = 296,
     READ = 297,
     HIGH_MINUS = 298,
-    LOWER_ELSE = 299
+    LOWER_ELSE = 300
   };
 #endif
 
@@ -95,7 +95,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 22 "syntax.y" /* yacc.c:1909  */
+#line 25 "syntax.y" /* yacc.c:1909  */
 
     struct ASTNode *node;
 
