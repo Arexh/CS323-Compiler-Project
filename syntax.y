@@ -8,16 +8,14 @@
     int functionStart;
     int firstAssign;
     int functionCheck;
-    int inCondition;
-    struct TypeCheck *conditionType;
-    struct ArrayList *jumpBlocks;
+    struct ArrayList *conditionStack;
+    struct ArrayList *jumpBlocksStack;
     struct IRBlock *whileIRStart;
     void RPError(const int);
     void SEMIError(const int);
     void STRUCTError(const int, const char *);
     void DEFError(const int);
     void initial();
-    void back_patching_stmt();
     #define MAX_LINE 1024
 %}
 %error-verbose
@@ -33,7 +31,7 @@
 %type  <node> CompSt StmtList Stmt DefList Def DecList Dec
 %type  <node> Exp Args ConditionEndTrigger
 %type  <node> FunID STRUCTTrigger LCTrigger RCTrigger ConditionExp WHILETrigger FORTrigger
-%type  <node> M ELSETrigger
+%type  <node> M1 M2 M3 M4
 %right ASSIGN
 %left OR
 %left AND
@@ -245,7 +243,6 @@ StmtList: Stmt StmtList {
 Stmt: Exp SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 2, $1, $2);
-        back_patching_stmt();
         if (functionCheck == 0) {
             check_exp($1);
         }
@@ -260,7 +257,6 @@ Stmt: Exp SEMI {
     | RETURN Exp SEMI {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
-        back_patching_stmt();
         if (functionCheck == 0) {
             check_return_exp($2);
             currentFunction->re = 1;
@@ -269,21 +265,21 @@ Stmt: Exp SEMI {
     | RETURN Exp error {
         SEMIError(@$.first_line);
     }
-    | IF LP ConditionExp RP M Stmt %prec LOWER_ELSE {
+    | IF LP ConditionExp RP M1 Stmt M2 %prec LOWER_ELSE {
         $$ = newNode("Stmt", @$.first_line); 
-        appendChild($$, 5, $1, $2, $3, $4, $5);
+        appendChild($$, 5, $1, $2, $3, $4, $6);
     }
     | IF LP ConditionExp error Stmt %prec LOWER_ELSE {
         RPError(@$.first_line);
     }
-    | IF LP ConditionExp RP M Stmt ELSETrigger Stmt {
+    | IF LP ConditionExp RP M1 Stmt ELSE M3 Stmt M4 {
         $$ = newNode("Stmt", @$.first_line); 
-        appendChild($$, 7, $1, $2, $3, $4, $5, $6, $7);
+        appendChild($$, 7, $1, $2, $3, $4, $6, $7, $8);
     }
-    | IF LP ConditionExp error Stmt ELSETrigger Stmt {
+    | IF LP ConditionExp error Stmt ELSE M3 Stmt M4 {
         RPError(@$.first_line);
     }
-    | WHILETrigger LP ConditionExp RP M ConditionEndTrigger {
+    | WHILETrigger LP ConditionExp RP M1 ConditionEndTrigger {
         $$ = newNode("Stmt", @$.first_line); 
         appendChild($$, 5, $1, $2, $3, $4, $6);
     }
@@ -319,31 +315,66 @@ Stmt: Exp SEMI {
         }
     }
     ;
-M: {
+M1: {
         $$ = newNode("NONE", @$.first_line);
         // true jump IR start
         append_new_block();
-        ArrayList *trueList = conditionType->trueList;
-        if (trueList)
-            back_patching_true_list(trueList, blockEnd);
-        free_array_list(trueList);
-        conditionType->trueList = NULL;
+        ArrayList *jumpBlocks = new_array_list();
+        append_to_array_list(jumpBlocksStack, jumpBlocks);
         append_to_array_list(jumpBlocks, blockEnd);
-        inCondition = 1;
+        TypeCheck *conditionType = get_last_from_array_list(conditionStack);
+        ArrayList *trueList = conditionType->trueList;
+        if (trueList) {
+            back_patching_true_list(trueList, blockEnd);
+            free_array_list(conditionType->trueList);
+        }
+        conditionType->trueList = NULL;
         // IR end
     }
     ;
-ELSETrigger: ELSE {
+M2: {
         $$ = newNode("NONE", @$.first_line);
-        appendChild($$, 1, $1);
+        // end of if IR start
+        append_new_block();
+        ArrayList *jumpBlocks = get_last_from_array_list(jumpBlocksStack);
+        back_patching_true_list(jumpBlocks, blockEnd);
+        free_array_list(jumpBlocks);
+        jumpBlocksStack->memberNum--;
+        TypeCheck *conditionType = get_last_from_array_list(conditionStack);
+        ArrayList *falseList = conditionType->falseList;
+        if (falseList) {
+            back_patching_false_list(falseList, blockEnd);
+            free_array_list(conditionType->falseList);
+        }
+        conditionType->falseList = NULL;
+        conditionStack->memberNum--;
+        // IR end
+    }
+    ;
+M3: {
+        $$ = newNode("NONE", @$.first_line);
         // false jump IR start
         append_new_block();
+        ArrayList *jumpBlocks = get_last_from_array_list(jumpBlocksStack);
+        append_to_array_list(jumpBlocks, blockEnd);
+        TypeCheck *conditionType = get_last_from_array_list(conditionStack);
         ArrayList *falseList = conditionType->falseList;
-        if (falseList)
+        if (falseList) {
             back_patching_false_list(falseList, blockEnd);
-        free_array_list(conditionType->falseList);
+            free_array_list(conditionType->falseList);
+        }
         conditionType->falseList = NULL;
-        inCondition = 1;
+        // IR end
+    }
+    ;
+M4: {
+        $$ = newNode("NONE", @$.first_line);
+        // end of condition
+        append_new_block();
+        ArrayList *jumpBlocks = get_last_from_array_list(jumpBlocksStack);
+        back_patching_true_list(jumpBlocks, blockEnd);
+        free_array_list(jumpBlocks);
+        jumpBlocksStack->memberNum--;
         // IR end
     }
     ;
@@ -356,7 +387,9 @@ WHILETrigger: WHILE {
             newLoop->next = currentLoop;
             currentLoop = newLoop;
         }
+        // while start IR start
         whileIRStart = append_new_block();
+        // IR end
     };
 FORTrigger: FOR {
         $$ = $1;
@@ -377,19 +410,13 @@ ConditionEndTrigger: Stmt {
             free(temp);
         }
         // while backpatching IR start
-        ArrayList *trueList = conditionType->trueList;
-        if (trueList) {
-            back_patching_true_list(trueList, blockEnd);
-            free_array_list(conditionType->trueList);
-            conditionType->trueList = NULL;
-        }
+
         // IR end
     };
 ConditionExp: Exp {
         $$ = $1;
-        conditionType = NULL;
         if (functionCheck == 0) {
-            conditionType = check_condition($1);
+            append_to_array_list(conditionStack, check_condition($1));
         }
     };
 /* local definition */
@@ -587,34 +614,6 @@ Args: Exp COMMA Args  {
     }
     ;
 %%
-void back_patching_stmt() {
-    if (!inCondition && conditionType && conditionType->falseList) {
-        IRBlock *before = blockEnd;
-        append_new_block();
-        if (whileIRStart) {
-            before->next = whileIRStart;
-            whileIRStart = NULL;
-        }
-        back_patching_false_list(conditionType->falseList, blockEnd);
-        free_array_list(conditionType->falseList);
-        conditionType->falseList = NULL;
-        conditionType = NULL;
-        if (jumpBlocks->memberNum) {
-            int i;
-            for (i = 0; i < jumpBlocks->memberNum; i++) {
-                IRBlock *block = jumpBlocks->arr[i];
-                if (*block->labelNum + 1 == *blockEnd->labelNum)
-                    continue;
-                block->next = blockEnd;
-                append_jump_previous(blockEnd, block);
-            }
-            free_array_list(jumpBlocks);
-            jumpBlocks = new_array_list();
-        }
-    } else {
-        inCondition = 0;
-    }
-}
 void RPError(const int lineno){
     fprintf(out, "Error type B at Line %d: Missing closing parenthesis ')'\n", lineno);
     error = 1;
@@ -655,10 +654,9 @@ void initial(){
     functionCheck = 0;
     init_number_control();
     init_IR_block();
-    jumpBlocks = new_array_list();
-    inCondition = 0;
     whileIRStart = NULL;
-    conditionType = NULL;
+    conditionStack = new_array_list();
+    jumpBlocksStack = new_array_list();
 }
 #ifndef CALC_MAIN
 #else

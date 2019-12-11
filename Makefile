@@ -6,7 +6,7 @@ BISON=bison
 .lex: lex.l
 	$(FLEX) lex.l
 .syntax: syntax.y
-	$(BISON) -t -d -v syntax.y
+	$(BISON) -t -d -v syntax.y -Wconflicts-sr
 splc: .lex .syntax
 	$(CC) syntax.tab.c -lfl -ly -D CALC_MAIN -o ./splc
 libcalc: .lex .syntax
