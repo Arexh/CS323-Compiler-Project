@@ -460,20 +460,17 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 fprintf(out, "Error type 1 at Line %d: variable is used without deﬁnition\n", exp->row);
                 return NULL;
             } else {
+                typeCheck->type = item->type;
+                typeCheck->dimension = item->dimension;
+                typeCheck->dimensions = item->dimensions;
                 if (strcmp(item->type, "structVariable") == 0) {
-                    typeCheck->type = item->type;
                     typeCheck->attribute = item->attribute;
-                    typeCheck->dimension = item->dimension;
-                    typeCheck->dimensions = item->dimensions;
                 } else {
-                    typeCheck->type = item->type;
-                    typeCheck->dimension = item->dimension;
-                    typeCheck->dimensions = item->dimensions;
                     typeCheck->attribute = NULL;
                 }
                 // struct or ID IR start
                 typeCheck->argNum = item->varNum;
-                if (typeCheck->dimension)
+                if (typeCheck->dimension || strcmp(item->type, "structVariable") == 0)
                     typeCheck->argType = _ADDRESS;
                 else
                     typeCheck->argType = _VAR_OR_TEMP;
@@ -600,7 +597,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     address_instruct->argTwo = offset;
                     address_instruct->argTwoType = _CONSTANT;
                     address_instruct->result = new_temp_num();
-                    checkMenber->index = -1;
+                    checkMenber->index = 0;
                     checkMenber->argNum = address_instruct->result;
                     checkMenber->argType = _VALUE;
                     return checkMenber;
@@ -806,7 +803,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                                 judge = 1;
                                 break;
                             } else {
-                                if (strcmp(c->type, "structVariable") == 0 && compare_if_equal(c->attribute, parameter->attribute)) {
+                                if (strcmp(c->type, "structVariable") == 0 && compare_if_equal(c->attribute, parameter->attribute) == 0) {
                                     judge = 1;
                                     break;
                                 } 
@@ -840,7 +837,8 @@ TypeCheck* travel_exp(ASTNode *exp) {
                                 TypeCheck *input_para = typeCheckArrayList->arr[i];
                                 IRInstruct *arg_instruct = append_new_instruct(blockEnd);
                                 arg_instruct->type = _ARGUMENT;
-                                arg_instruct->result = input_para->argNum;
+                                arg_instruct->argOne = input_para->argNum;
+                                arg_instruct->argOneType = input_para->argType;
                             }
                             IRInstruct *call_instruct = append_new_instruct(blockEnd);
                             call_instruct->type = _CALL;

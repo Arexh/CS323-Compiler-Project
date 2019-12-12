@@ -116,7 +116,7 @@ void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
             sprintf(str, "PARAM %s", result);
             break;
         case _ARGUMENT:
-            sprintf(str, "ARG %s", result);
+            sprintf(str, "ARG %s", argOne);
             break;
         case _CALL:
             sprintf(str, "%s := CALL %s", result, instruct->funcName);

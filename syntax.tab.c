@@ -2788,6 +2788,7 @@ void initial(){
     init_IR_block();
     conditionStack = new_array_list();
     whileIRStartStack = new_array_list();
+    jumpBlockStack = new_array_list();
 }
 #ifndef CALC_MAIN
 #else
