@@ -8,7 +8,7 @@ enum ArgType
 
 enum InstructType
 {
-    _ASSIGN = 1, _PLUS, _MINUS, _MULTIPLY, _SUBSTRACT, _DIVIDE, _ADDRESS, _COPY, _RETURN, _DECLARE, _PARAMETER, _ARGUMENT, _CALL, _READ, _WRITE, _FUNCTION,
+    _ASSIGN = 1, _PLUS, _MINUS, _MULTIPLY, _SUBSTRACT, _DIVIDE, _ADDRESS, _VALUE, _COPY, _RETURN, _DECLARE, _PARAMETER, _ARGUMENT, _CALL, _READ, _WRITE, _FUNCTION,
     _LESSTHAN, _LESSEQUAL, _GREATERTHAN, _GREATEREQUAL, _NOTEQUAL, _EQUAL
 };
 
@@ -81,6 +81,9 @@ void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
             break;
         case _COPY:
             sprintf(str, "*%s := %s", result, argOne);
+            break;
+        case _VALUE:
+            sprintf(str, "%s := *%s", result, argOne);
             break;
         case _RETURN:
             sprintf(str, "RETURN %s", argOne);

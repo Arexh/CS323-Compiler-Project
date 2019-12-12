@@ -341,7 +341,11 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             if (dimension > 0) {
                 // array variable declarae space IR start
                 int *dec_num = (int *)malloc(sizeof(int));
-                *dec_num = dimension * 4;
+                int i;
+                *dec_num = 1;
+                for (i = 0; i < dimension; i++)
+                    *dec_num *= *(dimensions + i);
+                *dec_num = *dec_num * 4;
                 IRInstruct *dec_instruct = append_new_instruct(blockEnd);
                 dec_instruct->type = _DECLARE;
                 dec_instruct->result = item->varNum;
@@ -372,6 +376,8 @@ void put_para(ASTNode *specifier, ASTNode *varDec) {
 
 typedef struct TypeCheck {
     int dimension;
+    int *dimensions;
+    int index;
     char *type;
     int r;
     StructAttribute *attribute;
@@ -384,9 +390,11 @@ typedef struct TypeCheck {
 TypeCheck *new_type_check() {
     TypeCheck *typeCheck = (TypeCheck *)malloc(sizeof(TypeCheck));
     typeCheck->dimension = 0;
+    typeCheck->dimensions = NULL;
     typeCheck->type = NULL;
     typeCheck->attribute = NULL;
     typeCheck->r = 0;
+    typeCheck->index = -1;
     typeCheck->trueList = NULL;
     typeCheck->falseList = NULL;
     return typeCheck;
@@ -409,6 +417,16 @@ TypeCheck *check_member(StructAttribute *attribute, char *ID) {
         }
     }
     return NULL;
+}
+
+void get_array_value(TypeCheck *typeCheck) {
+    IRInstruct *value_instruct = append_new_instruct(blockEnd);
+    value_instruct->type = _VALUE;
+    value_instruct->argOne = typeCheck->argNum;
+    value_instruct->argOneType = typeCheck->argType;
+    value_instruct->result = new_temp_num();
+    typeCheck->argNum = value_instruct->result;
+    typeCheck->argType = _VAR_OR_TEMP;
 }
 
 TypeCheck* travel_exp(ASTNode *exp) {
@@ -445,9 +463,11 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     typeCheck->type = item->type;
                     typeCheck->attribute = item->attribute;
                     typeCheck->dimension = item->dimension;
+                    typeCheck->dimensions = item->dimensions;
                 } else {
                     typeCheck->type = item->type;
                     typeCheck->dimension = item->dimension;
+                    typeCheck->dimensions = item->dimensions;
                     typeCheck->attribute = NULL;
                 }
                 // struct or ID IR start
@@ -467,6 +487,8 @@ TypeCheck* travel_exp(ASTNode *exp) {
             if (strcmp(right->type, "int") == 0 || strcmp(right->type, "float") == 0) {
                 if (right->dimension == 0) {
                     // MINUS IR start
+                    if (right->dimension)
+                        get_array_value(right);
                     IRInstruct *minus_instruct = append_new_instruct(blockEnd);
                     minus_instruct->type = _MINUS;
                     minus_instruct->result = new_temp_num();
@@ -663,6 +685,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     // comparation IR start
                     if (blockEnd->instructNum)
                         append_new_block();
+                    if (left->index)
+                        get_array_value(left);
+                    if (right->index)
+                        get_array_value(right);
                     IRInstruct *comparation_instruct = append_new_instruct(blockEnd);
                     if (strcmp(type, "LT") == 0)
                         comparation_instruct->type = _LESSTHAN;
@@ -699,6 +725,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         }
                         if (left->r || right->r)
                             newType->r = 1;
+                        if (left->index)
+                            get_array_value(left);
+                        if (right->index)
+                            get_array_value(right);
                         // Arithmetic opeartion IR start
                         IRInstruct *arithmetic_instruct = append_new_instruct(blockEnd);
                         if (strcmp(type, "PLUS") == 0)
@@ -825,6 +855,51 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 fprintf(out, "Error type 10 at Line %d: applying indexing operator ([...]) on non-array type variables\n", exp->row);
                 return NULL;
             }
+            if (left->index == -1) {
+                IRInstruct *address_instruct = append_new_instruct(blockEnd);
+                address_instruct->type = _ADDRESS;
+                address_instruct->argOne = left->argNum;
+                address_instruct->argOneType = left->argType;
+                address_instruct->result = new_temp_num();
+                left->argNum = address_instruct->result;
+                left->argType = _VAR_OR_TEMP;
+                left->index = 0;
+            }
+            int i;
+            int arrayDimension = left->index + left->dimension;
+            int *offset = (int *)malloc(sizeof(int));
+            *offset = 1;
+            for (i = left->index + 1; i < arrayDimension; i++) {
+                *offset *= *(left->dimensions + i);
+            }
+            *offset *= 4;
+            int *argTwo;
+            enum ArgType argTwoType;
+            if (right->argType == _CONSTANT) {
+                *offset *= *right->argNum;
+                argTwo = offset;
+                argTwoType = _CONSTANT;
+            } else {
+                IRInstruct *mul_instruct = append_new_instruct(blockEnd);
+                mul_instruct->type = _MULTIPLY;
+                mul_instruct->argOne = right->argNum;
+                mul_instruct->argOneType = right->argType;
+                mul_instruct->argTwo = offset;
+                mul_instruct->argTwoType = _CONSTANT;
+                mul_instruct->result = new_temp_num();
+                argTwo = mul_instruct->result;
+                argTwoType = _VAR_OR_TEMP;
+            }
+            IRInstruct *plus_instruct = append_new_instruct(blockEnd);
+            plus_instruct->type = _PLUS;
+            plus_instruct->argOne = left->argNum;
+            plus_instruct->argOneType = left->argType;
+            plus_instruct->argTwo = argTwo;
+            plus_instruct->argTwoType = argTwoType;
+            plus_instruct->result = new_temp_num();
+            left->argNum = plus_instruct->result;
+            left->argType = _VAR_OR_TEMP;
+            left->index++;
             left->dimension--;
             return left;
         } else {
