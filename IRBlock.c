@@ -77,7 +77,22 @@ IRInstruct *append_new_instruct(IRBlock *block) {
         block->instructTail->next = instruct;
         instruct->previous = block->instructTail;
         block->instructTail = instruct;
-        block->instructNum ++;
+        block->instructNum++;
+    }
+    return instruct;
+}
+
+IRInstruct *append_new_instruct_reverse(IRBlock *block) {
+    IRInstruct *instruct = new_IR_instruct();
+    if (block->instructNum == 0) {
+        block->instructHead = instruct;
+        block->instructTail = instruct;
+        block->instructNum = 1;
+    } else {
+        block->instructHead->previous = instruct;
+        instruct->next = block->instructHead;
+        block->instructHead = instruct;
+        block->instructNum++;
     }
     return instruct;
 }

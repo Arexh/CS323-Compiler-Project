@@ -14,6 +14,7 @@ typedef struct Parameter {
     char *type;
     int dimension;
     int *dimensions;
+    TableItem *item;
     struct StructAttribute *attribute;
     struct Parameter *next;
 } Parameter;
@@ -23,29 +24,18 @@ Parameter *new_parameter() {
     para->type = NULL;
     para->dimension = 0;
     para->attribute = NULL;
-    para->next = NULL;
     para->dimensions = NULL;
+    para->item = NULL;
     return para;
-}
-
-void append_new_parameter(Parameter *head, Parameter *new) {
-    Parameter *temp = head;
-    head = head->next;
-    while(head) {
-        temp = head;
-        head = head->next;
-    }
-    temp->next = new;
 }
 
 typedef struct FunctionAttribute {
     char *returnType;
     char *ID;
     int re;
-    int paraNum;
     struct StructAttribute *attribute;
     HashTable *hashTable;
-    Parameter *parameter;
+    ArrayList *parameters;
     struct FunctionAttribute *next;
 } FunctionAttribute;
 
@@ -55,11 +45,14 @@ FunctionAttribute *new_function_attribute(char *returnType, char *ID) {
     attribute->ID = ID;
     attribute->hashTable = new_hash_table();
     attribute->next = NULL;
-    attribute->paraNum = 0;
-    attribute->parameter = NULL;
+    attribute->parameters = new_array_list();
     attribute->attribute = NULL;
     attribute->re = 0;
     return attribute;
+}
+
+void append_new_parameter(FunctionAttribute *func, Parameter *new) {
+    append_to_array_list(func->parameters, new);
 }
 
 TableItem *put_node(char* ID, char* type, void *attribute, int scopeNum, int dimension, int *dimensions) {
@@ -357,17 +350,13 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             }
         }
         if (para) {
+            parameter->item = item;
             // parameter IR start
             IRInstruct *para_instruct = append_new_instruct(blockEnd);
             para_instruct->type = _PARAMETER;
             para_instruct->result = item->varNum;
             // IR end
-            if (currentFunction->parameter == NULL) {
-                currentFunction->parameter = parameter;
-            } else {
-                append_new_parameter(currentFunction->parameter, parameter);
-                currentFunction->paraNum++;
-            }
+            append_new_parameter(currentFunction, parameter);
         }
     }
     return 0;
@@ -535,11 +524,19 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 } else {
                     if (strcmp(item->type, "function") == 0) {
                         FunctionAttribute *attribute = item->attribute;
-                        if (attribute->parameter == NULL) {
+                        if (attribute->parameters->memberNum == 0) {
                             typeCheck->type = attribute->returnType;
                             if (strcmp(typeCheck->type, "structVariable") == 0) {
                                 typeCheck->attribute = attribute->attribute;
                             }
+                            // non-arg function call IR start
+                            IRInstruct *non_arg_instruct = append_new_instruct(blockEnd);
+                            non_arg_instruct->type = _CALL;
+                            non_arg_instruct->funcName = item->ID;
+                            non_arg_instruct->result = new_temp_num();
+                            typeCheck->argNum = non_arg_instruct->result;
+                            typeCheck->argType = _VAR_OR_TEMP;
+                            // IR end
                             return typeCheck;
                         } else {
                             fprintf(out, "Error type 9 at Line %d: the function’s arguments mismatch the declared parameters\n", exp->row);
@@ -740,15 +737,19 @@ TypeCheck* travel_exp(ASTNode *exp) {
             } else {
                 if (strcmp(item->type, "function") == 0) {
                     FunctionAttribute *attribute = item->attribute;
-                    Parameter *parameter = attribute->parameter;
-                    if (parameter == NULL) {
+                    if (attribute->parameters->memberNum == 0) {
                         fprintf(out, "Error type 9 at Line %d: the function’s arguments mismatch the declared parameters\n", exp->row);
                         return NULL;
                     } else {
                         ASTNode *args = exp->child[2];
                         int judge = 0;
-                        while(parameter) {
+                        int i = 0;
+                        ArrayList *typeCheckArrayList = new_array_list();
+                        int totalParaNum = attribute->parameters->memberNum;
+                        while(i < totalParaNum) {
+                            Parameter *parameter = attribute->parameters->arr[i];
                             TypeCheck *c = travel_exp(args->child[0]);
+                            append_to_array_list(typeCheckArrayList, c);
                             if (c == NULL) {
                                 return NULL;
                             }
@@ -761,15 +762,15 @@ TypeCheck* travel_exp(ASTNode *exp) {
                                     break;
                                 } 
                             }
-                            parameter = parameter->next;
+                            i++;
                             if (args->child_count == 3) {
                                 args = args->child[2];
-                                if (parameter == NULL) {
+                                if (i >= attribute->parameters->memberNum) {
                                     judge = 1;
                                     break;
                                 }
                             } else {
-                                if (parameter) {
+                                if (i < attribute->parameters->memberNum) {
                                     judge = 1;
                                 }
                                 break;
@@ -777,12 +778,29 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         }
                         if (judge) {
                             fprintf(out, "Error type 9 at Line %d: the function’s arguments mismatch the declared parameters\n", exp->row);
+                            free_array_list(typeCheckArrayList);
                             return NULL;
                         } else {
                             typeCheck->type = attribute->returnType;
                             if (strcmp(typeCheck->type, "structVariable") == 0) {
                                 typeCheck->attribute = attribute->attribute;
                             }
+                            // arg function call IR start
+                            int i;
+                            for (i = typeCheckArrayList->memberNum - 1; i >= 0; i--) {
+                                TypeCheck *input_para = typeCheckArrayList->arr[i];
+                                IRInstruct *arg_instruct = append_new_instruct(blockEnd);
+                                arg_instruct->type = _ARGUMENT;
+                                arg_instruct->result = input_para->argNum;
+                            }
+                            IRInstruct *call_instruct = append_new_instruct(blockEnd);
+                            call_instruct->type = _CALL;
+                            call_instruct->funcName = item->ID;
+                            call_instruct->result = new_temp_num();
+                            typeCheck->argNum = call_instruct->result;
+                            typeCheck->argType = _VAR_OR_TEMP;
+                            free_array_list(typeCheckArrayList);
+                            // IR end
                             return typeCheck;
                         }
                     }
