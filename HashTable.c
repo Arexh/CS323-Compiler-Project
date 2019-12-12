@@ -14,6 +14,7 @@ typedef struct TableItem {
     int scopeNum;
     int dimension;
     int *dimensions;
+    int para;
     // variable IR identifier
     int *varNum;
     struct TableItem *next;
@@ -43,6 +44,7 @@ TableItem *new_table_item(char *ID, char *type, void *attribute, int scopeNum, i
     item->scopeNum = scopeNum;
     item->dimension = dimension;
     item->dimensions = dimensions;
+    item->para = 0;
     // initial variable identifier IR start
     if (strcmp(type, "struct") && strcmp(type, "function"))
         item->varNum = new_var_num();

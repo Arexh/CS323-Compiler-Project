@@ -340,16 +340,18 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             item = put_node(ID, type, NULL, currentScopeNumber, dimension, dimensions);
             if (dimension > 0) {
                 // array variable declarae space IR start
-                int *dec_num = (int *)malloc(sizeof(int));
-                int i;
-                *dec_num = 1;
-                for (i = 0; i < dimension; i++)
-                    *dec_num *= *(dimensions + i);
-                *dec_num = *dec_num * 4;
-                IRInstruct *dec_instruct = append_new_instruct(blockEnd);
-                dec_instruct->type = _DECLARE;
-                dec_instruct->result = item->varNum;
-                dec_instruct->argOne = dec_num;
+                if (!para) {
+                    int *dec_num = (int *)malloc(sizeof(int));
+                    int i;
+                    *dec_num = 1;
+                    for (i = 0; i < dimension; i++)
+                        *dec_num *= *(dimensions + i);
+                    *dec_num = *dec_num * 4;
+                    IRInstruct *dec_instruct = append_new_instruct(blockEnd);
+                    dec_instruct->type = _DECLARE;
+                    dec_instruct->result = item->varNum;
+                    dec_instruct->argOne = dec_num;
+                } 
                 // IR end
             }
         }
@@ -359,6 +361,7 @@ int put_para_or_var(ASTNode *specifier, ASTNode *varDec, int para) {
             IRInstruct *para_instruct = append_new_instruct(blockEnd);
             para_instruct->type = _PARAMETER;
             para_instruct->result = item->varNum;
+            item->para = 1;
             // IR end
             append_new_parameter(currentFunction, parameter);
         }
@@ -420,16 +423,6 @@ TypeCheck *check_member(StructAttribute *attribute, char *ID) {
     return NULL;
 }
 
-void get_array_value(TypeCheck *typeCheck) {
-    IRInstruct *value_instruct = append_new_instruct(blockEnd);
-    value_instruct->type = _VALUE;
-    value_instruct->argOne = typeCheck->argNum;
-    value_instruct->argOneType = typeCheck->argType;
-    value_instruct->result = new_temp_num();
-    typeCheck->argNum = value_instruct->result;
-    typeCheck->argType = _VAR_OR_TEMP;
-}
-
 TypeCheck* travel_exp(ASTNode *exp) {
     TypeCheck *typeCheck = new_type_check();
     if (exp->child_count == 1) {
@@ -470,7 +463,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 }
                 // struct or ID IR start
                 typeCheck->argNum = item->varNum;
-                if (typeCheck->dimension || strcmp(item->type, "structVariable") == 0)
+                if (!item->para && (typeCheck->dimension || strcmp(item->type, "structVariable") == 0))
                     typeCheck->argType = _ADDRESS;
                 else
                     typeCheck->argType = _VAR_OR_TEMP;
@@ -488,8 +481,6 @@ TypeCheck* travel_exp(ASTNode *exp) {
             if (strcmp(right->type, "int") == 0 || strcmp(right->type, "float") == 0) {
                 if (right->dimension == 0) {
                     // MINUS IR start
-                    if (right->dimension)
-                        get_array_value(right);
                     IRInstruct *minus_instruct = append_new_instruct(blockEnd);
                     minus_instruct->type = _MINUS;
                     minus_instruct->result = new_temp_num();
@@ -593,7 +584,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     IRInstruct *address_instruct = append_new_instruct(blockEnd);
                     address_instruct->type = _PLUS;
                     address_instruct->argOne = left->argNum;
-                    address_instruct->argOneType = _ADDRESS;
+                    address_instruct->argOneType = left->argType;
                     address_instruct->argTwo = offset;
                     address_instruct->argTwoType = _CONSTANT;
                     address_instruct->result = new_temp_num();
@@ -701,10 +692,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     // comparation IR start
                     if (blockEnd->instructNum)
                         append_new_block();
-                    if (left->index)
-                        get_array_value(left);
-                    if (right->index)
-                        get_array_value(right);
+                    // if (left->index)
+                    //     get_array_value(left);
+                    // if (right->index)
+                    //     get_array_value(right);
                     IRInstruct *comparation_instruct = append_new_instruct(blockEnd);
                     if (strcmp(type, "LT") == 0)
                         comparation_instruct->type = _LESSTHAN;
@@ -741,10 +732,6 @@ TypeCheck* travel_exp(ASTNode *exp) {
                         }
                         if (left->r || right->r)
                             newType->r = 1;
-                        if (left->index)
-                            get_array_value(left);
-                        if (right->index)
-                            get_array_value(right);
                         // Arithmetic opeartion IR start
                         IRInstruct *arithmetic_instruct = append_new_instruct(blockEnd);
                         if (strcmp(type, "PLUS") == 0)
