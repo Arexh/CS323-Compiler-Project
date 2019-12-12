@@ -3,12 +3,12 @@
 
 enum ArgType
 {
-    _CONSTANT = 1, _VAR_OR_TEMP
+    _CONSTANT = 1, _VAR_OR_TEMP, _VALUE, _ADDRESS
 };
 
 enum InstructType
 {
-    _ASSIGN = 1, _PLUS, _MINUS, _MULTIPLY, _SUBSTRACT, _DIVIDE, _ADDRESS, _VALUE, _COPY, _RETURN, _DECLARE, _PARAMETER, _ARGUMENT, _CALL, _READ, _WRITE, _FUNCTION,
+    _ASSIGN = 1, _PLUS, _MINUS, _MULTIPLY, _SUBSTRACT, _DIVIDE, _COPY, _RETURN, _DECLARE, _PARAMETER, _ARGUMENT, _CALL, _READ, _WRITE, _FUNCTION,
     _LESSTHAN, _LESSEQUAL, _GREATERTHAN, _GREATEREQUAL, _NOTEQUAL, _EQUAL
 };
 
@@ -32,6 +32,8 @@ IRInstruct *new_IR_instruct() {
     instruct->next = NULL;
     instruct->previous = NULL;
     instruct->funcName = NULL;
+    instruct->argOneType = 0;
+    instruct->argTwoType = 0;
 }
 
 void get_result_string(char str[32], int *num) {
@@ -43,13 +45,35 @@ void get_result_string(char str[32], int *num) {
         sprintf(str, "t%d", -*num);
 }
 
-void get_arg_string(char str[32], int *num, enum ArgType type) {
+void get_address_string(char str[32], int *num) {
     if (num == NULL)
+        return;
+    if (*num > 0)
+        sprintf(str, "&v%d", *num);
+    else
+        sprintf(str, "&t%d", -*num);
+}
+
+void get_value_string(char str[32], int *num) {
+    if (num == NULL)
+        return;
+    if (*num > 0)
+        sprintf(str, "*v%d", *num);
+    else
+        sprintf(str, "*t%d", -*num);
+}
+
+void get_arg_string(char str[32], int *num, enum ArgType type) {
+    if (num == NULL || type == 0)
         return;
     if (type == _CONSTANT)
         sprintf(str, "#%d", *num);
-    else
+    else if (type == _VAR_OR_TEMP)
         get_result_string(str, num);
+    else if (type == _ADDRESS)
+        get_address_string(str, num);
+    else
+        get_value_string(str, num);
 }
 
 void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
@@ -62,7 +86,10 @@ void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
             sprintf(str, "%s := %s", result, argOne);
             break;
         case _PLUS:
-            sprintf(str, "%s := %s + %s", result, argOne, argTwo);
+            if (instruct->argTwo == NULL || *instruct->argTwo == 0)
+                sprintf(str, "%s := %s", result, argOne);
+            else
+                sprintf(str, "%s := %s + %s", result, argOne, argTwo);
             break;
         case _MINUS:
             sprintf(str, "%s := #0 - %s", result, argOne);
@@ -76,14 +103,8 @@ void get_IR_instruct_string(char str[128], IRInstruct *instruct) {
         case _DIVIDE:
             sprintf(str, "%s := %s / %s", result, argOne, argTwo);
             break;
-        case _ADDRESS:
-            sprintf(str, "%s := &%s", result, argOne);
-            break;
         case _COPY:
             sprintf(str, "*%s := %s", result, argOne);
-            break;
-        case _VALUE:
-            sprintf(str, "%s := *%s", result, argOne);
             break;
         case _RETURN:
             sprintf(str, "RETURN %s", argOne);

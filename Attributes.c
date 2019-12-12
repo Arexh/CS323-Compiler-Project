@@ -394,7 +394,7 @@ TypeCheck *new_type_check() {
     typeCheck->type = NULL;
     typeCheck->attribute = NULL;
     typeCheck->r = 0;
-    typeCheck->index = -1;
+    typeCheck->index = 0;
     typeCheck->trueList = NULL;
     typeCheck->falseList = NULL;
     return typeCheck;
@@ -412,6 +412,7 @@ TypeCheck *check_member(StructAttribute *attribute, char *ID) {
                 newType->type = variable->type;
                 newType->dimension = variable->dimension;
                 newType->attribute = variable->attribute;
+                newType->index = index;
                 return newType;
             }
         }
@@ -472,7 +473,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 }
                 // struct or ID IR start
                 typeCheck->argNum = item->varNum;
-                typeCheck->argType = _VAR_OR_TEMP;
+                if (typeCheck->dimension)
+                    typeCheck->argType = _ADDRESS;
+                else
+                    typeCheck->argType = _VAR_OR_TEMP;
                 // IR end
             }
         }
@@ -587,6 +591,18 @@ TypeCheck* travel_exp(ASTNode *exp) {
                     fprintf(out, "Error type 14 at Line %d: accessing an undeﬁned structure member\n", exp->row);
                     return NULL;
                 } else {
+                    int *offset = (int *)malloc(sizeof(int));
+                    *offset = checkMenber->index * 4;
+                    IRInstruct *address_instruct = append_new_instruct(blockEnd);
+                    address_instruct->type = _PLUS;
+                    address_instruct->argOne = left->argNum;
+                    address_instruct->argOneType = _ADDRESS;
+                    address_instruct->argTwo = offset;
+                    address_instruct->argTwoType = _CONSTANT;
+                    address_instruct->result = new_temp_num();
+                    checkMenber->index = -1;
+                    checkMenber->argNum = address_instruct->result;
+                    checkMenber->argType = _VALUE;
                     return checkMenber;
                 }
             } else {
@@ -620,7 +636,10 @@ TypeCheck* travel_exp(ASTNode *exp) {
                             // match
                             // assign IR start
                             IRInstruct *assign_instruct = append_new_instruct(blockEnd);
-                            assign_instruct->type = _ASSIGN;
+                            if (left->argType == _VALUE)
+                                assign_instruct->type = _COPY;
+                            else
+                                assign_instruct->type = _ASSIGN;
                             assign_instruct->result = left->argNum;
                             assign_instruct->argOne = right->argNum;
                             assign_instruct->argOneType = right->argType;
@@ -855,16 +874,7 @@ TypeCheck* travel_exp(ASTNode *exp) {
                 fprintf(out, "Error type 10 at Line %d: applying indexing operator ([...]) on non-array type variables\n", exp->row);
                 return NULL;
             }
-            if (left->index == -1) {
-                IRInstruct *address_instruct = append_new_instruct(blockEnd);
-                address_instruct->type = _ADDRESS;
-                address_instruct->argOne = left->argNum;
-                address_instruct->argOneType = left->argType;
-                address_instruct->result = new_temp_num();
-                left->argNum = address_instruct->result;
-                left->argType = _VAR_OR_TEMP;
-                left->index = 0;
-            }
+            // array IR start
             int i;
             int arrayDimension = left->index + left->dimension;
             int *offset = (int *)malloc(sizeof(int));
@@ -901,6 +911,9 @@ TypeCheck* travel_exp(ASTNode *exp) {
             left->argType = _VAR_OR_TEMP;
             left->index++;
             left->dimension--;
+            if (left->dimension == 0)
+                left->argType = _VALUE;
+            // IR end
             return left;
         } else {
             // WRITE LP Exp RP

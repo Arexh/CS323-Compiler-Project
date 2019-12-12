@@ -2,7 +2,11 @@ LABEL label1 :
 FUNCTION main :
 LABEL label2 :
 READ t1
-v1 := t1
+DEC v1 8
+v2 := &v1 + #4
+*v2 := #4
+t10 := #3 - *v2
+WRITE t10
 LABEL label3 :
 IF v1 <= #0 GOTO label5
 LABEL label4 :
