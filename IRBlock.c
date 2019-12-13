@@ -142,9 +142,8 @@ char **get_block_string(IRBlock *block) {
 }
 
 void printf_block(IRBlock *block) {
-    // if (block->ignore == _NONE)
-    //     printf("LABEL label%d :\n", *block->labelNum);
-    printf("LABEL label%d :\n", *block->labelNum);
+    if (block->ignore == _NONE)
+        printf("LABEL label%d :\n", *block->labelNum);
     if (block->instructNum) {
         char **arr = get_block_string(block);
         int i;
@@ -174,8 +173,11 @@ void rebuild_blocks() {
                 block->jumpNext = jumpNext;
             }
             append_to_array_list(newBlocksList, block);
-            *block->labelNum = newBlocksList->memberNum;
         }
+    }
+    for (i = 0; i < newBlocksList->memberNum; i++) {
+        IRBlock *block = newBlocksList->arr[i];
+        *block->labelNum = i + 1;
     }
     blocksArrayList = newBlocksList;
 }
@@ -227,17 +229,15 @@ void check_label_reference() {
 void printf_all_blocks() {
     remove_empty_blocks();
     rebuild_blocks();
-    IRBlock *test = blocksArrayList->arr[29];
-    test = test->next;
-    printf("REFERNCE: %d, ignore: %d\n", test->reference, test->ignore);
-    // printf_block(test);
-    // test = test->next;
-    // printf("NEXT: %d\n", *test->labelNum);
-    // check_label_reference();
-    // int i;
+    int i;
     // for (i = 0; i < blocksArrayList->memberNum; i++) {
-    //     printf_block((IRBlock *)blocksArrayList->arr[i]);
-    // }   
+    //     IRBlock *block = blocksArrayList->arr[i];
+    //     printf("BLOCK %d, insturnctNum: %d\n", i + 1, block->instructNum);
+    // }
+    check_label_reference();
+    for (i = 0; i < blocksArrayList->memberNum; i++) {
+        printf_block((IRBlock *)blocksArrayList->arr[i]);
+    }
 }
 
 void append_jump_previous(IRBlock *block, IRBlock *previous) {

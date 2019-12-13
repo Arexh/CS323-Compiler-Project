@@ -1,0 +1,27 @@
+FUNCTION main :
+READ t1
+v1 := t1
+IF v1 <= #0 GOTO label5
+WRITE #1
+GOTO label8
+LABEL label5 :
+IF v1 >= #0 GOTO label7
+t2 := #0 - #1
+WRITE t2
+GOTO label8
+LABEL label7 :
+WRITE #0
+LABEL label8 :
+RETURN #0
+--------------------------
+[INPUT] 11
+[program output] 1
+[INFO] Total instructions = 7
+--------------------------
+[INPUT] 0
+[program output] 0
+[INFO] Total instructions = 8
+--------------------------
+[INPUT] -3213
+[program output] -1
+[INFO] Total instructions = 9

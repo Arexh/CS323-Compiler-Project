@@ -1,0 +1,22 @@
+FUNCTION foo :
+PARAM v1
+PARAM v2
+PARAM v3
+t1 := v1 - v2
+t2 := v3 * #2
+t3 := t1 + t2
+RETURN t3
+FUNCTION main :
+v4 := #110
+v5 := #97
+v6 := #3
+ARG v6
+ARG v5
+ARG v4
+t4 := CALL foo
+v6 := t4
+WRITE v6
+RETURN #0
+------------------------
+[program output] 19
+[INFO] Total instructions = 18

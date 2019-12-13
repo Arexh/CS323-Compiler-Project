@@ -1,0 +1,45 @@
+FUNCTION hanoi :
+PARAM v1
+PARAM v2
+PARAM v3
+PARAM v4
+IF v1 != #1 GOTO label5
+t1 := v2 * #1000000
+t2 := t1 + v4
+WRITE t2
+GOTO label6
+LABEL label5 :
+t3 := v1 - #1
+ARG v3
+ARG v4
+ARG v2
+ARG t3
+t4 := CALL hanoi
+t5 := v2 * #1000000
+t6 := t5 + v4
+WRITE t6
+t7 := v1 - #1
+ARG v4
+ARG v2
+ARG v3
+ARG t7
+t8 := CALL hanoi
+LABEL label6 :
+RETURN #0
+FUNCTION main :
+v5 := #3
+ARG #3
+ARG #2
+ARG #1
+ARG v5
+t9 := CALL hanoi
+RETURN #0
+----------------------
+[program output] 1000003
+[program output] 1000002
+[program output] 3000002
+[program output] 1000003
+[program output] 2000001
+[program output] 2000003
+[program output] 1000003
+[INFO] Total instructions = 114

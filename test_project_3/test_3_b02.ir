@@ -1,0 +1,43 @@
+FUNCTION add :
+PARAM v1
+t1 := v1
+t2 := v1 + #4
+t3 := *t1 + *t2
+RETURN t3
+FUNCTION main :
+DEC v2 8
+DEC v3 8
+v4 := #0
+v5 := #0
+LABEL label5 :
+IF v4 >= #2 GOTO label9
+LABEL label6 :
+IF v5 >= #2 GOTO label8
+t4 := v5 * #4
+t5 := &v2 + t4
+t6 := v4 + v5
+*t5 := t6
+t7 := v5 + #1
+v5 := t7
+GOTO label6
+LABEL label8 :
+t8 := &v3
+t9 := v4 * #4
+t10 := t8 + t9
+ARG &v2
+t11 := CALL add
+*t10 := t11
+t12 := &v3
+t13 := v4 * #4
+t14 := t12 + t13
+WRITE *t14
+t15 := v4 + #1
+v4 := t15
+v5 := #0
+GOTO label5
+LABEL label9 :
+RETURN #0
+--------------------
+[program output] 1
+[program output] 3
+[INFO] Total instructions = 84

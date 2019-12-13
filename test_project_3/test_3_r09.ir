@@ -52,7 +52,6 @@ LABEL label16 :
 RETURN v9
 FUNCTION isNarcissistic :
 PARAM v10
-LABEL label18 :
 t22 := #1 + v10
 t23 := t22 - #1
 ARG t23
@@ -60,6 +59,7 @@ t24 := CALL getNumDigits
 v11 := t24
 v12 := #0
 v13 := v10
+LABEL label19 :
 IF v13 <= #0 GOTO label21
 ARG #10
 ARG v13
@@ -73,7 +73,7 @@ ARG v14
 t28 := CALL power
 t29 := v12 + t28
 v12 := t29
-GOTO label18
+GOTO label19
 LABEL label21 :
 IF v12 != v10 GOTO label23
 RETURN #1
@@ -84,6 +84,7 @@ LABEL label24 :
 FUNCTION main :
 v15 := #0
 v16 := #300
+LABEL label26 :
 IF v16 >= #500 GOTO label31
 ARG v16
 t30 := CALL isNarcissistic
@@ -94,7 +95,13 @@ v15 := t31
 LABEL label30 :
 t32 := v16 + #1
 v16 := t32
-GOTO label25
+GOTO label26
 LABEL label31 :
 WRITE v15
 RETURN v15
+---------------------
+[program output] 370
+[program output] 371
+[program output] 407
+[program output] 3
+[INFO] Total instructions = 58819

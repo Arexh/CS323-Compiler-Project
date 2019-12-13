@@ -1,0 +1,85 @@
+FUNCTION main :
+READ t1
+v2 := t1
+READ t2
+v1 := t2
+t3 := v2 / #100
+t4 := t3 * #100
+IF v2 != t4 GOTO label20
+t5 := v2 / #400
+t6 := t5 * #400
+IF v2 != t6 GOTO label13
+IF v1 != #2 GOTO label8
+WRITE #29
+GOTO label12
+LABEL label8 :
+t7 := v1 / #2
+t8 := t7 * #2
+IF v1 != t8 GOTO label11
+WRITE #30
+GOTO label12
+LABEL label11 :
+WRITE #31
+LABEL label12 :
+GOTO label19
+LABEL label13 :
+IF v1 != #2 GOTO label15
+WRITE #28
+GOTO label19
+LABEL label15 :
+t9 := v1 / #2
+t10 := t9 * #2
+IF v1 != t10 GOTO label18
+WRITE #30
+GOTO label19
+LABEL label18 :
+WRITE #31
+LABEL label19 :
+GOTO label35
+LABEL label20 :
+t11 := v2 / #4
+t12 := t11 * #4
+IF v2 != t12 GOTO label29
+IF v1 != #2 GOTO label24
+WRITE #29
+GOTO label28
+LABEL label24 :
+t13 := v1 / #2
+t14 := t13 * #2
+IF v1 != t14 GOTO label27
+WRITE #30
+GOTO label28
+LABEL label27 :
+WRITE #31
+LABEL label28 :
+GOTO label35
+LABEL label29 :
+IF v1 != #2 GOTO label31
+WRITE #28
+GOTO label35
+LABEL label31 :
+t15 := v1 / #2
+t16 := t15 * #2
+IF v1 != t16 GOTO label34
+WRITE #30
+GOTO label35
+LABEL label34 :
+WRITE #31
+LABEL label35 :
+RETURN #0
+-----------------------
+[INPUT] 2016, 3
+[program output] 31
+[INFO] Total instructions = 19
+-----------------------
+[INPUT] 2016, 2
+[program output] 29
+[INFO] Total instructions = 16
+-----------------------
+[INPUT] 2018, 2
+[program output] 28
+[INFO] Total instructions = 15
+-----------------------
+[INPUT] 2000, 2
+[program output] 29
+[INFO] Total instructions = 17
