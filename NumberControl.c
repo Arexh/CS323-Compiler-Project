@@ -6,13 +6,11 @@ struct ArrayList *tempNumArrayList;
 struct ArrayList *labelNumArrayList;
 
 typedef struct NumberNode {
-    int reference;
     int *number;
 } NumberNode;
 
 NumberNode *new_number_node(int num) {
     NumberNode *number_node = (NumberNode *)malloc(sizeof(NumberNode));
-    number_node->reference = 0;
     number_node->number = (int *)malloc(sizeof(int));
     *number_node->number = num;
     return number_node;

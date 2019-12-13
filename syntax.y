@@ -155,6 +155,7 @@ VarDec: ID {
 FunDec: FunID LP VarList RP {
         $$ = newNode("FunDec", @$.first_line); 
         appendChild($$, 4, $1, $2, $3, $4);
+        append_new_block();
     } 
     | FunID LP VarList error {
         RPError(@$.first_line);
@@ -162,6 +163,7 @@ FunDec: FunID LP VarList RP {
     | FunID LP RP {
         $$ = newNode("FunDec", @$.first_line); 
         appendChild($$, 3, $1, $2, $3);
+        append_new_block();
     }
     | FunID LP error {
         RPError(@$.first_line);
