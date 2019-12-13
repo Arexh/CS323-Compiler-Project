@@ -227,14 +227,7 @@ void check_label_reference() {
 }
 
 void printf_all_blocks() {
-    remove_empty_blocks();
-    rebuild_blocks();
     int i;
-    // for (i = 0; i < blocksArrayList->memberNum; i++) {
-    //     IRBlock *block = blocksArrayList->arr[i];
-    //     printf("BLOCK %d, insturnctNum: %d\n", i + 1, block->instructNum);
-    // }
-    check_label_reference();
     for (i = 0; i < blocksArrayList->memberNum; i++) {
         printf_block((IRBlock *)blocksArrayList->arr[i]);
     }
