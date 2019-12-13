@@ -644,6 +644,10 @@ int main(int count, char **args){
         // if (error == 0) {
         //     dfsPrintf(root, 0);
         // }
+        remove_empty_blocks();
+        rebuild_blocks();
+        check_label_reference();
+        constant_propagation();
         printf_all_blocks();
     } else {
         for(int x = 1; x < count; x++){
