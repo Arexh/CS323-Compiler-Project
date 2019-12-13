@@ -12,14 +12,6 @@ ArrayList *new_array_list() {
     return arrayList;
 }
 
-ArrayList *new_array_list_size(int size) {
-    ArrayList *arrayList = (ArrayList *)malloc(sizeof(ArrayList));
-    arrayList->memberNum = 0;
-    arrayList->space = size;
-    arrayList->arr = (void **)malloc(sizeof(void *) * arrayList->space);
-    return arrayList;
-}
-
 void append_to_array_list(ArrayList *arrayList, void *item) {
     if (arrayList->memberNum == arrayList->space) {
         arrayList->space = arrayList->space * 2;

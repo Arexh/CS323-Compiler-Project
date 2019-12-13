@@ -647,7 +647,7 @@ int main(int count, char **args){
         remove_empty_blocks();
         rebuild_blocks();
         check_label_reference();
-        constant_propagation();
+        constant_propagation_and_folding();
         printf_all_blocks();
     } else {
         for(int x = 1; x < count; x++){

@@ -13,8 +13,6 @@ NumberNode *new_number_node(int num) {
     NumberNode *number_node = (NumberNode *)malloc(sizeof(NumberNode));
     number_node->number = (int *)malloc(sizeof(int));
     *number_node->number = num;
-    number_node->left = 0;
-    number_node->right = 0;
     return number_node;
 }
 
