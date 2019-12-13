@@ -5,7 +5,29 @@ struct ArrayList *varNumArrayList;
 struct ArrayList *tempNumArrayList;
 struct ArrayList *labelNumArrayList;
 
+enum ExpressionType
+{
+    _ONE_CON = 1,
+    _TWO_CON,
+    _CON_ADD_VAR,
+    _CON_SUB_VAR,
+    _CON_MUL_VAR,
+    _CON_DIV_VAR,
+    _VAR_ADD_CON,
+    _VAR_SUB_CON,
+    _VAR_MUL_CON,
+    _VAR_DIV_CON,
+    _VAR_ADD_VAR,
+    _VAR_SUB_VAR,
+    _VAR_MUL_VAR,
+    _VAR_DIV_VAR
+};
+
 typedef struct NumberNode {
+    enum ExpressionType type;
+    int changed;
+    int left;
+    int right;
     int *number;
 } NumberNode;
 
