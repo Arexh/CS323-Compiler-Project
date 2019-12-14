@@ -7,6 +7,7 @@
 #include "IRBlock.c"
 #include "Optimization.c"
 
+
 struct FunctionAttribute *currentFunction;
 int currentScopeNumber;
 int _assign;
