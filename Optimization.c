@@ -154,10 +154,6 @@ ExpRecord *put_record(int num, int left, enum ArgType leftType, int right, enum 
     return record;
 }
 
-void put_constant(int num, int constant) {
-    put_record(num, constant, _CONSTANT, 0, 0, _ASSIGN);
-}
-
 ExpRecord *get_exp_record(int num) {
     if (num > 0)
         return varRecords[num - 1];
@@ -1015,7 +1011,9 @@ ExpRecord *update_record_recursive(int num) {
                 }
                 if (left->type == _ONE_CON) {
                     if (right->type == _ONE_CON) {
-                        int cal = left->left - right->right;
+                        puts("HERE");
+                        printf("LEFT: %d, RIGHT: %d\n", left->left, right->left);
+                        int cal = left->left - right->left;
                         if (cal >= 0) {
                             record->left = cal;
                             record->type = _ONE_CON;
@@ -1387,6 +1385,7 @@ ExpRecord *update_record_recursive(int num) {
                         }
                     }
                 }
+                return record;
             }
         case _VAR_DIV_VAR:
             {
@@ -1447,6 +1446,93 @@ ExpRecord *update_record_recursive(int num) {
     return record;
 }
 
+void update_instruct(ExpRecord *record, IRInstruct *instruct) {
+    if (record == NULL)
+        return;
+    instruct->argOne = (int *)malloc(sizeof(int));
+    instruct->argTwo = (int *)malloc(sizeof(int));
+    *instruct->argOne = record->left;
+    *instruct->argTwo = record->right;
+    switch(record->type) {
+        case _ONE_CON:
+            instruct->argOneType = _CONSTANT;
+            instruct->type = _ASSIGN;
+            break;
+        case _ONE_VAR:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->type = _ASSIGN;
+            break;
+        case _MINUS_ONE_CON:
+            instruct->argOneType = _CONSTANT;
+            instruct->type = _MINUS;
+            break;
+        case _MINUS_ONE_VAR:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->type = _MINUS;
+            break;
+        case _CON_ADD_VAR:
+            instruct->argOneType = _CONSTANT;
+            instruct->argTwoType = _VAR_OR_TEMP;
+            instruct->type = _PLUS;
+            break;
+        case _CON_SUB_VAR:
+            instruct->argOneType = _CONSTANT;
+            instruct->argTwoType = _VAR_OR_TEMP;
+            instruct->type = _SUBSTRACT;
+            break;
+        case _CON_MUL_VAR:
+            instruct->argOneType = _CONSTANT;
+            instruct->argTwoType = _VAR_OR_TEMP;
+            instruct->type = _MULTIPLY;
+            break;
+        case _CON_DIV_VAR:
+            instruct->argOneType = _CONSTANT;
+            instruct->argTwoType = _VAR_OR_TEMP;
+            instruct->type = _DIVIDE;
+            break;
+        case _VAR_ADD_CON:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->argTwoType = _CONSTANT;
+            instruct->type = _PLUS;
+            break;
+        case _VAR_SUB_CON:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->argTwoType = _CONSTANT;
+            instruct->type = _SUBSTRACT;
+            break;
+        case _VAR_MUL_CON:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->argTwoType = _CONSTANT;
+            instruct->type = _MULTIPLY;
+            break;
+        case _VAR_DIV_CON:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->argTwoType = _CONSTANT;
+            instruct->type = _DIVIDE;
+            break;
+        case _VAR_ADD_VAR:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->argTwoType = _VAR_OR_TEMP;
+            instruct->type = _PLUS;
+            break;
+        case _VAR_SUB_VAR:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->argTwoType = _VAR_OR_TEMP;
+            instruct->type = _SUBSTRACT;
+            break;
+        case _VAR_MUL_VAR:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->argTwoType = _VAR_OR_TEMP;
+            instruct->type = _MULTIPLY;
+            break;
+        case _VAR_DIV_VAR:
+            instruct->argOneType = _VAR_OR_TEMP;
+            instruct->argTwoType = _VAR_OR_TEMP;
+            instruct->type = _DIVIDE;
+            break;
+    }
+}
+
 void constant_propagation_and_folding() {
     int i;
     int blocksNum = blocksArrayList->memberNum;
@@ -1462,67 +1548,56 @@ void constant_propagation_and_folding() {
             if (instruct->argOne) {
                 argOne = *instruct->argOne;
                 argOneType = instruct->argOneType;
+                if (argOneType != _CONSTANT && argOneType != _VAR_OR_TEMP)
+                    continue;
             }
             int argTwo = 0;
             int argTwoType;
             if (instruct->argTwo) {
                 argTwo = *instruct->argTwo;
                 argTwoType = instruct->argTwoType;
+                if (argTwoType != _CONSTANT && argTwoType != _VAR_OR_TEMP)
+                    continue;
             }
+            int result;
+            if (instruct->result)
+                result = *instruct->result;
             switch(instruct->type) {
                 case _ASSIGN:
-                    if (argOneType == _CONSTANT) {
-                        put_constant(*instruct->result, argOne);
-                    } else {
-                        ExpRecord *record = get_exp_record(argOne);
-                        if (record && record->type == _ONE_CON) {
-                            instruct->argOne = (int *)malloc(sizeof(int));
-                            instruct->argOneType = _CONSTANT;
-                            *instruct->argOne = record->left;
-                            if (record->left >= 0) {
-                                *instruct->argOne = record->left;
-                            } else {
-                                *instruct->argOne = -record->left;
-                                instruct->type = _MINUS; 
-                            }
-                        }
-                    }
-                    break;
                 case _MINUS:
-                    if (argOneType == _CONSTANT) {
-                        put_constant(*instruct->result, -argOne);
-                    } else {
-                        ExpRecord *record = get_exp_record(argOne);
-                        if (record && record->type == _ONE_CON) {
-                            instruct->argOne = (int *)malloc(sizeof(int));
-                            *instruct->argOne = record->left;
-                            instruct->argOneType = _CONSTANT;
-                        }
-                    }
+                {   
+                    put_record(result, argOne, argOneType, 0, 0, instruct->type);
+                    ExpRecord *record = update_record_recursive(result);
+                    update_instruct(record, instruct);
+                    break;
+                }
                 case _PLUS:
                 case _MULTIPLY:
                 case _SUBSTRACT:
                 case _DIVIDE:
-                    if (argOneType == _CONSTANT && argTwoType == _CONSTANT) {
-                        ExpRecord *record = put_record(*instruct->result, argOne, argOneType, argTwo, argTwoType, instruct->type);
-                        instruct->type = _ASSIGN;
-                        instruct->argTwo = NULL;
-                        instruct->argTwoType = 0;
-                        *instruct->argOne = record->left;
-                    } else if (argOneType == _CONSTANT) {
-                        ExpRecord *rightRecord = get_exp_record(argTwo);
-                        if (rightRecord && rightRecord->type == _ONE_CON) {
-                            ExpRecord *record = put_record(*instruct->result, argOne, argOneType, rightRecord->left, _CONSTANT, instruct->type);
-                            instruct->type = _ASSIGN;
-                            instruct->argTwo = NULL;
-                            instruct->argTwoType = 0;
+                {
+                    put_record(result, argOne, argOneType, argTwo, argTwoType, instruct->type);
+                    ExpRecord *record = update_record_recursive(result);
+                    update_instruct(record, instruct);
+                    break;
+                }
+                case _WRITE:
+                {
+                    ExpRecord *record = update_record_recursive(argOne);
+                    switch(record->type) {
+                        case _ONE_CON:
+                            instruct->argOne = (int *)malloc(sizeof(int));
                             *instruct->argOne = record->left;
-                        } else if (rightRecord && rightRecord->type == _ONE_VAR) {
-                            // ExpRecord *newRecord = update_record_recursive(rightRecord);
-                        }
+                            instruct->argOneType = _CONSTANT;
+                            break;
+                        case _ONE_VAR:
+                            instruct->argOne = (int *)malloc(sizeof(int));
+                            *instruct->argOne = record->left;
+                            instruct->argOneType = _VAR_OR_TEMP;
+                            break;
                     }
                     break;
-
+                }
             }
             instruct = instruct->next;
         }
