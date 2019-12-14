@@ -432,8 +432,449 @@ ExpRecord *update_record_recursive(int num) {
                         record->left = left->left;
                         record->right = right->left;
                         record->type = _VAR_SUB_VAR;
+                    } else if (right->type == _CON_SUB_VAR) {
+                        if (right->right == left->left) {
+                            record->left = right->left;
+                            record->type = _ONE_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_SUB_VAR) {
+                        if (right->right == left->left) {
+                            record->left = right->left;
+                            record->type = _ONE_VAR;
+                        } else {
+                            return NULL;
+                        }
                     } else {
                         return NULL;
+                    }
+                } else if (left->type == _MINUS_ONE_CON) {
+                    if (right->type == _ONE_CON) {
+                        int cal = right->left - left->left;
+                        record->type = _ONE_CON;
+                        if (cal >= 0) {
+                            record->left = cal;
+                        } else {
+                            record->left = -cal;
+                        }
+                    } else if (right->type == _ONE_VAR) {
+                        record->left = right->left;
+                        record->right = left->left;
+                        record->type = _VAR_SUB_CON;
+                    } else if (right->type == _MINUS_ONE_CON) {
+                        record->left = left->left + right->left;
+                        record->type = _MINUS_ONE_CON;
+                    } else if (right->type == _CON_ADD_VAR) {
+                        int cal = right->left - left->left;
+                        record->left = right->right;
+                        if (cal > 0) {
+                            record->right = cal;
+                            record->type = _VAR_ADD_CON;
+                        } else if (cal < 0) {
+                            record->right = -cal;
+                            record->type = _VAR_SUB_CON;
+                        } else {
+                            record->type = _ONE_VAR;
+                        }
+                    } else if (right->type == _CON_SUB_VAR) {
+                        int cal = right->left - left->left;
+                        if (cal > 0) {
+                            record->left = cal;
+                            record->right = right->right;
+                            record->type = _CON_SUB_VAR;
+                        } else if (cal == 0) {
+                            record->left = right->right;
+                            record->type = _MINUS_ONE_VAR;
+                        } else {
+                            return NULL:
+                        }
+                    } else if (right->type == _VAR_ADD_CON) {
+                        int cal = right->right - left->left;
+                        record->left = right->left;
+                        if (cal > 0) {
+                            record->right = cal;
+                            right->type = _VAR_ADD_CON;
+                        } else if (cal < 0) {
+                            record->right = -cal;
+                            right->type = _VAR_SUB_CON;
+                        } else {
+                            record->type = _ONE_VAR;
+                        }
+                    } else if (right->type == _VAR_SUB_CON) {
+                        record->left = right->left;
+                        record->right = left->left + right->right;
+                        record->type = _VAR_SUB_VAR;
+                    } else {
+                        return NULL;
+                    }
+                } else if (left->type == _MINUS_ONE_VAR) {
+                    if (right->type == _ONE_CON) {
+                        record->left = right->left;
+                        record->right = left->left;
+                        record->type = _CON_SUB_VAR;
+                    } else if (right->type == _ONE_VAR) {
+                        record->left = right->left;
+                        record->right = left->left;
+                        record->type = _VAR_SUB_VAR;
+                    } else if (right->type == _VAR_ADD_CON) {
+                        if (left->left == right->left) {
+                            record->left = right->right;
+                            record->type = _ONE_CON
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_SUB_CON) {
+                        if (left->left == right->left) {
+                            record->left = right->right;
+                            record->type = _MINUS_ONE_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_ADD_VAR) {
+                        if (left->left == right->left) {
+                            record->left = right->right;
+                            record->type = _ONE_VAR;
+                        } else if (left->left == right->right) {
+                            record->left = right->left;
+                            record->type = _ONE_VAR;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_SUB_VAR) {
+                        if (left->left == right->left) {
+                            record->left = right->right;
+                            record->type = _MINUS_ONE_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else {
+                        return NULL;
+                    }
+                } else if (left->type == _CON_ADD_VAR) {
+                    if (right->type == _ONE_CON) {
+                        record->left = left->left + right->left;
+                        record->type = _CON_ADD_VAR;
+                    } else if (right->type == _MINUS_ONE_CON) {
+                        int cal = left->left - right->left;
+                        record->left = right->left;
+                        if (cal > 0) {
+                            record->right = cal;
+                            record->type = _VAR_ADD_CON;
+                        } else if (cal < 0) {
+                            record->right = -cal;
+                            record->type = _VAR_SUB_CON;
+                        } else {
+                            record->type = _ONE_VAR;
+                        }
+                    } else if (right->type == _VAR_SUB_CON) {
+                        int cal = left->left - right->right;
+                        if (cal == 0) {
+                            record->left = left->right;
+                            record->right = right->left;
+                            record->type = _VAR_ADD_VAR;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_SUB_VAR) {
+                        if (right->right == left->right) {
+                            record->left = left->left;
+                            record->right = right->left;
+                            record->type = _VAR_ADD_VAR;
+                        } else {
+                            return NULL;
+                        }
+                    } else {
+                        return NULL;
+                    }
+                } else if (left->type == _CON_SUB_VAR) {
+                    if (right->type == _ONE_CON) {
+                        record->left = left->left + right->left;
+                        record->right = left->right;
+                        record->type = _CON_SUB_VAR;
+                    } else if (right->type == _ONE_VAR) {
+                        if (left->right == right->left) {
+                            record->left = left->left;
+                            record->type = _ONE_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _MINUS_ONE_CON) {
+                        int cal = left->left - right->left;
+                        if (cal > 0) {
+                            record->left = cal;
+                            record->right = left->right;
+                            record->type = _CON_SUB_VAR;
+                        } else if (cal == 0) {
+                            record->left = left->right;
+                            record->type = _MINUS_ONE_VAR;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _CON_ADD_VAR) {
+                        if (left->right == right->right) {
+                            record->left = left->left + right->left;
+                            record->type = _ONE_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_ADD_CON) {
+                        if (left->right == right->left) {
+                            record->left = left->left + right->right;
+                            record->type = _ONE_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_SUB_CON) {
+                        if (left->left == right->right && left->right != right->left) {
+                            record->left = right->left;
+                            record->right = left->right;
+                            record->type = _VAR_SUB_VAR;
+                        } else if (left->left == right->right && left->right == right->left) {
+                            record->left = 0;
+                            record->type = _ONE_CON;
+                        } else if (left->left != right->right && left->right == right->left) {
+                            int cal = left->left - right->right;
+                            if (cal >= 0) {
+                                record->left = cal;
+                                record->type = _ONE_CON;
+                            } else {
+                                record->left = -cal;
+                                record->type = _MINUS_ONE_CON;
+                            }
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_ADD_VAR) {
+                        if (left->right == right->left) {
+                            record->left = right->right;
+                            record->right = left->left;
+                            record->type = _VAR_ADD_CON;
+                        } else if (left->right == right->right) {
+                            record->left = right->left;
+                            record->right = left->left;
+                            record->type = _VAR_ADD_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_SUB_VAR) {
+                        if (left->right == right->left) {
+                            record->left = left->left;
+                            record->right = right->right;
+                            record->type = _CON_SUB_VAR;
+                        } else {
+                            return NULL;
+                        }
+                    } else {
+                        return NULL;
+                    }
+                } else if (left->type == _VAR_ADD_CON) {
+                    if (right->type == _ONE_CON) {
+                        record->left = left->left;
+                        record->right = left->right + right->left;
+                        record->type = _VAR_ADD_CON;
+                    } else if (right->type == _MINUS_ONE_CON) {
+                        int cal = left->right - right->left;
+                        record->left = left->left;
+                        if (cal > 0) {
+                            record->right = cal;
+                            record->type = _VAR_ADD_CON;
+                        } else if (cal < 0) {
+                            record->right = -cal;
+                            record->type = _VAR_SUB_CON;
+                        } else {
+                            record->type = _ONE_VAR;
+                        }
+                    } else if (right->type == _MINUS_ONE_VAR) {
+                        if (left->left == right->left) {
+                            record->left = left->right;
+                            record->type = _ONE_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _CON_SUB_VAR) {
+                        if (left->left == right->right) {
+                            record->left = left->right + right->left;
+                            record->type = _ONE_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_SUB_CON) {
+                        if (left->right == right->right) {
+                            record->left = left->left;
+                            record->right = right->left;
+                            record->type = _VAR_ADD_VAR;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _VAR_SUB_VAR) {
+                        if (left->left == right->right) {
+                            record->left = right->left;
+                            record->right = left->right;
+                            record->type = _VAR_ADD_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else {
+                        return NULL;
+                    }
+                } else if (left->type == _VAR_SUB_CON) {
+                    if (right->type == _ONE_CON) {
+                        int cal = right->left - left->right;
+                        record->left = left->left;
+                        if (cal > 0) {
+                            record->right = cal;
+                            record->type = _VAR_ADD_CON;
+                        } else if (cal < 0) {
+                            record->right = -cal;
+                            record->type = _VAR_SUB_CON;
+                        } else {
+                            record->type = _ONE_VAR;
+                        }
+                    } else if (right->type == _MINUS_ONE_CON) {
+                        record->left = left->left;
+                        record->right = left->right + right->left;
+                        record->type = _VAR_SUB_CON;
+                    } else if (right->type == _MINUS_ONE_VAR) {
+                        if (left->left == right->left) {
+                            record->left = left->right;
+                            record->type = _MINUS_ONE_CON;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _CON_ADD_VAR) {
+                        if (left->right == right->left) {
+                            record->left = left->left;
+                            record->right = right->right;
+                            record->type = _VAR_ADD_VAR;
+                        } else {
+                            return NULL;
+                        }
+                    } else if (right->type == _CON_SUB_VAR) {
+                        if (left->right == right->left && left->left != right->right) {
+                            record->left = left->left;
+                            record->right = right->right;
+                            record->type = _VAR_SUB_VAR;
+                        } else if (left->right == right->left && left->left == right->right) {
+                            record->left = 0;
+                            record->type = _ONE_CON;
+                        } else if (left->right != right->left && left->left == right->right) {
+                            int cal = right->left - left->right;
+                            if (cal >= 0) {
+                                record->left = cal;
+                                record->type = _ONE_CON;
+                            } else {
+                                record->left = -cal;
+                                record->type = _MINUS_ONE_CON;
+                            }
+                        } else {
+                            return NULL;
+                        }
+                    } else if (left->type == VAR_ADD_VAR) {
+                        if (right->type == _MINUS_ONE_VAR) {
+                            if (left->left == right->left) {
+                                record->left = left->right;
+                                record->type = _ONE_VAR;
+                            } else if (left->right == right->left) {
+                                record->left = left->left;
+                                record->type = _ONE_VAR;
+                            } else {
+                                return NULL;
+                            }
+                        } else if (right->type == _CON_SUB_VAR) {
+                            if (left->left == right->right) {
+                                record->left = left->right;
+                                record->right = right->left;
+                                record->type = _VAR_ADD_CON;
+                            } else if (left->right == right->right) {
+                                record->left = left->left;
+                                record->right = right->left;
+                                record->type = _VAR_ADD_CON;
+                            } else {
+                                return NULL;
+                            }
+                        } else if (right->type == VAR_SUB_VAR) {
+                            if (left->left == right->right) {
+                                record->left = left->right;
+                                record->right = right->left;
+                                record->type = _VAR_ADD_VAR;
+                            } else if (left->right == right->right) {
+                                record->left = left->left;
+                                record->right = right->left;
+                                record->type = _VAR_ADD_VAR;
+                            } else {
+                                return NULL;
+                            }
+                        } else {
+                            return NULL;
+                        }
+                    } else if (left->type == _VAR_SUB_VAR) {
+                        if (right->type == _ONE_VAR) {
+                            if (left->right == right->left) {
+                                record->left = left->left;
+                                record->type = _ONE_VAR;
+                            } else {
+                                return NULL;
+                            }
+                        } else if (right->type == _MINUS_ONE_VAR) {
+                            if (left->left == right->left) {
+                                record->left = left->right;
+                                record->type = _MINUS_ONE_VAR;
+                            } else {
+                                return NULL;
+                            }
+                        } else if (right->type == _CON_ADD_VAR) {
+                            if (left->right == right->right) {
+                                record->left = left->left;
+                                record->right = right->left;
+                                record->type = _VAR_ADD_CON;
+                            } else {
+                                return NULL;
+                            }
+                        } else if (right->type == _CON_SUB_VAR) {
+                            if (left->left == right->right) {
+                                record->left = right->left;
+                                record->right = left->right;
+                                record->type = _CON_SUB_VAR;
+                            } else {
+                                return NULL;
+                            }
+                        } else if (right->type == _VAR_ADD_CON) {
+                            if (left->right == right->left) {
+                                record->left = left->left;
+                                record->right = right->right;
+                                record->type = _VAR_ADD_CON;
+                            } else {
+                                return NULL;
+                            }
+                        } else if (right->type == _VAR_SUB_CON) {
+                            if (left->right == right->left) {
+                                record->left = left->left;
+                                record->right = right->right;
+                                record->type = _VAR_SUB_CON;
+                            } else {
+                                return NULL;
+                            }
+                        } else if (right->type == _VAR_ADD_VAR) {
+                            if (left->right == right->left) {
+                                record->left = left->left;
+                                record->right = right->right;
+                                record->type = _VAR_ADD_VAR;
+                            } else if (left->right == right->right) {
+                                record->left = left->left;
+                                record->right = right->left;
+                                record->type = _VAR_ADD_VAR;
+                            } else {
+                                return NULL;
+                            }
+                        } else if (right->type == _VAR_SUB_VAR) {
+                            if (left->left == right->right && left->right == right->left) {
+                                record->left = 0;
+                                record->type = _ONE_CON;
+                            } else if (left->left == right->right && left->right != right->left) {
+
+                            }
+                        }
                     }
                 }
             }
