@@ -1,5 +1,6 @@
 struct ExpRecord **varRecords;
 struct ExpRecord **tempRecords;
+struct ExpRecordNode *recordList;
 int varNum;
 int tempNum;
 
@@ -15,12 +16,87 @@ typedef struct ExpRecord {
     enum ExpressionType type;
 } ExpRecord;
 
+typedef struct ExpRecordNode {
+    int result;
+    int left;
+    int right;
+    enum ExpressionType type;
+    struct ExpRecordNode *next;
+    struct ExpRecordNode *previous;
+} ExpRecordNode;
+
 ExpRecord *new_exp_record() {
     ExpRecord *newRecord = (ExpRecord *)malloc(sizeof(ExpRecord));
     newRecord->left = 0;
     newRecord->right = 0;
     newRecord->type = _NOTHING;
     return newRecord;
+}
+
+ExpRecordNode *new_exp_record_node() {
+    ExpRecordNode *node = (ExpRecordNode *)malloc(sizeof(ExpRecordNode));
+    node->result = 0;
+    node->left = 0;
+    node->right = 0;
+    node->type = _NOTHING;
+    return node;
+}
+
+void append_exp_to_list(ExpRecordNode *node) {
+    if (recordList) {
+        recordList->previous = node;
+        node->next = recordList;
+        recordList = node;
+    } else {
+        recordList = node;
+    }
+}
+
+ExpRecordNode *find_available_exp(ExpRecord *record) {
+    if (recordList == NULL) {
+        return NULL;
+    }
+    ExpRecordNode *node = recordList;
+    while(node) {
+        if (record->left == node->left && record->right == node->right && record->type == node->type) {
+            return node;
+        } else if (record->left == node->right && record->right == node->left) {
+            enum ExpressionType typeOne = record->type;
+            enum ExpressionType typeTwo = node->type;
+            if ((typeOne == _CON_ADD_VAR && typeTwo == _VAR_ADD_CON) 
+             || (typeTwo == _CON_ADD_VAR && typeOne == _VAR_ADD_CON)) {
+                return node;
+            } else if ((typeOne == _CON_MUL_VAR && typeTwo == _VAR_MUL_CON) 
+                    || (typeTwo == _CON_MUL_VAR && typeOne == _VAR_MUL_CON)) {
+                return node;
+            }
+        }
+        node = node->next;
+    }
+    return NULL;
+}
+
+void remove_exp(int num) {
+    if (recordList == NULL) {
+        return;
+    }
+    ExpRecordNode *node = recordList;
+    while(node) {
+        if (num == node->result) {
+            if (node->previous) {
+                node->previous->next = node->next;
+                if (node->next)
+                    node->next->previous = node->previous;
+            } else {
+                recordList = node->next;
+                if (node->next)
+                    node->next->previous = NULL;
+            }
+            free(node);
+            break;
+        }
+        node = node->next;
+    }
 }
 
 void new_block_container() {
@@ -147,8 +223,14 @@ ExpRecord *put_record(int num, int left, enum ArgType leftType, int right, enum 
         record->right = right;
     }
     if (num > 0) {
+        ExpRecord *temp = varRecords[num - 1];
+        if (temp)
+            free(temp);
         varRecords[num - 1] = record;
     } else {
+        ExpRecord *temp = tempRecords[-num - 1];
+        if (temp)
+            free(temp);
         tempRecords[-num - 1] = record;
     }
     return record;
@@ -1542,6 +1624,7 @@ void constant_propagation_and_folding() {
         int j;
         int instructNum = block->instructNum;
         IRInstruct *instruct = block->instructHead;
+        printf("%d\n", instructNum);
         for (j = 1; j < instructNum; j++) {
             int argOne = 0;
             int argOneType;
@@ -1562,13 +1645,19 @@ void constant_propagation_and_folding() {
             int result;
             if (instruct->result)
                 result = *instruct->result;
+            printf("TYPE: %d\n", instruct->type);
             switch(instruct->type) {
                 case _ASSIGN:
                 case _MINUS:
                 {   
                     put_record(result, argOne, argOneType, 0, 0, instruct->type);
                     ExpRecord *record = update_record_recursive(result);
+                    remove_exp(result);
                     update_instruct(record, instruct);
+                    ExpRecordNode *re = find_available_exp(record);
+                    if (re && re->result < 0 && result > 0) {
+                        re->result = result;
+                    }
                     break;
                 }
                 case _PLUS:
@@ -1578,12 +1667,43 @@ void constant_propagation_and_folding() {
                 {
                     put_record(result, argOne, argOneType, argTwo, argTwoType, instruct->type);
                     ExpRecord *record = update_record_recursive(result);
+                    switch(record->type) {
+                        case _ONE_CON:
+                        case _ONE_VAR:
+                        case _MINUS_ONE_CON:
+                        case _MINUS_ONE_VAR:
+                            remove_exp(result);
+                            break;
+                        default:
+                        {
+                            ExpRecordNode *re = find_available_exp(record);
+                            if (re) {
+                                record->left = re->result;
+                                record->type = _ONE_VAR;
+                            } else {
+                                remove_exp(result);
+                                ExpRecordNode *node = new_exp_record_node();
+                                node->left = record->left;
+                                node->right = record->right;
+                                node->type = record->type;
+                                node->result = result;
+                                append_exp_to_list(node);
+                            }
+                            break;
+                        }
+                    }
                     update_instruct(record, instruct);
                     break;
                 }
+                case _RETURN:
                 case _WRITE:
                 {
                     ExpRecord *record = update_record_recursive(argOne);
+                    ExpRecordNode *re = find_available_exp(record);
+                    if (re) {
+                        record->left = re->result;
+                        record->type = _ONE_VAR;
+                    }
                     switch(record->type) {
                         case _ONE_CON:
                             instruct->argOne = (int *)malloc(sizeof(int));
@@ -1602,6 +1722,7 @@ void constant_propagation_and_folding() {
             instruct = instruct->next;
         }
         clear_block_container();
+        new_block_container();
     }
     free_block_container();
 }
