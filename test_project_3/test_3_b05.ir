@@ -56,6 +56,3 @@ v5 := t21
 GOTO label16
 LABEL label21 :
 RETURN #0
---------------------
-[program output] 121
-[INFO] Total instructions = 2174

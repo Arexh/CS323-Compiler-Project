@@ -2036,7 +2036,7 @@ void dead_code_elimination() {
                 case _ASSIGN:
                 case _MINUS:
                 {
-                    if (argOneType == _VAR_OR_TEMP && check_arg(varList, argOne) == 0 && argOne > 0) {
+                    if (argOneType != _CONSTANT && check_arg(varList, argOne) == 0 && argOne > 0) {
                         append_arg_to_list(&varList, argOne);
                     }
                     break;
@@ -2140,7 +2140,7 @@ void dead_code_elimination() {
                         remove_instruct_from_block(block, instruct);
                         break;                          
                     }
-                    if (argOneType == _VAR_OR_TEMP && check_arg(argList, argOne) == 0 && argOne < 0) {
+                    if (argOneType != _CONSTANT && check_arg(argList, argOne) == 0 && argOne < 0) {
                         append_arg_to_list(&argList, argOne);
                     }
                     break;

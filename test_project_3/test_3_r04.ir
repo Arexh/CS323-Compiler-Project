@@ -24,3 +24,9 @@ RETURN #0
 [program output] 121
 [program output] 1331
 [INFO] Total instructions = 18
+-------------------------------
+[INPUT] -30
+[program output] -30
+[program output] 900
+[program output] -27000
+[INFO] Total instructions = 18
