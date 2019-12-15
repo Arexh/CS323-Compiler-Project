@@ -3,7 +3,7 @@ READ t1
 v2 := t1
 READ t2
 v1 := t2
-t3 := v2 / #100
+t3 := t1 / #100
 t4 := t3 * #100
 IF v2 != t4 GOTO label20
 t5 := v2 / #400

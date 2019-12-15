@@ -2805,7 +2805,8 @@ int main(int count, char **args){
         remove_empty_blocks();
         rebuild_blocks();
         check_label_reference();
-        constant_propagation_and_folding();
+        propagation_folding_replacement();
+        dead_code_elimination();
         printf_all_blocks();
     } else {
         for(int x = 1; x < count; x++){
@@ -2814,9 +2815,9 @@ int main(int count, char **args){
             char *output = malloc(length + 1);
             strcpy(output, args[x]);
             output[length] = 0;
-            output[length - 1] = 't';
-            output[length - 2] = 'u';
-            output[length - 3] = 'o';
+            output[length - 1] = 0;
+            output[length - 2] = 'r';
+            output[length - 3] = 'i';
             char buf[MAX_LINE];
             int len;
             if ((fp = fopen(args[x],"r")) == NULL)
@@ -2829,6 +2830,12 @@ int main(int count, char **args){
             yyparse();
             // if (error == 0)
             //     dfsPrintf(root, 0);
+            remove_empty_blocks();
+            rebuild_blocks();
+            check_label_reference();
+            propagation_folding_replacement();
+            dead_code_elimination();
+            printf_all_blocks();
             fclose(fp);
             fclose(out);
         }        

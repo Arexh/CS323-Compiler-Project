@@ -15,7 +15,7 @@ ARG v5
 ARG v4
 t4 := CALL foo
 v6 := t4
-WRITE v6
+WRITE t4
 RETURN #0
 ------------------------
 [program output] 19

@@ -143,17 +143,17 @@ char **get_block_string(IRBlock *block) {
 
 void printf_block(IRBlock *block) {
     if (block->ignore == _NONE)
-        printf("LABEL label%d :\n", *block->labelNum);
+        fprintf(out,"LABEL label%d :\n", *block->labelNum);
     if (block->instructNum) {
         char **arr = get_block_string(block);
         int i;
         for (i = 0; i < block->instructNum; i++) {
-            printf("%s\n", arr[i]);
+            fprintf(out,"%s\n", arr[i]);
         }
     }
     if (block->next && *block->next->labelNum != -1 && *block->next->labelNum != *block->labelNum + 1 &&
     *block->next->labelNum != *block->labelNum)
-        printf("GOTO label%d\n", *block->next->labelNum);
+        fprintf(out,"GOTO label%d\n", *block->next->labelNum);
 }
 
 void rebuild_blocks() {
@@ -309,7 +309,7 @@ void append_node_to_list(IRBlockNode *list, IRBlock *block) {
 //     char ** instructs = get_block_string(block);
 //     int i;
 //     for (i = 0; i < block->instruct_num; i ++) {
-//         printf("%s\n", instructs[i]);
+//         fprintf(out,"%s\n", instructs[i]);
 //     }
 //     puts("END");
 //     return 0;

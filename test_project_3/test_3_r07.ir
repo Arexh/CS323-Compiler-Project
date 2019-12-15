@@ -15,8 +15,7 @@ t6 := v1 - t5
 v4 := t6
 GOTO label4
 LABEL label6 :
-v3 := v2
-RETURN v3
+RETURN v2
 FUNCTION gcd2 :
 PARAM v5
 PARAM v6
@@ -68,4 +67,4 @@ RETURN #0
 [INPUT] 725, 1250
 [program output] 25
 [program output] 25
-[INFO] Total instructions = 168
+[INFO] Total instructions = 167

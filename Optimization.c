@@ -1133,6 +1133,10 @@ ExpRecord *update_record(int num) {
                 ExpRecord *left = get_exp_record(record->left);
                 ExpRecord *right = get_exp_record(record->right);
                 if (left == NULL && right == NULL) {
+                    if (record->left == record->right) {
+                        record->left = 0;
+                        record->type = _ONE_CON;
+                    }
                     return record;
                 } else if (left == NULL && right) {
                     if (right->type == _ONE_CON) {
@@ -1273,9 +1277,14 @@ ExpRecord *update_record(int num) {
                         record->right = right->right;
                         record->type = _VAR_SUB_CON;
                     } else if (right->type == _ONE_VAR) {
-                        record->left = left->left;
-                        record->right = right->left;
-                        record->type = _VAR_SUB_VAR;
+                        if (left->left == right->left) {
+                            record->left = 0;
+                            record->type = _ONE_CON;
+                        } else {
+                            record->left = left->left;
+                            record->right = right->left;
+                            record->type = _VAR_SUB_VAR;
+                        }
                     } else if (right->type == _MINUS_ONE_CON) {
                         record->left = left->left;
                         record->right = right->left;
@@ -1596,6 +1605,10 @@ ExpRecord *update_record(int num) {
                 ExpRecord *left = get_exp_record(record->left);
                 ExpRecord *right = get_exp_record(record->right);
                 if (left == NULL && right == NULL) {
+                    if (record->left == record->right) {
+                        record->left = 1;
+                        record->type = _ONE_CON;
+                    }
                     return record;
                 } else if (left == NULL && right) {
                     if (right->type == _ONE_CON) {
@@ -1782,7 +1795,7 @@ int verify(int result, ExpRecord *record) {
     return jug;
 }
 
-void constant_propagation_and_folding() {
+void propagation_folding_replacement() {
     int i;
     int blocksNum = blocksArrayList->memberNum;
     new_block_container();
@@ -1899,6 +1912,26 @@ void constant_propagation_and_folding() {
                     }
                     break;
                 }
+                case _READ:
+                {
+                    ExpRecord *record = update_record(result);
+                    ExpRecordNode *re = find_available_exp(record);
+                    if (re) {
+                        record->left = re->result;
+                        record->type = _ONE_VAR;
+                    }
+                    if (record) {
+                        switch(record->type) {
+                            case _ONE_VAR:
+                                {
+                                    instruct->result = (int *)malloc(sizeof(int));
+                                    *instruct->result = record->left;
+                                    break;
+                                }
+                        }
+                    }
+                    break;
+                }
             }
             instruct = instruct->next;
         }
@@ -1906,4 +1939,292 @@ void constant_propagation_and_folding() {
         new_block_container();
     }
     free_block_container();
+}
+
+typedef struct ArgNode {
+    int num;
+    struct ArgNode *next;
+} ArgNode;
+
+ArgNode *new_arg_node() {
+    ArgNode *node = (ArgNode *)malloc(sizeof(ArgNode));
+    node->num = 0;
+    node->next = NULL;
+    return node;
+}
+
+void append_arg_to_list(ArgNode **listPointer, int num) {
+    ArgNode *list = *listPointer;
+    if (list) {
+        ArgNode *node = new_arg_node();
+        node->next = list;
+        node->num = num;
+        *listPointer = node;
+    } else {
+        *listPointer = new_arg_node();
+        (*listPointer)->num = num;
+    }
+}
+
+void remove_arg_from_list(ArgNode **list, int num) {
+    ArgNode *node = *list;
+    if (node->num == num) {
+        *list = node->next;
+        return;
+    }
+    ArgNode *last = node;
+    node = node->next;
+    while(node) {
+        if (node->num == num) {
+            last->next = node->next;
+            break;
+        }
+        last = node;
+        node = node->next;
+    }
+}
+
+int check_arg(ArgNode *list, int num) {
+    if (list == NULL)
+        return 0;
+    while(list) {
+        if (list->num == num)
+            return 1;
+        list = list->next;
+    }
+    return 0;
+}
+
+void remove_instruct_from_block(IRBlock *block, IRInstruct *instruct) {
+    if (instruct->previous && instruct->next) {
+        instruct->previous->next = instruct->next;
+        instruct->next->previous = instruct->previous;
+        block->instructNum--;
+    } else if (instruct->previous) {
+        instruct->previous->next = NULL;
+        block->instructTail = instruct->previous;
+        block->instructNum--;
+    } else if (instruct->next) {
+        instruct->next->previous = NULL;
+        block->instructHead = instruct->next;
+        block->instructNum--;
+    } else {
+        block->instructNum = 0;
+        block->instructHead = NULL;
+        block->instructTail = NULL;
+    }
+}
+
+void dead_code_elimination() {
+    ArgNode *argList = NULL;
+    ArgNode *varList = NULL;
+    int i;
+    for (i = blocksArrayList->memberNum - 1; i >= 0; i--) {
+        IRBlock *block = blocksArrayList->arr[i];
+        IRInstruct *instruct = block->instructTail;
+        while(instruct) {
+            int argOne = 0;
+            int argOneType;
+            if (instruct->argOne) {
+                argOne = *instruct->argOne;
+                argOneType = instruct->argOneType;
+            }
+            int result;
+            if (instruct->result)
+                result = *instruct->result;
+            switch(instruct->type) {
+                case _ASSIGN:
+                case _MINUS:
+                {
+                    if (argOneType == _VAR_OR_TEMP && check_arg(varList, argOne) == 0 && argOne > 0) {
+                        append_arg_to_list(&varList, argOne);
+                    }
+                    break;
+                }
+                case _PLUS:
+                case _MULTIPLY:
+                case _SUBSTRACT:
+                case _DIVIDE:
+                {
+                    int argTwo = 0;
+                    int argTwoType = -1;
+                    if (instruct->argTwo) {
+                        argTwo = *instruct->argTwo;
+                        argTwoType = instruct->argTwoType;
+                    }
+                    if (argOneType != _CONSTANT && check_arg(varList, argOne) == 0 && argOne > 0) {
+                        append_arg_to_list(&varList, argOne);
+                    }
+                    if (argTwoType != _CONSTANT && check_arg(varList, argTwo) == 0 && argTwo > 0) {
+                        append_arg_to_list(&varList, argTwo);
+                    }
+                }
+                case _COPY:
+                {
+                    if (argOneType != _CONSTANT && check_arg(varList, argOne) == 0 && argOne > 0) {
+                        append_arg_to_list(&varList, argOne);
+                    }
+                    if (check_arg(varList, result) == 0 && result > 0) {
+                        append_arg_to_list(&varList, result);
+                    }
+                    break;
+                }
+                case _RETURN:
+                case _WRITE:
+                case _ARGUMENT:
+                {
+                    if (argOneType != _CONSTANT && check_arg(varList, argOne) == 0 && argOne > 0) {
+                        append_arg_to_list(&varList, argOne);
+                    }
+                    break;
+                }
+                case _CALL:
+                case _READ:
+                {
+                    if (check_arg(varList, result) == 0 && result > 0) {
+                        append_arg_to_list(&varList, result);
+                    }
+                    break;
+                }
+                case _LESSTHAN:
+                case _LESSEQUAL:
+                case _GREATERTHAN:
+                case _GREATEREQUAL:
+                case _EQUAL:
+                case _NOTEQUAL:
+                {
+                    int argTwo = 0;
+                    int argTwoType = -1;
+                    if (instruct->argTwo) {
+                        argTwo = *instruct->argTwo;
+                        argTwoType = instruct->argTwoType;
+                    }
+                    if (argOneType != _CONSTANT && check_arg(varList, argOne) == 0 && argOne > 0) {
+                        append_arg_to_list(&varList, argOne);
+                    }
+                    if (argTwoType != _CONSTANT && check_arg(varList, argTwo) == 0 && argTwo > 0) {
+                        append_arg_to_list(&varList, argTwo);
+                    }
+                    break;
+                }
+            }
+            instruct = instruct->previous;
+        }
+    }
+    for (i = blocksArrayList->memberNum - 1; i >= 0; i--) {
+        IRBlock *block = blocksArrayList->arr[i];
+        IRInstruct *instruct = block->instructTail;
+        while(instruct) {
+            int argOne = 0;
+            int argOneType;
+            if (instruct->argOne) {
+                argOne = *instruct->argOne;
+                argOneType = instruct->argOneType;
+            }
+            int result;
+            if (instruct->result)
+                result = *instruct->result;
+            switch(instruct->type) {
+                case _ASSIGN:
+                case _MINUS:
+                {
+                    if (result < 0) {
+                        if (check_arg(argList, result)) {
+                            remove_arg_from_list(&argList, result);
+                        } else {
+                            remove_instruct_from_block(block, instruct);
+                            break;
+                        }
+                    }
+                    if (result > 0 && check_arg(varList, result) == 0) {
+                        remove_instruct_from_block(block, instruct);
+                        break;                          
+                    }
+                    if (argOneType == _VAR_OR_TEMP && check_arg(argList, argOne) == 0 && argOne < 0) {
+                        append_arg_to_list(&argList, argOne);
+                    }
+                    break;
+                }
+                case _PLUS:
+                case _MULTIPLY:
+                case _SUBSTRACT:
+                case _DIVIDE:
+                {
+                    int argTwo = 0;
+                    int argTwoType = -1;
+                    if (instruct->argTwo) {
+                        argTwo = *instruct->argTwo;
+                        argTwoType = instruct->argTwoType;
+                    }
+                    if (result < 0) {
+                        if (check_arg(argList, result)) {
+                            remove_arg_from_list(&argList, result);
+                        } else {
+                            remove_instruct_from_block(block, instruct);
+                            break;
+                        }
+                    }
+                    if (result > 0 && check_arg(varList, result) == 0) {
+                        remove_instruct_from_block(block, instruct);
+                        break;                          
+                    }
+                    if (argOneType != _CONSTANT && check_arg(argList, argOne) == 0 && argOne < 0) {
+                        append_arg_to_list(&argList, argOne);
+                    }
+                    if (argTwoType != _CONSTANT && check_arg(argList, argTwo) == 0 && argTwo < 0) {
+                        append_arg_to_list(&argList, argTwo);
+                    }
+                }
+                case _COPY:
+                {
+                    if (argOneType != _CONSTANT && check_arg(argList, argOne) == 0 && argOne < 0) {
+                        append_arg_to_list(&argList, argOne);
+                    }
+                    if (check_arg(argList, result) == 0 && result < 0) {
+                        append_arg_to_list(&argList, result);
+                    }
+                    break;
+                }
+                case _RETURN:
+                case _WRITE:
+                case _ARGUMENT:
+                {
+                    if (argOneType != _CONSTANT && check_arg(argList, argOne) == 0 && argOne < 0) {
+                        append_arg_to_list(&argList, argOne);
+                    }
+                    break;
+                }
+                case _CALL:
+                case _READ:
+                {
+                    if (check_arg(argList, result) == 0 && result < 0) {
+                        append_arg_to_list(&argList, result);
+                    }
+                    break;
+                }
+                case _LESSTHAN:
+                case _LESSEQUAL:
+                case _GREATERTHAN:
+                case _GREATEREQUAL:
+                case _EQUAL:
+                case _NOTEQUAL:
+                {
+                    int argTwo = 0;
+                    int argTwoType = -1;
+                    if (instruct->argTwo) {
+                        argTwo = *instruct->argTwo;
+                        argTwoType = instruct->argTwoType;
+                    }
+                    if (argOneType != _CONSTANT && check_arg(argList, argOne) == 0 && argOne < 0) {
+                        append_arg_to_list(&argList, argOne);
+                    }
+                    if (argTwoType != _CONSTANT && check_arg(argList, argTwo) == 0 && argTwo < 0) {
+                        append_arg_to_list(&argList, argTwo);
+                    }
+                    break;
+                }
+            }
+            instruct = instruct->previous;
+        }
+    }
 }
