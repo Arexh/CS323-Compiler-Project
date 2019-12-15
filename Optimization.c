@@ -39,6 +39,8 @@ ExpRecordNode *new_exp_record_node() {
     node->left = 0;
     node->right = 0;
     node->type = _NOTHING;
+    node->next = NULL;
+    node->previous = NULL;
     return node;
 }
 
@@ -82,7 +84,33 @@ void remove_exp(int num) {
     }
     ExpRecordNode *node = recordList;
     while(node) {
-        if (num == node->result) {
+        int jug = 0;
+        switch(node->type) {
+            case _ONE_VAR:
+            case _MINUS_ONE_VAR:
+            case _VAR_ADD_CON:
+            case _VAR_SUB_CON:
+            case _VAR_DIV_CON:
+            case _VAR_MUL_CON:
+                if (num == node->left)
+                    jug = 1;
+                break;
+            case _CON_DIV_VAR:
+            case _CON_MUL_VAR:
+            case _CON_SUB_VAR:
+            case _CON_ADD_VAR:
+                if (num == node->right)
+                    jug = 1;
+                break;
+            case _VAR_ADD_VAR:
+            case _VAR_SUB_VAR:
+            case _VAR_MUL_VAR:
+            case _VAR_DIV_VAR:
+                if (num == node->left || num == node->right)
+                    jug = 1;
+                break;
+        }
+        if (jug == 1 || num == node->result) {
             if (node->previous) {
                 node->previous->next = node->next;
                 if (node->next)
@@ -126,6 +154,15 @@ void clear_block_container() {
         if (tempRecords[i] != NULL) {
             free_exp_record(tempRecords[i]);
         }
+    }
+    ExpRecordNode *node = recordList;
+    recordList = NULL;
+    while (node) {
+        ExpRecordNode *temp = node;
+        node = node->next;
+        temp->next = NULL;
+        temp->previous = NULL;
+        free(temp);
     }
 }
 
@@ -243,14 +280,14 @@ ExpRecord *get_exp_record(int num) {
         return tempRecords[-num - 1];
 }
 
-ExpRecord *update_record_recursive(int num) {
+ExpRecord *update_record(int num) {
     ExpRecord *record = get_exp_record(num);
     if (record == NULL)
         return NULL;
     switch(record->type) {
         case _ONE_VAR:
             {
-                ExpRecord *newRecord = update_record_recursive(record->left);
+                ExpRecord *newRecord = get_exp_record(record->left);
                 if (newRecord) {
                     record->left = newRecord->left;
                     record->right = newRecord->right;
@@ -260,7 +297,7 @@ ExpRecord *update_record_recursive(int num) {
             }
         case _MINUS_ONE_VAR:
             {
-                ExpRecord *newRecord = update_record_recursive(record->left);
+                ExpRecord *newRecord = get_exp_record(record->left);
                 if (newRecord) {
                     if (newRecord->type == _ONE_VAR) {
                         record->left = newRecord->left;
@@ -286,9 +323,96 @@ ExpRecord *update_record_recursive(int num) {
                 }
                 return record;
             }
+        case _CON_ADD_VAR:
+            {
+                int temp;
+                temp = record->left;
+                record->left = record->right;
+                record->right = temp;
+                record->type = _VAR_ADD_CON;
+                return update_record(num);
+            }
+        case _CON_MUL_VAR: 
+            {
+                int temp;
+                temp = record->left;
+                record->left = record->right;
+                record->right = temp;
+                record->type = _VAR_MUL_CON;
+                return update_record(num);
+            }
+        case _CON_SUB_VAR:
+            {
+                ExpRecord *right = get_exp_record(record->right);
+                if (right->type == _ONE_CON) {
+                    int cal = record->left - right->left;
+                    if (cal >= 0) {
+                        record->left = cal;
+                        record->type = _ONE_CON;
+                    } else {
+                        record->left = -cal;
+                        record->type = _MINUS_ONE_CON;
+                    }
+                } else if (right->type == _ONE_VAR) {
+                    record->right = right->left;
+                    record->type = _CON_SUB_VAR;
+                } else if (right->type == _MINUS_ONE_CON) {
+                    record->left = record->left + right->left;
+                    record->type = _ONE_CON;
+                } else if (right->type == _MINUS_ONE_VAR) {
+                    record->right = right->left;
+                    record->type = _CON_ADD_VAR;
+                } else if (right->type == _CON_ADD_VAR) {
+                    int cal = record->left - right->left;
+                    if (cal > 0) {
+                        record->left = cal;
+                        record->right = right->right;
+                        record->type = _CON_SUB_VAR;
+                    }
+                } else if (right->type == _CON_SUB_VAR) {
+                    record->left = right->right;
+                    int cal = record->left - right->left;
+                    if (cal > 0) {
+                        record->right = cal;
+                        record->type = _VAR_ADD_CON;
+                    } else if (cal < 0) {
+                        record->right = -cal;
+                        record->type = _VAR_SUB_CON;
+                    } else {
+                        record->type = _ONE_VAR;
+                    }
+                } else if (right->type == _VAR_ADD_CON) {
+                    int cal = record->left - right->right;
+                    if (cal > 0) {
+                        record->left = cal;
+                        record->right = right->left;
+                        record->type = _CON_SUB_VAR;
+                    }
+                } else if (right->type == _VAR_SUB_CON) {
+                    record->left = record->left + right->right;
+                    record->right = right->left;
+                    record->type = _CON_SUB_VAR;
+                }
+                return record;
+            }
+        case _CON_DIV_VAR:
+            {
+                ExpRecord *right = get_exp_record(record->right);
+                if (right->type == _ONE_CON) {
+                    record->left = record->left / right->left;
+                    record->type = _ONE_CON;   
+                } else if (right->type == _ONE_VAR) {
+                    record->right = right->left;
+                    record->type = _CON_DIV_VAR;
+                } else if (right->type == _MINUS_ONE_VAR) {
+                    record->left = record->left / right->left;
+                    record->type = _MINUS_ONE_CON;
+                }
+                return record;
+            }
         case _VAR_ADD_CON:
             {
-                ExpRecord *left = update_record_recursive(record->left);
+                ExpRecord *left = get_exp_record(record->left);
                 if (left) {
                     if (left->type == _ONE_CON) {
                         record->left = left->left + record->right;
@@ -334,7 +458,7 @@ ExpRecord *update_record_recursive(int num) {
             }
         case _VAR_MUL_CON:
             {
-                ExpRecord *left = update_record_recursive(record->left);
+                ExpRecord *left = get_exp_record(record->left);
                 if (left) {
                     if (left->type == _ONE_CON) {
                         record->left = left->left * record->right;
@@ -359,7 +483,7 @@ ExpRecord *update_record_recursive(int num) {
             }
         case _VAR_SUB_CON:
             {
-                ExpRecord *left = update_record_recursive(record->left);
+                ExpRecord *left = get_exp_record(record->left);
                 if (left) {
                     if (left->type == _ONE_CON) {
                         int cal = left->left - record->right;
@@ -422,7 +546,7 @@ ExpRecord *update_record_recursive(int num) {
             }
         case _VAR_DIV_CON:
             {
-                ExpRecord *left = update_record_recursive(record->left);
+                ExpRecord *left = get_exp_record(record->left);
                 if (left) {
                     if (left->type == _ONE_CON) {
                         record->left = left->left / record->left;
@@ -439,8 +563,8 @@ ExpRecord *update_record_recursive(int num) {
             }
         case _VAR_ADD_VAR:
             {
-                ExpRecord *left = update_record_recursive(record->left);
-                ExpRecord *right = update_record_recursive(record->right);
+                ExpRecord *left = get_exp_record(record->left);
+                ExpRecord *right = get_exp_record(record->right);
                 if (left == NULL && right == NULL) {
                     return record;
                 } else if (left == NULL && right) {
@@ -918,8 +1042,8 @@ ExpRecord *update_record_recursive(int num) {
             }
         case _VAR_MUL_VAR:
             {
-                ExpRecord *left = update_record_recursive(record->left);
-                ExpRecord *right = update_record_recursive(record->right);
+                ExpRecord *left = get_exp_record(record->left);
+                ExpRecord *right = get_exp_record(record->right);
                 if (left == NULL && right == NULL) {
                     return record;
                 } else if (left == NULL && right) {
@@ -1006,8 +1130,8 @@ ExpRecord *update_record_recursive(int num) {
             }
         case _VAR_SUB_VAR:
             {
-                ExpRecord *left = update_record_recursive(record->left);
-                ExpRecord *right = update_record_recursive(record->right);
+                ExpRecord *left = get_exp_record(record->left);
+                ExpRecord *right = get_exp_record(record->right);
                 if (left == NULL && right == NULL) {
                     return record;
                 } else if (left == NULL && right) {
@@ -1093,8 +1217,6 @@ ExpRecord *update_record_recursive(int num) {
                 }
                 if (left->type == _ONE_CON) {
                     if (right->type == _ONE_CON) {
-                        puts("HERE");
-                        printf("LEFT: %d, RIGHT: %d\n", left->left, right->left);
                         int cal = left->left - right->left;
                         if (cal >= 0) {
                             record->left = cal;
@@ -1471,8 +1593,8 @@ ExpRecord *update_record_recursive(int num) {
             }
         case _VAR_DIV_VAR:
             {
-                ExpRecord *left = update_record_recursive(record->left);
-                ExpRecord *right = update_record_recursive(record->right);
+                ExpRecord *left = get_exp_record(record->left);
+                ExpRecord *right = get_exp_record(record->right);
                 if (left == NULL && right == NULL) {
                     return record;
                 } else if (left == NULL && right) {
@@ -1615,6 +1737,51 @@ void update_instruct(ExpRecord *record, IRInstruct *instruct) {
     }
 }
 
+int verify(int result, ExpRecord *record) {
+    int jug = 0;
+    switch(record->type) {
+        case _ONE_VAR:
+        case _MINUS_ONE_VAR:
+        case _VAR_ADD_CON:
+        case _VAR_SUB_CON:
+        case _VAR_DIV_CON:
+        case _VAR_MUL_CON:
+            if (result == record->left) {
+                if (result > 0)
+                    varRecords[result - 1] = NULL;
+                else
+                    tempRecords[result - 1] = NULL;
+                jug = 1;
+            }
+            break;
+        case _CON_DIV_VAR:
+        case _CON_MUL_VAR:
+        case _CON_SUB_VAR:
+        case _CON_ADD_VAR:
+            if (result == record->right) {
+                if (result > 0)
+                    varRecords[result - 1] = NULL;
+                else
+                    tempRecords[result - 1] = NULL;
+                jug = 1;
+            }
+            break;
+        case _VAR_ADD_VAR:
+        case _VAR_SUB_VAR:
+        case _VAR_MUL_VAR:
+        case _VAR_DIV_VAR:
+            if (result == record->left || result == record->right) {
+                if (result > 0)
+                    varRecords[result - 1] = NULL;
+                else
+                    tempRecords[result - 1] = NULL;
+                jug = 1;
+            }
+            break;
+    }
+    return jug;
+}
+
 void constant_propagation_and_folding() {
     int i;
     int blocksNum = blocksArrayList->memberNum;
@@ -1624,7 +1791,6 @@ void constant_propagation_and_folding() {
         int j;
         int instructNum = block->instructNum;
         IRInstruct *instruct = block->instructHead;
-        printf("%d\n", instructNum);
         for (j = 1; j < instructNum; j++) {
             int argOne = 0;
             int argOneType;
@@ -1645,17 +1811,18 @@ void constant_propagation_and_folding() {
             int result;
             if (instruct->result)
                 result = *instruct->result;
-            printf("TYPE: %d\n", instruct->type);
+            int jug = 0;
             switch(instruct->type) {
                 case _ASSIGN:
                 case _MINUS:
                 {   
                     put_record(result, argOne, argOneType, 0, 0, instruct->type);
-                    ExpRecord *record = update_record_recursive(result);
+                    ExpRecord *record = update_record(result);
                     remove_exp(result);
                     update_instruct(record, instruct);
+                    int jug = verify(result, record);
                     ExpRecordNode *re = find_available_exp(record);
-                    if (re && re->result < 0 && result > 0) {
+                    if (jug == 0 && re && re->result < 0 && result > 0) {
                         re->result = result;
                     }
                     break;
@@ -1666,7 +1833,13 @@ void constant_propagation_and_folding() {
                 case _DIVIDE:
                 {
                     put_record(result, argOne, argOneType, argTwo, argTwoType, instruct->type);
-                    ExpRecord *record = update_record_recursive(result);
+                    ExpRecord *record = update_record(result);
+                    update_instruct(record, instruct);
+                    int jug = verify(result, record);
+                    if (jug) {
+                        remove_exp(result);
+                        break;
+                    }
                     switch(record->type) {
                         case _ONE_CON:
                         case _ONE_VAR:
@@ -1692,29 +1865,37 @@ void constant_propagation_and_folding() {
                             break;
                         }
                     }
-                    update_instruct(record, instruct);
+                    
                     break;
                 }
                 case _RETURN:
                 case _WRITE:
                 {
-                    ExpRecord *record = update_record_recursive(argOne);
+                    if (argOneType != _VAR_OR_TEMP)
+                        break;
+                    ExpRecord *record = update_record(argOne);
                     ExpRecordNode *re = find_available_exp(record);
                     if (re) {
                         record->left = re->result;
                         record->type = _ONE_VAR;
                     }
-                    switch(record->type) {
-                        case _ONE_CON:
-                            instruct->argOne = (int *)malloc(sizeof(int));
-                            *instruct->argOne = record->left;
-                            instruct->argOneType = _CONSTANT;
-                            break;
-                        case _ONE_VAR:
-                            instruct->argOne = (int *)malloc(sizeof(int));
-                            *instruct->argOne = record->left;
-                            instruct->argOneType = _VAR_OR_TEMP;
-                            break;
+                    if (record) {
+                        switch(record->type) {
+                            case _ONE_CON:
+                                {
+                                    instruct->argOne = (int *)malloc(sizeof(int));
+                                    *instruct->argOne = record->left;
+                                    instruct->argOneType = _CONSTANT;
+                                    break;
+                                }
+                            case _ONE_VAR:
+                                {
+                                    instruct->argOne = (int *)malloc(sizeof(int));
+                                    *instruct->argOne = record->left;
+                                    instruct->argOneType = _VAR_OR_TEMP;
+                                    break;
+                                }
+                        }
                     }
                     break;
                 }
